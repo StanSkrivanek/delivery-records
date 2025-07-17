@@ -1,6 +1,6 @@
 <!-- src/lib/components/RecordsList.svelte -->
 <script lang="ts">
-	import type { Record } from '$lib/db.server';
+	import type { Record, RecordService } from '$lib/db.server';
 	import { formatDate } from '$lib/utils';
 
 	let { records }: { records: Record[] } = $props();
@@ -101,6 +101,26 @@
 			closeModal();
 		}
 	}
+
+	function removeDbRecord(recordId: number) {
+		if (confirm('Are you sure you want to delete this record?')) {
+			// Optimistically remove from local records array
+			records = records.filter((r) => r.id !== recordId);
+
+			// Send delete request to server
+			fetch(`/api/records/${recordId}`, { method: 'DELETE' })
+				.then((res) => {
+					if (!res.ok) {
+						alert('Failed to delete record. The page may show outdated data.');
+						// Optionally, you could refetch the data here to ensure UI consistency
+					}
+				})
+				.catch((err) => {
+					console.error('Error deleting record:', err);
+					alert('An error occurred while deleting the record.');
+				});
+		}
+	}
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -124,7 +144,8 @@
 						<th>Returned</th>
 						<th>D-total</th>
 						<th>Image</th>
-						<th>Edit</th>
+						<th></th>
+						<th></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -150,6 +171,9 @@
 							</td>
 							<td class="td-cell">
 								<button class="td-btn" onclick={() => openEditModal(record)}>Edit</button>
+							</td>
+							<td class="td-cell">
+								<button class="td-btn btn-danger" onclick={() => removeDbRecord(record.id!)}>Delete</button>
 							</td>
 						</tr>
 					{/each}
@@ -349,7 +373,7 @@
 	/* } */
 
 	.td-btn {
-		background: #28a745;
+		background: #1853f3;
 		color: white;
 		border: none;
 		border-radius: 4px;
@@ -363,7 +387,7 @@
 	}
 
 	.td-btn:hover {
-		background: #218838;
+		background: #000000;
 		transform: translateY(-1px);
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 	}
@@ -371,7 +395,9 @@
 	.td-btn:active {
 		transform: translateY(0);
 	}
-
+.btn-danger{
+		background: #dc3545;
+	}
 	.no-image {
 		color: #999;
 		font-style: italic;
