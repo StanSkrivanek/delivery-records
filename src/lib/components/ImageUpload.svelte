@@ -50,6 +50,7 @@
 		if (files && files.length > 0) {
 			selectedFile = files[0];
 			onFileSelected?.(files[0]);
+			// Do NOT reset target.value here; only reset on removeFile
 		}
 	}
 
