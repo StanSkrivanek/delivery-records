@@ -62,7 +62,7 @@
 			<div class="form-group">
 				<label for="loaded">Loaded:</label>
 				<input
-					type="number"
+					type="text"
 					id="loaded"
 					name="loaded"
 					bind:value={loaded}
@@ -75,7 +75,7 @@
 			<div class="form-group">
 				<label for="collected">Collected:</label>
 				<input
-					type="number"
+					type="text"
 					id="collected"
 					name="collected"
 					bind:value={collected}
@@ -88,7 +88,7 @@
 			<div class="form-group">
 				<label for="cutters">Cutters:</label>
 				<input
-					type="number"
+					type="text"
 					id="cutters"
 					name="cutters"
 					bind:value={cutters}
@@ -101,7 +101,7 @@
 			<div class="form-group">
 				<label for="returned">Returned:</label>
 				<input
-					type="number"
+					type="text"
 					id="returned"
 					name="returned"
 					bind:value={returned}
@@ -159,7 +159,7 @@
 
 	.form-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
 		gap: 1rem;
 		margin-bottom: 2rem;
 	}
@@ -179,14 +179,14 @@
 		color: #333;
 	}
 
-	input[type='number'] {
+	input[type='text'] {
 		padding: 0.75rem;
 		border: 1px solid #ddd;
 		border-radius: 4px;
 		font-size: 1rem;
 	}
 
-	input[type='number']:focus {
+	input[type='text']:focus {
 		outline: none;
 		border-color: #007bff;
 		box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);

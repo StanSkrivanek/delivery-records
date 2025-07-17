@@ -6,25 +6,63 @@ import path from 'path';
 const dbPath = dev ? 'database.db' : './database.db';
 const db = new Database(dbPath);
 
+// --- Migration: convert numeric columns to TEXT if needed ---
+interface TableColumn {
+	name: string;
+	type: string;
+	[key: string]: string | number | boolean | null;
+}
+const tableInfo = db.prepare('PRAGMA table_info(records)').all() as TableColumn[];
+const needsMigration = tableInfo.some(
+	(col) => ['loaded', 'collected', 'cutters', 'returned'].includes(col.name) && col.type !== 'TEXT'
+);
+
+if (needsMigration) {
+	db.transaction(() => {
+		// Rename old table
+		db.exec(`ALTER TABLE records RENAME TO records_old`);
+		// Create new table with TEXT columns
+		db.exec(`
+			CREATE TABLE records (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				loaded TEXT NOT NULL,
+				collected TEXT NOT NULL,
+				cutters TEXT NOT NULL,
+				returned TEXT NOT NULL,
+				image_path TEXT,
+				date_created DATETIME DEFAULT CURRENT_TIMESTAMP
+			)
+		`);
+		// Copy data, casting numbers to strings
+		db.exec(`
+			INSERT INTO records (id, loaded, collected, cutters, returned, image_path, date_created)
+			SELECT id, CAST(loaded AS TEXT), CAST(collected AS TEXT), CAST(cutters AS TEXT), CAST(returned AS TEXT), image_path, date_created
+			FROM records_old
+		`);
+		// Drop old table
+		db.exec(`DROP TABLE records_old`);
+	})();
+}
+
 // Initialize database schema
 db.exec(`
   CREATE TABLE IF NOT EXISTS records (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	loaded INTEGER NOT NULL,
-	collected INTEGER NOT NULL,
-	cutters INTEGER NOT NULL,
-	returned INTEGER NOT NULL,
-	image_path TEXT,
-	date_created DATETIME DEFAULT CURRENT_TIMESTAMP
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    loaded TEXT NOT NULL,
+    collected TEXT NOT NULL,
+    cutters TEXT NOT NULL,
+    returned TEXT NOT NULL,
+    image_path TEXT,
+    date_created DATETIME DEFAULT CURRENT_TIMESTAMP
   )
 `);
 
 export interface Record {
 	id?: number;
-	loaded: number;
-	collected: number;
-	cutters: number;
-	returned: number;
+	loaded: number | string;
+	collected: number | string;
+	cutters: number | string;
+	returned: number | string;
 	image_path?: string;
 	date_created?: string;
 }
@@ -32,18 +70,16 @@ export interface Record {
 export class RecordService {
 	static async createRecord(record: Omit<Record, 'id' | 'date_created'>): Promise<number> {
 		const stmt = db.prepare(`
-	  INSERT INTO records (loaded, collected, cutters, returned, image_path)
-	  VALUES (?, ?, ?, ?, ?)
-	`);
-
+			INSERT INTO records (loaded, collected, cutters, returned, image_path)
+			VALUES (?, ?, ?, ?, ?)
+		`);
 		const result = stmt.run(
-			record.loaded,
-			record.collected,
-			record.cutters,
-			record.returned,
-			record.image_path || null
+			record.loaded.toString(),
+			record.collected.toString(),
+			record.cutters.toString(),
+			record.returned.toString(),
+			record.image_path ?? null // ensure null if not present
 		);
-
 		return result.lastInsertRowid as number;
 	}
 
@@ -62,16 +98,16 @@ export class RecordService {
 		data: Partial<Omit<Record, 'id' | 'date_created'>>
 	): Promise<boolean> {
 		const stmt = db.prepare(`
-	  UPDATE records
-	  SET loaded = ?, collected = ?, cutters = ?, returned = ?, image_path = ?
-	  WHERE id = ?
-	`);
+			UPDATE records
+			SET loaded = ?, collected = ?, cutters = ?, returned = ?, image_path = ?
+			WHERE id = ?
+		`);
 		const result = stmt.run(
-			data.loaded,
-			data.collected,
-			data.cutters,
-			data.returned,
-			data.image_path || null,
+			data.loaded?.toString(),
+			data.collected?.toString(),
+			data.cutters?.toString(),
+			data.returned?.toString(),
+			data.image_path ?? null, // ensure null if not present
 			id
 		);
 		return result.changes > 0;

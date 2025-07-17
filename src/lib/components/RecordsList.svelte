@@ -9,12 +9,6 @@
 	let modalImage = $state('');
 	let modalAlt = $state('');
 
-	// calculate total for D-total column
-	function calculateTotal(record: Record): number {
-		// loaded - returned
-		return record.loaded - record.returned;
-	}
-
 	// Edit modal state
 	let showEditModal = $state(false);
 	let editRecord = $state<Record>({
@@ -27,7 +21,14 @@
 	});
 
 	function openEditModal(record: Record) {
-		editRecord = { ...record };
+		// Create a copy of the record with string values for text inputs
+		editRecord = {
+			...record,
+			loaded: record.loaded.toString(),
+			collected: record.collected.toString(),
+			cutters: record.cutters.toString(),
+			returned: record.returned.toString()
+		};
 		showEditModal = true;
 	}
 
@@ -36,18 +37,50 @@
 	}
 
 	async function saveEdit() {
+		// Convert string values back to numbers before saving
+		const recordToSave = {
+			...editRecord,
+			loaded: parseInt(editRecord.loaded as string) || 0,
+			collected: parseInt(editRecord.collected as string) || 0,
+			cutters: parseInt(editRecord.cutters as string) || 0,
+			returned: parseInt(editRecord.returned as string) || 0
+		};
+
+		// Immediately update the local records array for immediate UI feedback
+		const idx = records.findIndex((r) => r.id === editRecord.id);
+		if (idx !== -1) {
+			// Create a new array with the updated record
+			records = [...records.slice(0, idx), recordToSave, ...records.slice(idx + 1)];
+		}
+
+		// Close modal early to improve perceived performance
+		showEditModal = false;
+
+		// Then send the update to the server
 		const res = await fetch(`/api/records/${editRecord.id}`, {
 			method: 'PUT',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(editRecord)
+			body: JSON.stringify(recordToSave)
 		});
-		if (res.ok) {
-			const idx = records.findIndex((r) => r.id === editRecord.id);
-			if (idx !== -1) records[idx] = { ...editRecord };
-			showEditModal = false;
-		} else {
-			alert('Failed to update record.');
+
+		// If the server request fails, show an error and potentially revert the change
+		if (!res.ok) {
+			alert('Failed to update record on the server. The page may show outdated data.');
+			// Optionally, you could refetch the data here to ensure UI consistency
+			// Or implement a more sophisticated rollback mechanism
 		}
+	}
+
+	// calculate total for D-total column - ensure it works with both number and string types
+	function calculateTotal(record: Record): number {
+		// Convert values to numbers if they're strings
+		const loadedValue =
+			typeof record.loaded === 'string' ? parseInt(record.loaded) || 0 : record.loaded;
+		const returnedValue =
+			typeof record.returned === 'string' ? parseInt(record.returned) || 0 : record.returned;
+
+		// loaded - returned
+		return loadedValue - returnedValue;
 	}
 
 	function openImageModal(imagePath: string, recordId: number) {
@@ -98,16 +131,16 @@
 					{#each records as record (record.id)}
 						<tr>
 							<td class="date-cell">{formatDate(record.date_created!)}</td>
-							<td class="number-cell">{record.loaded}</td>
-							<td class="number-cell">{record.collected}</td>
-							<td class="number-cell">{record.cutters}</td>
-							<td class="number-cell">{record.returned}</td>
-							<td class="number-cell">{calculateTotal(record)}</td>
-							<td class="image-cell">
+							<td class="td-cell">{record.loaded}</td>
+							<td class="td-cell">{record.collected}</td>
+							<td class="td-cell">{record.cutters}</td>
+							<td class="td-cell">{record.returned}</td>
+							<td class="td-cell">{calculateTotal(record)}</td>
+							<td class="td-cell">
 								{#if record.image_path}
 									<button
 										type="button"
-										class="image-btn"
+										class="td-btn"
 										onclick={() => openImageModal(record.image_path!, record.id!)}
 										title="View image">View Image</button
 									>
@@ -115,8 +148,8 @@
 									<span class="no-image">No image</span>
 								{/if}
 							</td>
-							<td>
-								<button class="image-btn" onclick={() => openEditModal(record)}>Edit</button>
+							<td class="td-cell">
+								<button class="td-btn" onclick={() => openEditModal(record)}>Edit</button>
 							</td>
 						</tr>
 					{/each}
@@ -157,24 +190,24 @@
 				<div class="edit-fields">
 					<label class="form-field">
 						<span>Loaded:</span>
-						<input type="number" bind:value={editRecord.loaded} min="0" required />
+						<input type="text" bind:value={editRecord.loaded} required />
 					</label>
 					<label class="form-field">
 						<span>Collected:</span>
-						<input type="number" bind:value={editRecord.collected} min="0" required />
+						<input type="text" bind:value={editRecord.collected} required />
 					</label>
 					<label class="form-field">
 						<span>Cutters:</span>
-						<input type="number" bind:value={editRecord.cutters} min="0" required />
+						<input type="text" bind:value={editRecord.cutters} required />
 					</label>
 					<label class="form-field">
 						<span>Returned:</span>
-						<input type="number" bind:value={editRecord.returned} min="0" required />
+						<input type="text" bind:value={editRecord.returned} required />
 					</label>
 				</div>
 				<div class="modal-footer">
+					<button type="button" class="btn-danger" onclick={closeEditModal}>Cancel</button>
 					<button type="submit" class="btn-primary">Save Changes</button>
-					<button type="button" class="btn-secondary" onclick={closeEditModal}>Cancel</button>
 				</div>
 			</form>
 		</div>
@@ -268,7 +301,7 @@
 
 	.records-table th {
 		padding: 1rem 0.75rem;
-		text-align: left;
+		text-align: center;
 		font-weight: 600;
 		color: #333;
 		border-bottom: 2px solid #dee2e6;
@@ -281,7 +314,7 @@
 	.records-table td {
 		padding: 0.75rem;
 		border-bottom: 1px solid #dee2e6;
-		vertical-align: middle;
+		/* vertical-align: middle; */
 	}
 
 	.records-table tbody tr:hover {
@@ -301,21 +334,21 @@
 	.date-cell {
 		color: #666;
 		font-size: 0.85rem;
-		width: 140px;
+		/* width: 140px; */
 	}
 
-	.number-cell {
+	.td-cell {
 		text-align: center;
 		font-weight: 500;
-		width: 90px;
+		/* width: 100px; */
 	}
 
-	.image-cell {
-		text-align: center;
-		width: 120px;
-	}
+	/* .image-cell { */
+	/* text-align: center; */
+	/* width: 120px; */
+	/* } */
 
-	.image-btn {
+	.td-btn {
 		background: #28a745;
 		color: white;
 		border: none;
@@ -329,13 +362,13 @@
 		gap: 0.25rem;
 	}
 
-	.image-btn:hover {
+	.td-btn:hover {
 		background: #218838;
 		transform: translateY(-1px);
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 	}
 
-	.image-btn:active {
+	.td-btn:active {
 		transform: translateY(0);
 	}
 
@@ -434,10 +467,11 @@
 	}
 
 	.modal-footer {
-		padding: 1rem 1.5rem;
+		padding: 1rem;
 		border-top: 1px solid #dee2e6;
 		display: flex;
 		justify-content: flex-end;
+		gap: 1rem;
 	}
 
 	.btn-secondary {
@@ -449,7 +483,15 @@
 		cursor: pointer;
 		transition: background-color 0.2s ease;
 	}
-
+.btn-danger {
+		background: #dc4832;
+		color: white;
+		border: none;
+		border-radius: 4px;
+		padding: 0.5rem 1rem;
+		cursor: pointer;
+		transition: background-color 0.2s ease;
+	}
 	.btn-secondary:hover {
 		background: #5a6268;
 	}
@@ -507,7 +549,9 @@
 		border-radius: 4px;
 		padding: 0.5rem 1rem;
 		cursor: pointer;
-		transition: background-color 0.2s ease, transform 0.1s ease;
+		transition:
+			background-color 0.2s ease,
+			transform 0.1s ease;
 		font-weight: 500;
 	}
 
@@ -543,7 +587,7 @@
 			font-size: 0.75rem;
 		}
 
-		.image-btn {
+		.td-btn {
 			font-size: 0.7rem;
 			padding: 0.4rem 0.6rem;
 		}
@@ -577,7 +621,7 @@
 			padding: 0.4rem 0.3rem;
 		}
 
-		.image-btn {
+		.td-btn {
 			font-size: 0.65rem;
 			padding: 0.3rem 0.5rem;
 		}
