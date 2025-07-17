@@ -30,6 +30,7 @@
 	// Callback functions for ImageUpload component
 	function handleFileSelected(file: File) {
 		selectedFile = file;
+		console.log(`File selected: ${file.name}`);
 	}
 
 	function handleFileRemoved() {
@@ -113,8 +114,9 @@
 		</div>
 
 		<div class="form-group image-section">
-			<label id="image-label"
-				>Image (optional):
+			<!-- <label id="image-label"
+			>Image (optional):
+		</label> -->
 				<div aria-labelledby="image-label">
 					<ImageUpload
 						bind:selectedFile
@@ -123,7 +125,6 @@
 						onFileRemoved={handleFileRemoved}
 					/>
 				</div>
-			</label>
 		</div>
 
 		<div class="form-actions">
