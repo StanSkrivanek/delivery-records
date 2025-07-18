@@ -39,7 +39,7 @@ export class RecordService {
 	static async createRecord(record: Omit<Record, 'id' | 'created_at'>): Promise<number> {
 		const stmt = db.prepare(`
       INSERT INTO records (loaded, collected, cutters, returned, zong, expense, image_path, entry_date)
-      VALUES (?, ?, ?, ?, ?, ?, ? )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ? )
     `);
 
 		const result = stmt.run(
@@ -86,7 +86,7 @@ export class RecordService {
 	): Promise<boolean> {
 		const stmt = db.prepare(`
 				UPDATE records
-				SET loaded = ?, collected = ?, cutters = ?, returned = ?, image_path = ?
+				SET loaded = ?, collected = ?, cutters = ?, returned = ?, zong = ?, expense = ?, image_path = ?
 				WHERE id = ?
 			`);
 		const result = stmt.run(
