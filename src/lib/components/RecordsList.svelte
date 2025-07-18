@@ -161,7 +161,7 @@
 							</td>
 							<td>
 								<button
-									class="image-btn"
+									class="image-btn btn-danger"
 									onclick={() => record.id !== undefined && openDeleteModal(record.id)}
 									title="Delete record"
 								>
@@ -370,24 +370,24 @@
 	.date-cell {
 		color: #666;
 		font-size: 0.9rem;
-		width: 120px;
 		font-weight: 500;
+		/* width: 120px; */
 	}
 
 	.number-cell {
 		text-align: center;
 		font-weight: 500;
-		width: 90px;
+		/* width: 90px; */
 	}
 
 	.image-cell {
 		text-align: center;
-		width: 120px;
+		/* width: 120px; */
 	}
 
 	.image-btn {
-		background: #286ca7;
-		color: white;
+		background: #34d393;
+		color: black;
 		border: none;
 		border-radius: 4px;
 		padding: 0.5rem 0.75rem;
@@ -400,7 +400,8 @@
 	}
 
 	.image-btn:hover {
-		background: #218838;
+		background: #3fb586;
+		color: white;
 		transform: translateY(-1px);
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 	}
@@ -414,7 +415,16 @@
 		font-style: italic;
 		font-size: 0.8rem;
 	}
-
+	.btn-danger {
+		background: #dc3545;
+		color: white;
+		border: none;
+		border-radius: 4px;
+		padding: 0.5rem 0.75rem;
+		font-size: 0.8rem;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
 	/* Modal Styles */
 	.modal-overlay {
 		position: fixed;

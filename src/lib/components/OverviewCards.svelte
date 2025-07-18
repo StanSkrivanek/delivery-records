@@ -1,6 +1,6 @@
 <script>
 	let { analytics, selectedYear, selectedMonth } = $props();
-	console.log("🚀 ~ analytics:", analytics)
+	console.log('🚀 ~ analytics:', analytics);
 
 	const monthNames = [
 		'January',
@@ -96,6 +96,17 @@
 				<div class="card-value">{formatCurrency(analytics.toInvoice)}</div>
 				<div class="card-subtitle">Total amount to invoice</div>
 			</div>
+			<!-- Average Delivered -->
+			<div class="card warning">
+				<div class="card-header">
+					<h3>Average</h3>
+					<!-- <div class="card-icon">📊</div> -->
+				</div>
+				<div class="card-value">{formatNumber(analytics.averagePerDay)}</div>
+				<div class="card-subtitle">Parcels / day</div>
+			</div>
+		</div>
+		<div class="block">
 			<!-- Total Expenses -->
 			<div class="card total">
 				<div class="card-header">
@@ -105,29 +116,17 @@
 				<div class="card-value">{formatCurrency(analytics.expenseSum)}</div>
 				<div class="card-subtitle">Fuel, Car Maintenance, etc.</div>
 			</div>
-		</div>
-    <div class="block">
 
-      <!-- Average Delivered -->
-      <div class="card warning">
-        <div class="card-header">
-          <h3>Average</h3>
-          <!-- <div class="card-icon">📊</div> -->
-        </div>
-        <div class="card-value">{formatNumber(analytics.averagePerDay)}</div>
-        <div class="card-subtitle">Parcels / day</div>
-      </div>
-  
-      <!-- Balance -->
-      <div class="card info">
-        <div class="card-header">
-          <h3>Ballance</h3>
-          <!-- <div class="card-icon">🧾</div> -->
-        </div>
-        <div class="card-value">{formatCurrency(analytics.toInvoice - analytics.expenseSum)}</div>
-        <div class="card-subtitle">Netto amount</div>
-      </div>
-    </div>
+			<!-- Balance -->
+			<div class="card info">
+				<div class="card-header">
+					<h3>Ballance</h3>
+					<!-- <div class="card-icon">🧾</div> -->
+				</div>
+				<div class="card-value">{formatCurrency(analytics.toInvoice - analytics.expenseSum)}</div>
+				<div class="card-subtitle">Netto amount</div>
+			</div>
+		</div>
 	</div>
 </div>
 
