@@ -2,7 +2,7 @@
 	import { formatDate } from '$lib/utils';
 
 	let { records, selectedYear, selectedMonth } = $props();
-	console.log("🚀OVERVIEW TABLE ~ records:", records)
+	console.log('🚀OVERVIEW TABLE ~ records:', records);
 
 	let showModal = $state(false);
 	let modalImage = $state('');
@@ -79,18 +79,21 @@
 	let totals = $derived(() => {
 		return records.reduce(
 			(
-				/** @type {{ loaded: any; collected: any; cutters: any; returned: any; missplaced: any; loading: any; expense: any; deliveryValue: number; collectedValue: number; totalValue: number; }} */ acc,
-				/** @type {{ loaded: number; collected: number; cutters: any; returned: any; missplaced?: any; loading?: any; expense?: any; }} */ record
+				/** @type {{ loaded: any; collected: any; cutters: any; returned: any; missplaced: any; delivered: any; loading: any; expense: any; deliveryValue: number; collectedValue: number; totalValue: number; }} */ acc,
+				/** @type {{ loaded: number; collected: number; cutters: any; returned: any; missplaced?: any; delivered?: any; loading?: any; expense?: any; }} */ record
 			) => {
-				const deliveryValue = calculateDeliveryValue(record.loaded);
+				const deliveryValue = calculateDeliveryValue(
+					record.loaded - (record.returned + (record.missplaced || 0)) || 0
+				);
 				const collectedValue = calculateCollectedValue(record.collected);
+				const delivered = record.loaded - (record.returned + (record.missplaced || 0)) || 0;
 				return {
 					loaded: acc.loaded + record.loaded,
 					collected: acc.collected + record.collected,
 					cutters: acc.cutters + record.cutters,
 					returned: acc.returned + record.returned,
 					missplaced: acc.missplaced + (record.missplaced || 0),
-					// loading: acc.loading + (record.loading || 0),
+					delivered: acc.delivered + delivered,
 					expense: acc.expense + (record.expense || 0),
 					deliveryValue: acc.deliveryValue + deliveryValue,
 					collectedValue: acc.collectedValue + collectedValue,
@@ -103,7 +106,7 @@
 				cutters: 0,
 				returned: 0,
 				missplaced: 0,
-				// loading: 0,
+				delivered: 0,
 				expense: 0,
 				deliveryValue: 0,
 				collectedValue: 0,
@@ -141,6 +144,7 @@
 						<th>Cutters</th>
 						<th>Returned</th>
 						<th>Missplaced</th>
+						<th>Delivered</th>
 						<th>Expense</th>
 						<th>Delivery Value</th>
 						<th>Collected Value</th>
@@ -150,7 +154,9 @@
 				</thead>
 				<tbody>
 					{#each records as record (record.id)}
-						{@const deliveryValue = calculateDeliveryValue(record.loaded)}
+						{@const deliveryValue = calculateDeliveryValue(
+							record.loaded - (record.returned + record.missplaced) || 0
+						)}
 						{@const collectedValue = calculateCollectedValue(record.collected)}
 						{@const totalValue = deliveryValue + collectedValue}
 						<tr>
@@ -159,11 +165,12 @@
 							<td class="number-cell">{record.loaded}</td>
 							<td class="number-cell">{record.collected}</td>
 							<td class="number-cell">{record.cutters}</td>
-							<td class="number-cell">{record.returned}</td>
-							<td class="number-cell">{record.missplaced || 0}</td>
+							<td class="number-cell" class:expense={record.returned > 0}>{record.returned}</td>
+							<td class="number-cell" class:expense={record.missplaced > 0}>{record.missplaced || 0}</td>
+							<td class="number-cell success" >{record.loaded - (record.returned + record.missplaced) || 0}</td>
 							<td class="currency-cell expense">{formatCurrency(record.expense)}</td>
 							<td class="currency-cell">{formatCurrency(deliveryValue)}</td>
-							<td class="currency-cell ">{formatCurrency(collectedValue)}</td>
+							<td class="currency-cell">{formatCurrency(collectedValue)}</td>
 							<td class="total-cell">{formatCurrency(totalValue)}</td>
 							<td class="image-cell">
 								{#if record.image_path}
@@ -189,13 +196,16 @@
 						<td class="number-cell"><strong>{totals().loaded}</strong></td>
 						<td class="number-cell"><strong>{totals().collected}</strong></td>
 						<td class="number-cell"><strong>{totals().cutters}</strong></td>
-						<td class="number-cell"><strong>{totals().returned}</strong></td>
-						<td class="number-cell"><strong>{totals().missplaced || 0}</strong></td>
-						<td class="currency-cell expense"><strong>{formatCurrency(totals().expense)}</strong></td>
+						<td class="number-cell" class:expense={totals().returned > 0}><strong>{totals().returned}</strong></td>
+						<td class="number-cell" class:expense={totals().missplaced > 0}><strong>{totals().missplaced || 0}</strong></td>
+						<td class="number-cell success"><strong>{totals().delivered || 0}</strong></td>
+						<td class="currency-cell expense"
+							><strong>{formatCurrency(totals().expense)}</strong></td
+						>
 						<td class="currency-cell"><strong>{formatCurrency(totals().deliveryValue)}</strong></td>
 						<td class="currency-cell"><strong>{formatCurrency(totals().collectedValue)}</strong></td
 						>
-						<td class="total-cell"><strong>{formatCurrency(totals().totalValue)}</strong></td>
+						<td class="total-cell "><strong>{formatCurrency(totals().totalValue)}</strong></td>
 						<td class="image-cell">—</td>
 					</tr>
 				</tbody>
@@ -357,18 +367,26 @@
 		color: #2870a7;
 		width: 100px;
 	}
-	.expense{
+	.expense {
 		text-align: right;
 		font-weight: 500;
 		color: #c0392b;
 		background: #f8d7da;
 		width: 100px;
 	}
+
+	.success {
+		text-align: right;
+		font-weight: 500;
+		color: #28a745;
+		background: #d4edda;
+		width: 100px;
+	}
 	.total-cell {
 		text-align: right;
 		font-weight: 600;
-		color: #09122e;
-		background: #c1cadb;
+		color: #e9eefd;
+		background: #0f1219;
 		width: 100px;
 	}
 
