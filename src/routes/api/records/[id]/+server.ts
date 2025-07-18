@@ -9,15 +9,16 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 	}
 	const data = await request.json();
 	// Only allow updating certain fields
-	const { loaded, collected, cutters, returned, image_path } = data;
+	const { loaded, collected, cutters, returned, zong, expense,entry_date, image_path } = data;
 	try {
 		const updated = await RecordService.updateRecord(id, {
 			loaded,
 			collected,
 			cutters,
 			returned,
-			expense: data.expense, // Assuming expense is a new field
-			entry_date: data.entry_date, // Ensure entry_date is included
+			zong,
+			expense, // Assuming expense is a new field
+			entry_date, // Ensure entry_date is included
 			image_path
 		});
 		if (!updated) {

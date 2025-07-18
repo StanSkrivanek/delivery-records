@@ -20,6 +20,7 @@
 	});
 
 	function openEditModal(record: Record) {
+		console.log(record);
 		editRecord = { ...record };
 		showEditModal = true;
 	}
