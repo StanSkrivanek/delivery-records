@@ -10,10 +10,14 @@ export const load: PageServerLoad = async () => {
 	const monthsSet = new Set<number>();
 
 	records.forEach((record) => {
-		if (record.date_created) {
-			const date = new Date(record.date_created);
-			yearsSet.add(date.getFullYear());
-			monthsSet.add(date.getMonth() + 1); // getMonth() returns 0-11, so add 1
+		if (record.entry_date || record.created_at) {
+			// Use entry_date if available, fallback to date_created for older records
+			const dateString = record.entry_date || record.created_at;
+			if (typeof dateString === 'string') {
+				const date = new Date(dateString);
+				yearsSet.add(date.getFullYear());
+				monthsSet.add(date.getMonth() + 1); // getMonth() returns 0-11, so add 1
+			}
 		}
 	});
 
