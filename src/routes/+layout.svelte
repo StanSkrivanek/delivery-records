@@ -1,7 +1,7 @@
 <script>
 	//  props we can access {children, data, form}
 	let { children } = $props();
-	// import '../app.css';
+	import '../app.css';
 </script>
 
 <nav>
