@@ -9,6 +9,7 @@
   let collected = $state(0);
   let cutters = $state(0);
   let returned = $state(0);
+  let expence = $state(0);
   let selectedFile: File | null = $state(null);
   
   // Date picker functionality - simplified
@@ -46,6 +47,7 @@
       collected = 0;
       cutters = 0;
       returned = 0;
+	  expence = 0;
       selectedFile = null;
       selectedDate = getCurrentDate(); // Reset to current date
     }
@@ -164,6 +166,17 @@
           disabled={loading}
         />
       </div>
+	  <div class="form-group">
+		<label for="expence">Expence:</label>
+		<input
+		  type="number"
+		  id="expence"
+		  name="expence"
+		  bind:value={expence}
+		  min="0"
+		  required
+		  disabled={loading}
+		/></div>
     </div>
     
     <div class="form-group image-section">
@@ -211,17 +224,22 @@
   }
   
   .date-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     background: #f8f9fa;
     border: 1px solid #dee2e6;
-    border-radius: 8px;
+    /* border-radius: 8px; */
     padding: 1.5rem;
     margin-bottom: 2rem;
-    border-left: 4px solid #007bff;
+    /* border-left: 4px solid #007bff; */
   }
   
   .date-input-group {
     display: flex;
-    align-items: center;
+    /* flex-direction: column; */
+    /* align-items: center;
+    justify-content: center; */
     gap: 1rem;
     margin-top: 0.5rem;
   }
@@ -273,7 +291,7 @@
   
   .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
     gap: 1rem;
     margin-bottom: 2rem;
   }

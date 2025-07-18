@@ -14,6 +14,7 @@ db.exec(`
     collected INTEGER NOT NULL,
     cutters INTEGER NOT NULL,
     returned INTEGER NOT NULL,
+	expence INTEGER DEFAULT 0,
     image_path TEXT,
     entry_date DATE NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -26,6 +27,7 @@ export interface Record {
 	collected: number;
 	cutters: number;
 	returned: number;
+	expence?: number;
 	image_path?: string;
 	entry_date: string;
 	created_at?: string;
@@ -34,8 +36,8 @@ export interface Record {
 export class RecordService {
 	static async createRecord(record: Omit<Record, 'id' | 'created_at'>): Promise<number> {
 		const stmt = db.prepare(`
-      INSERT INTO records (loaded, collected, cutters, returned, image_path, entry_date)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO records (loaded, collected, cutters, returned, expence, image_path, entry_date)
+      VALUES (?, ?, ?, ?, ?, ?, ? )
     `);
 
 		const result = stmt.run(
@@ -43,6 +45,7 @@ export class RecordService {
 			record.collected,
 			record.cutters,
 			record.returned,
+			record.expence || 0,
 			record.image_path || null,
 			record.entry_date
 		);
@@ -88,6 +91,7 @@ export class RecordService {
 				data.collected?.toString(),
 				data.cutters?.toString(),
 				data.returned?.toString(),
+				data.expence?.toString(),
 				data.image_path ?? null, // ensure null if not present
 				id
 			);

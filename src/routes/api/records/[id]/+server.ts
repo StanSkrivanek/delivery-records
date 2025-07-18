@@ -16,6 +16,8 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 			collected,
 			cutters,
 			returned,
+			expence: data.expence, // Assuming expence is a new field
+			entry_date: data.entry_date, // Ensure entry_date is included
 			image_path
 		});
 		if (!updated) {

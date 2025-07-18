@@ -10,7 +10,7 @@ export const load: PageServerLoad = async () => {
 	const monthsSet = new Set<number>();
 
 	records.forEach((record) => {
-		if (record.entry_date || record.created_at) {
+		if (record.entry_date || record.entry_date === null) {
 			// Use entry_date if available, fallback to date_created for older records
 			const dateString = record.entry_date || record.created_at;
 			if (typeof dateString === 'string') {

@@ -20,6 +20,7 @@ export const actions: Actions = {
 			const collected = Number(formData.get('collected'));
 			const cutters = Number(formData.get('cutters'));
 			const returned = Number(formData.get('returned'));
+			const expence = Number(formData.get('expence')) || 0; // Default to 0 if not provided
 			const selectedDate = formData.get('selectedDate') as string;
 			const imageFile = formData.get('image') as File | null;
 
@@ -86,6 +87,7 @@ export const actions: Actions = {
 				collected,
 				cutters,
 				returned,
+				expence,
 				image_path: imagePath,
 				entry_date: selectedDate
 			});

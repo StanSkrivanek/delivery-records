@@ -130,7 +130,7 @@
             {@const totalValue = deliveryValue + collectedValue}
             <tr>
               <td class="id-cell">#{record.id}</td>
-              <td class="date-cell">{formatDate(record.date_created)}</td>
+              <td class="date-cell">{formatDate(record.entry_date)}</td>
               <td class="number-cell">{record.loaded}</td>
               <td class="number-cell">{record.collected}</td>
               <td class="number-cell">{record.cutters}</td>
