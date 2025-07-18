@@ -28,7 +28,7 @@ export interface Record {
 	collected: number;
 	cutters: number;
 	returned: number;
-	missplaced?: number; // wrong Delivery
+	missplaced?: number; 
 	expense?: number;
 	image_path?: string;
 	entry_date: string;
@@ -96,8 +96,8 @@ export class RecordService {
 			data.returned?.toString(),
 			data.missplaced?.toString(),
 			data.expense?.toString(),
-			data.entry_date ?? null,
 			data.image_path ?? null, // ensure null if not present
+			data.entry_date ?? null,
 			id
 		);
 		return result.changes > 0;
