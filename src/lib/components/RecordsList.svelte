@@ -122,7 +122,7 @@
 						<th>Collected</th>
 						<th>Cutters</th>
 						<th>Returned</th>
-						<th>Zong</th>
+						<th>missplaced</th>
 						<th>Expense</th>
 						<th>Image</th>
 						<th>Edit</th>
@@ -140,7 +140,7 @@
 							<td class="number-cell">{record.collected}</td>
 							<td class="number-cell">{record.cutters}</td>
 							<td class="number-cell">{record.returned}</td>
-							<td class="number-cell">{record.zong}</td>
+							<td class="number-cell">{record.missplaced}</td>
 							<td class="number-cell">{record.expense}</td>
 							<td class="image-cell">
 								{#if record.image_path}
@@ -243,8 +243,8 @@
 						<input type="number" bind:value={editRecord.returned} min="0" />
 					</label>
 					<label class="form-field">
-						<span>Zong:</span>
-						<input type="number" bind:value={editRecord.zong} min="0" />
+						<span>missplaced:</span>
+						<input type="number" bind:value={editRecord.missplaced} min="0" />
 					</label>
 					<label class="form-field">
 						<span>Expense:</span>

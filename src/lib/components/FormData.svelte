@@ -9,7 +9,7 @@
 	let collected = $state(0);
 	let cutters = $state(0);
 	let returned = $state(0);
-	let zong = $state(0);
+	let missplaced = $state(0);
 	let expense = $state(0);
 	let selectedFile: File | null = $state(null);
 
@@ -48,7 +48,7 @@
 			collected = 0;
 			cutters = 0;
 			returned = 0;
-			zong = 0;
+			missplaced = 0;
 			expense = 0;
 			selectedFile = null;
 			selectedDate = getCurrentDate(); // Reset to current date
@@ -169,12 +169,12 @@
 				/>
 			</div>
 			<div class="form-group">
-				<label for="returned">Zong:</label>
+				<label for="missplaced">missplaced:</label>
 				<input
 					type="number"
-					id="returned"
-					name="returned"
-					bind:value={zong}
+					id="missplaced"
+					name="missplaced"
+					bind:value={missplaced}
 					min="0"
 					required
 					disabled={loading}
