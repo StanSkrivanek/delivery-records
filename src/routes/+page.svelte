@@ -18,6 +18,9 @@
 <main>
   <FormData {form} bind:loading />
   <RecordsList records={data.records} />
+  {#if loading}
+    <p>Loading...</p>
+  {/if}
 </main>
 
 <style>
