@@ -122,7 +122,7 @@
 						<th>Collected</th>
 						<th>Cutters</th>
 						<th>Returned</th>
-						<th>missplaced</th>
+						<th>Missplaced</th>
 						<th>Expense</th>
 						<th>Image</th>
 						<th>Edit</th>
@@ -170,6 +170,8 @@
 								<!-- Delete Confirmation Modal -->
 								{#if showDeleteModal}
 									<div class="modal-overlay" role="dialog" aria-modal="true" tabindex="0">
+										<!-- svelte-ignore a11y_click_events_have_key_events -->
+										<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 										<div
 											class="modal-container"
 											role="document"

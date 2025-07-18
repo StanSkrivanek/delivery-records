@@ -1,5 +1,6 @@
 <script>
 	let { analytics, selectedYear, selectedMonth } = $props();
+	console.log("🚀 ~ analytics:", analytics)
 
 	const monthNames = [
 		'January',

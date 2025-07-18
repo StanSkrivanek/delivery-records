@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte';
 
 	let { data } = $props();
+	console.log("🚀 PAGE OVERVIEW~ data:", data)
 
 	let selectedYear = $state(data.defaultYear);
 	let selectedMonth = $state(data.defaultMonth);
@@ -56,10 +57,10 @@
 	// Calculate analytics using $derived
 	let analytics = $derived.by(() => {
 		const records = filteredRecords;
-		const totalDelivered = records.reduce((sum, record) => sum + (record.loaded || 0), 0);
+		const totalDelivered = records.reduce((sum, record) => sum + (record.loaded - (record.returned + (record.missplaced || 0)) || 0), 0);
 		const totalCollected = records.reduce((sum, record) => sum + (record.collected || 0), 0);
 		const averagePerDay = records.length > 0 ? totalDelivered / records.length : 0;
-		const deliverySum = records.reduce((sum, record) => sum + (record.loaded || 0) * 4 * 1.23, 0);
+		const deliverySum = records.reduce((sum, record) => sum + (record.loaded - (record.returned + (record.missplaced || 0))) * 4 * 1.23, 0);
 		const collectedSum = records.reduce((sum, record) => sum + (record.collected || 0) * 1.23, 0);
 		const expenseSum = records.reduce((sum, record) => sum + (record.expense || 0), 0);
 		const toInvoice = deliverySum + collectedSum;
