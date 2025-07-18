@@ -14,6 +14,7 @@ db.exec(`
     collected INTEGER NOT NULL,
     cutters INTEGER NOT NULL,
     returned INTEGER NOT NULL,
+	zong INTEGER DEFAULT 0,
 	expense INTEGER DEFAULT 0,
     image_path TEXT,
     entry_date DATE NOT NULL,
@@ -27,6 +28,7 @@ export interface Record {
 	collected: number;
 	cutters: number;
 	returned: number;
+	zong?: number; // wrong Delivery
 	expense?: number;
 	image_path?: string;
 	entry_date: string;
@@ -36,7 +38,7 @@ export interface Record {
 export class RecordService {
 	static async createRecord(record: Omit<Record, 'id' | 'created_at'>): Promise<number> {
 		const stmt = db.prepare(`
-      INSERT INTO records (loaded, collected, cutters, returned, expense, image_path, entry_date)
+      INSERT INTO records (loaded, collected, cutters, returned, zong, expense, image_path, entry_date)
       VALUES (?, ?, ?, ?, ?, ?, ? )
     `);
 
@@ -45,6 +47,7 @@ export class RecordService {
 			record.collected,
 			record.cutters,
 			record.returned,
+			record.zong || 0, // Default to 0 if not provided
 			record.expense || 0,
 			record.image_path || null,
 			record.entry_date
@@ -91,6 +94,7 @@ export class RecordService {
 			data.collected?.toString(),
 			data.cutters?.toString(),
 			data.returned?.toString(),
+			data.zong?.toString(),
 			data.expense?.toString(),
 			data.image_path ?? null, // ensure null if not present
 			id
