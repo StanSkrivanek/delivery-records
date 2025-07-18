@@ -1,20 +1,44 @@
+<!-- src/lib/components/FormData.svelte - SIMPLIFIED WITH DATE PICKER ONLY -->
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import ImageUpload from './ImageUpload.svelte';
 
-	let {
-		form,
-		loading = $bindable(false)
-	}: {
-		form: any;
-		loading?: boolean;
-	} = $props();
+	let { form, loading = $bindable(false) } = $props();
 
 	let loaded = $state(0);
 	let collected = $state(0);
 	let cutters = $state(0);
 	let returned = $state(0);
 	let selectedFile: File | null = $state(null);
+
+	// Date picker functionality - simplified
+	let selectedDate = $state(getCurrentDate());
+
+	function getCurrentDate() {
+		const now = new Date();
+		// Format as YYYY-MM-DD for HTML date input
+		const year = now.getFullYear();
+		const month = String(now.getMonth() + 1).padStart(2, '0');
+		const day = String(now.getDate()).padStart(2, '0');
+		return `${year}-${month}-${day}`;
+	}
+
+
+	function formatDateForDisplay(dateString: string | number | Date) {
+		const date = new Date(dateString);
+		return date.toLocaleDateString('en-US', {
+			weekday: 'long',
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric'
+		});
+	}
+
+	function isToday(dateString: string | number | Date) {
+		const selected = new Date(dateString);
+		const today = new Date();
+		return selected.toDateString() === today.toDateString();
+	}
 
 	// Reset form after successful submission
 	$effect(() => {
@@ -24,13 +48,16 @@
 			cutters = 0;
 			returned = 0;
 			selectedFile = null;
+			selectedDate = getCurrentDate(); // Reset to current date
 		}
 	});
 
 	// Callback functions for ImageUpload component
-	function handleFileSelected(file: File) {
+	/**
+	 * @param {File} file
+	 */
+	function handleFileSelected(file: File | null) {
 		selectedFile = file;
-		console.log(`File selected: ${file.name}`);
 	}
 
 	function handleFileRemoved() {
@@ -51,6 +78,9 @@
 				formData.append('image', selectedFile);
 			}
 
+			// Add the selected date to form data
+			formData.append('selectedDate', selectedDate);
+
 			loading = true;
 
 			return async ({ result, update }) => {
@@ -59,11 +89,33 @@
 			};
 		}}
 	>
+		<!-- Date Selection Section -->
+		<div class="form-group date-section">
+			<label for="date-input">Entry Date:</label>
+			<div class="date-input-group">
+				<input
+					type="date"
+					id="date-input"
+					bind:value={selectedDate}
+					disabled={loading}
+					class="date-input"
+				/>
+				<div class="date-display">
+					<span class="date-text">
+						{formatDateForDisplay(selectedDate)}
+					</span>
+					{#if isToday(selectedDate)}
+						<span class="today-badge">Today</span>
+					{/if}
+				</div>
+			</div>
+		</div>
+
 		<div class="form-grid">
 			<div class="form-group">
 				<label for="loaded">Loaded:</label>
 				<input
-					type="text"
+					type="number"
 					id="loaded"
 					name="loaded"
 					bind:value={loaded}
@@ -76,7 +128,7 @@
 			<div class="form-group">
 				<label for="collected">Collected:</label>
 				<input
-					type="text"
+					type="number"
 					id="collected"
 					name="collected"
 					bind:value={collected}
@@ -89,7 +141,7 @@
 			<div class="form-group">
 				<label for="cutters">Cutters:</label>
 				<input
-					type="text"
+					type="number"
 					id="cutters"
 					name="cutters"
 					bind:value={cutters}
@@ -102,7 +154,7 @@
 			<div class="form-group">
 				<label for="returned">Returned:</label>
 				<input
-					type="text"
+					type="number"
 					id="returned"
 					name="returned"
 					bind:value={returned}
@@ -114,17 +166,12 @@
 		</div>
 
 		<div class="form-group image-section">
-			<!-- <label id="image-label"
-			>Image (optional):
-		</label> -->
-				<div aria-labelledby="image-label">
-					<ImageUpload
-						bind:selectedFile
-						disabled={loading}
-						onFileSelected={handleFileSelected}
-						onFileRemoved={handleFileRemoved}
-					/>
-				</div>
+			<ImageUpload
+				bind:selectedFile
+				disabled={loading}
+				onFileSelected={handleFileSelected}
+				onFileRemoved={handleFileRemoved}
+			/>
 		</div>
 
 		<div class="form-actions">
@@ -158,9 +205,70 @@
 		margin-bottom: 2rem;
 	}
 
+	.date-section {
+		background: #f8f9fa;
+		border: 1px solid #dee2e6;
+		border-radius: 8px;
+		padding: 1.5rem;
+		margin-bottom: 2rem;
+		border-left: 4px solid #007bff;
+	}
+
+	.date-input-group {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin-top: 0.5rem;
+	}
+
+	.date-input {
+		padding: 0.75rem;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		font-size: 1rem;
+		background: white;
+		cursor: pointer;
+		min-width: 150px;
+	}
+
+	.date-input:focus {
+		outline: none;
+		border-color: #007bff;
+		box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+	}
+
+	.date-input:disabled {
+		background-color: #f8f9fa;
+		cursor: not-allowed;
+	}
+
+	.date-display {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		flex: 1;
+	}
+
+	.date-text {
+		font-weight: 500;
+		color: #333;
+		font-size: 1.1rem;
+	}
+
+	.today-badge {
+		background: #28a745;
+		color: white;
+		padding: 0.25rem 0.5rem;
+		border-radius: 12px;
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
 	.form-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 		gap: 1rem;
 		margin-bottom: 2rem;
 	}
@@ -180,14 +288,14 @@
 		color: #333;
 	}
 
-	input[type='text'] {
+	input[type='number'] {
 		padding: 0.75rem;
 		border: 1px solid #ddd;
 		border-radius: 4px;
 		font-size: 1rem;
 	}
 
-	input[type='text']:focus {
+	input[type='number']:focus {
 		outline: none;
 		border-color: #007bff;
 		box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
@@ -242,5 +350,40 @@
 		background: #f8d7da;
 		border: 1px solid #f5c6cb;
 		color: #721c24;
+	}
+
+	@media (max-width: 768px) {
+		.form-container {
+			padding: 1rem;
+		}
+
+		.date-input-group {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 0.75rem;
+		}
+
+		.date-display {
+			justify-content: center;
+			text-align: center;
+		}
+
+		.form-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 480px) {
+		h1 {
+			font-size: 1.5rem;
+		}
+
+		.date-section {
+			padding: 1rem;
+		}
+
+		.date-text {
+			font-size: 1rem;
+		}
 	}
 </style>
