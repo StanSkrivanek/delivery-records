@@ -205,10 +205,10 @@
 		color: #666;
 	}
 
-	.upload-icon {
+	/* .upload-icon {
 		font-size: 3rem;
 		margin-bottom: 1rem;
-	}
+	} */
 
 	.or-text {
 		font-size: 0.875rem;
