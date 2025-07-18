@@ -1,7 +1,7 @@
 <!-- src/lib/components/RecordsList.svelte - CLEAN VERSION -->
 <script lang="ts">
+	import { invalidateAll } from '$app/navigation';
 	import type { Record } from '$lib/db.server';
-import { invalidateAll } from '$app/navigation';
 	let { records }: { records: Record[] } = $props();
 
 	let showModal = $state(false);
@@ -18,6 +18,10 @@ import { invalidateAll } from '$app/navigation';
 		entry_date: '',
 		image_path: ''
 	});
+
+	// Delete dialog state
+	let showDeleteModal = $state(false);
+	let recordIdToDelete: number | null = $state(null);
 
 	function openEditModal(record: Record) {
 		console.log(record);
@@ -39,7 +43,7 @@ import { invalidateAll } from '$app/navigation';
 			const idx = records.findIndex((r) => r.id === editRecord.id);
 			if (idx !== -1) records[idx] = { ...editRecord };
 			showEditModal = false;
-			 await invalidateAll()
+			await invalidateAll();
 		} else {
 			alert('Failed to update record.');
 		}
@@ -71,6 +75,31 @@ import { invalidateAll } from '$app/navigation';
 			day: 'numeric'
 		});
 	}
+
+	function openDeleteModal(recordId: number) {
+		recordIdToDelete = recordId;
+		showDeleteModal = true;
+	}
+
+	function closeDeleteModal() {
+		showDeleteModal = false;
+		recordIdToDelete = null;
+	}
+
+	async function confirmDeleteRecord() {
+		if (recordIdToDelete !== null) {
+			// Optionally remove from local array for instant feedback
+			records = records.filter((r) => r.id !== recordIdToDelete);
+			showDeleteModal = false;
+			const res = await fetch(`/api/records/${recordIdToDelete}`, { method: 'DELETE' });
+			if (!res.ok) {
+				alert('Failed to delete record. The page may show outdated data.');
+			} else {
+				await invalidateAll();
+			}
+			recordIdToDelete = null;
+		}
+	}
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -97,6 +126,7 @@ import { invalidateAll } from '$app/navigation';
 						<th>Expense</th>
 						<th>Image</th>
 						<th>Edit</th>
+						<th>Delete</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -128,6 +158,36 @@ import { invalidateAll } from '$app/navigation';
 							</td>
 							<td>
 								<button class="image-btn" onclick={() => openEditModal(record)}>Edit</button>
+							</td>
+							<td>
+								<button
+									class="image-btn"
+									onclick={() => record.id !== undefined && openDeleteModal(record.id)}
+									title="Delete record"
+								>
+									Delete
+								</button>
+								<!-- Delete Confirmation Modal -->
+								{#if showDeleteModal}
+									<div class="modal-overlay" role="dialog" aria-modal="true" tabindex="0">
+										<div
+											class="modal-container"
+											role="document"
+											onclick={(e) => e.stopPropagation()}
+										>
+											<div class="modal-header">
+												<h3>Confirm Delete</h3>
+											</div>
+											<div class="modal-body">
+												<p>Are you sure you want to delete this record?</p>
+											</div>
+											<div class="modal-footer">
+												<button class="btn-secondary" onclick={closeDeleteModal}>Cancel</button>
+												<button class="btn-primary" onclick={confirmDeleteRecord}>Delete</button>
+											</div>
+										</div>
+									</div>
+								{/if}
 							</td>
 						</tr>
 					{/each}
@@ -184,7 +244,7 @@ import { invalidateAll } from '$app/navigation';
 					</label>
 					<label class="form-field">
 						<span>Zong:</span>
-						<input type="number" bind:value={editRecord.zong} min="0"/>
+						<input type="number" bind:value={editRecord.zong} min="0" />
 					</label>
 					<label class="form-field">
 						<span>Expense:</span>
