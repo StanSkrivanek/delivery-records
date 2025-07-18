@@ -1,88 +1,70 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
-	import { invalidateAll } from '$app/navigation';
-	import OverviewCards from '$lib/components/OverviewCards.svelte';
-	import OverviewTable from '$lib/components/OverviewTable.svelte';
-	import { onMount } from 'svelte';
+    import { browser } from '$app/environment';
+    import { invalidateAll } from '$app/navigation';
+    import OverviewCards from '$lib/components/OverviewCards.svelte';
+    import OverviewTable from '$lib/components/OverviewTable.svelte';
+    import { onMount } from 'svelte';
+    import { calculateAnalytics } from '$lib/utils';
 
-	let { data } = $props();
-	console.log("🚀 PAGE OVERVIEW~ data:", data)
+    let { data } = $props();
+    console.log("🚀 PAGE OVERVIEW~ data:", data)
 
-	let selectedYear = $state(data.defaultYear);
-	let selectedMonth = $state(data.defaultMonth);
+    let selectedYear = $state(data.defaultYear);
+    let selectedMonth = $state(data.defaultMonth);
 
-	// Month options with names
-	const monthOptions = [
-		{ value: 1, label: 'January' },
-		{ value: 2, label: 'February' },
-		{ value: 3, label: 'March' },
-		{ value: 4, label: 'April' },
-		{ value: 5, label: 'May' },
-		{ value: 6, label: 'June' },
-		{ value: 7, label: 'July' },
-		{ value: 8, label: 'August' },
-		{ value: 9, label: 'September' },
-		{ value: 10, label: 'October' },
-		{ value: 11, label: 'November' },
-		{ value: 12, label: 'December' }
-	];
+    // Month options with names
+    const monthOptions = [
+        { value: 1, label: 'January' },
+        { value: 2, label: 'February' },
+        { value: 3, label: 'March' },
+        { value: 4, label: 'April' },
+        { value: 5, label: 'May' },
+        { value: 6, label: 'June' },
+        { value: 7, label: 'July' },
+        { value: 8, label: 'August' },
+        { value: 9, label: 'September' },
+        { value: 10, label: 'October' },
+        { value: 11, label: 'November' },
+        { value: 12, label: 'December' }
+    ];
 
-	// Get available months for the selected year using $derived
-	let availableMonthsForYear: number[] = $derived.by(() => {
-		const monthsInYear = new Set<number>();
-		data.records.forEach((record) => {
-			const dateString = record.entry_date || record.created_at;
-			if (dateString) {
-				const recordDate = new Date(dateString);
-				if (recordDate.getFullYear() === selectedYear) {
-					monthsInYear.add(recordDate.getMonth() + 1);
-				}
-			}
-		});
-		return Array.from(monthsInYear).sort((a, b) => a - b);
-	});
+    // Get available months for the selected year using $derived
+    let availableMonthsForYear: number[] = $derived.by(() => {
+        const monthsInYear = new Set<number>();
+        data.records.forEach((record) => {
+            const dateString = record.entry_date || record.created_at;
+            if (dateString) {
+                const recordDate = new Date(dateString);
+                if (recordDate.getFullYear() === selectedYear) {
+                    monthsInYear.add(recordDate.getMonth() + 1);
+                }
+            }
+        });
+        return Array.from(monthsInYear).sort((a, b) => a - b);
+    });
 
-	// Filter records based on selected year and month using $derived
-	let filteredRecords = $derived.by(() => {
-		return data.records.filter((record) => {
-			const dateString = record.entry_date || record.created_at;
-			if (!dateString) return false;
-			const recordDate = new Date(dateString);
-			return (
-				recordDate.getFullYear() === selectedYear && recordDate.getMonth() + 1 === selectedMonth
-			);
-		});
-	});
+    // Filter records based on selected year and month using $derived
+    let filteredRecords = $derived.by(() => {
+        return data.records.filter((record) => {
+            const dateString = record.entry_date || record.created_at;
+            if (!dateString) return false;
+            const recordDate = new Date(dateString);
+            return (
+                recordDate.getFullYear() === selectedYear && recordDate.getMonth() + 1 === selectedMonth
+            );
+        });
+    });
 
-	// Calculate analytics using $derived
-	let analytics = $derived.by(() => {
-		const records = filteredRecords;
-		const totalDelivered = records.reduce((sum, record) => sum + (record.loaded - (record.returned + (record.missplaced || 0)) || 0), 0);
-		const totalCollected = records.reduce((sum, record) => sum + (record.collected || 0), 0);
-		const averagePerDay = records.length > 0 ? totalDelivered / records.length : 0;
-		const deliverySum = records.reduce((sum, record) => sum + (record.loaded - (record.returned + (record.missplaced || 0))) * 4 * 1.23, 0);
-		const collectedSum = records.reduce((sum, record) => sum + (record.collected || 0) * 1.23, 0);
-		const expenseSum = records.reduce((sum, record) => sum + (record.expense || 0), 0);
-		const toInvoice = deliverySum + collectedSum;
+    // Calculate analytics using $derived and the utility function
+    let analytics = $derived.by(() => calculateAnalytics(filteredRecords));
 
-		return {
-			totalDelivered,
-			totalCollected,
-			averagePerDay,
-			deliverySum,
-			collectedSum,
-			expenseSum,
-			toInvoice
-		};
-	});
-
-	// Auto-adjust month if not available for selected year using $effect
-	$effect(() => {
-		const availableMonths = availableMonthsForYear;
-		if (!availableMonths.includes(selectedMonth) && availableMonths.length > 0) {
-			selectedMonth = availableMonths[0];
-		}
-	});
+    // Auto-adjust month if not available for selected year using $effect
+    $effect(() => {
+        const availableMonths = availableMonthsForYear;
+        if (!availableMonths.includes(selectedMonth) && availableMonths.length > 0) {
+            selectedMonth = availableMonths[0];
+        }
+    });
 
 	// Auto-refresh data when page becomes visible (handles navigation from other pages)
 	onMount(() => {

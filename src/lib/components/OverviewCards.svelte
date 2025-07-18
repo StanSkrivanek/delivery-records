@@ -1,47 +1,13 @@
 <script>
-	let { analytics, selectedYear, selectedMonth } = $props();
-	console.log('🚀 ~ analytics:', analytics);
+    import { formatCurrency, formatNumber, getMonthName } from '$lib/utils';
 
-	const monthNames = [
-		'January',
-		'February',
-		'March',
-		'April',
-		'May',
-		'June',
-		'July',
-		'August',
-		'September',
-		'October',
-		'November',
-		'December'
-	];
-
-	/**
-	 * @param {string | number | bigint} value
-	 */
-	function formatCurrency(value) {
-		return new Intl.NumberFormat('en-IE', {
-			style: 'currency',
-			currency: 'EUR',
-			minimumFractionDigits: 2
-		}).format(typeof value === 'string' ? Number(value) : value);
-	}
-
-	/**
-	 * @param {string | number | bigint} value
-	 */
-	function formatNumber(value) {
-		return new Intl.NumberFormat('en-US', {
-			minimumFractionDigits: 1,
-			maximumFractionDigits: 1
-		}).format(typeof value === 'string' ? Number(value) : value);
-	}
+    let { analytics, selectedYear, selectedMonth } = $props();
+    console.log('🚀 ~ analytics:', analytics);
 </script>
 
 <div class="cards-section">
 	<div class="period-info">
-		<h2>{monthNames[selectedMonth - 1]} {selectedYear}</h2>
+		<h2>{getMonthName(selectedMonth - 1)} {selectedYear}</h2>
 	</div>
 
 	<div class="cards-grid">

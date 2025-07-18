@@ -56,6 +56,131 @@ export function formatDateOnly(dateString: string): string {
 	});
 }
 
+
+ //Calculates analytics from delivery records
+ // @param records Array of delivery records
+ // @returns Object containing calculated analytics
+ //
+export interface DeliveryRecord {
+  loaded: number;
+  returned: number;
+  missplaced?: number;
+  collected?: number;
+  expense?: number;
+}
+
+export function calculateAnalytics(records: DeliveryRecord[]) {
+  // Basic metrics
+  const totalDelivered = records.reduce(
+    (sum, record) => sum + (record.loaded - (record.returned + (record.missplaced || 0)) || 0), 
+    0
+  );
+  
+  const totalCollected = records.reduce(
+    (sum, record) => sum + (record.collected || 0), 
+    0
+  );
+  
+  const averagePerDay = records.length > 0 ? totalDelivered / records.length : 0;
+  
+  // Financial calculations
+  const deliveryRate = 4 * 1.23; // Price per delivery with tax
+  const collectionRate = 1.23;   // Price per collection with tax
+  
+  const deliverySum = records.reduce(
+    (sum, record) => sum + (record.loaded - (record.returned + (record.missplaced || 0))) * deliveryRate, 
+    0
+  );
+  
+  const collectedSum = records.reduce(
+    (sum, record) => sum + (record.collected || 0) * collectionRate, 
+    0
+  );
+  
+  const expenseSum = records.reduce(
+    (sum, record) => sum + (record.expense || 0), 
+    0
+  );
+  
+  const toInvoice = deliverySum + collectedSum;
+  const balance = toInvoice - expenseSum;
+
+  return {
+    totalDelivered,
+    totalCollected,
+    averagePerDay,
+    deliverySum,
+    collectedSum,
+    expenseSum,
+    toInvoice,
+    balance
+  };
+}
+
+/**
+ * Format currency values
+ * @param value Number to format as currency
+ * @returns Formatted currency string
+ */
+export function formatCurrency(value: string | number | bigint) {
+  return new Intl.NumberFormat('en-IE', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2
+  }).format(typeof value === 'string' ? Number(value) : value);
+}
+
+/**
+ * Format number with 1 decimal place
+ * @param value Number to format
+ * @returns Formatted number string
+ */
+export function formatNumber(value: string | number | bigint) {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1
+  }).format(typeof value === 'string' ? Number(value) : value);
+}
+
+/**
+ * Get month name from month number
+ * @param month Month number (1-12)
+ * @returns Month name
+ */
+export function getMonthName(month: number) {
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  return monthNames[month - 1];
+}
+
+
+/**
+ * Calculate the monetary value of delivered items
+ * @param delivered Number of delivered items
+ * @param price Price per delivered item
+ * @param taxRate Tax rate to apply
+ * @default price 4
+ * @default taxRate 0.23
+ * @returns Monetary value including tax
+ */
+export function calculateDeliveryValue(delivered: number, price: number = 4, taxRate: number = 0.23) {
+  return delivered * price * (1 + taxRate);
+}
+
+/**
+ * Calculate the monetary value of collected items
+ * @param collected Number of collected items
+ * @param price Price per collected item
+ * @param taxRate Tax rate to apply
+  * @default price 1
+  * @default taxRate 0.23
+ * @returns Monetary value including tax
+ */
+export function calculateCollectedValue(collected: number, price: number = 1, taxRate: number = 0.23) {
+  return collected * price * (1 + taxRate);
+}
 // export function isToday(dateString: string): boolean {
 // 	const date = new Date(dateString);
 // 	const today = new Date();

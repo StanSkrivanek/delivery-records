@@ -1,5 +1,11 @@
-<script>
-	import { formatDate } from '$lib/utils';
+<script lang="ts">
+	import {
+		calculateCollectedValue,
+		calculateDeliveryValue,
+		formatCurrency,
+		formatDate,
+		getMonthName
+	} from '$lib/utils';
 
 	let { records, selectedYear, selectedMonth } = $props();
 	console.log('🚀OVERVIEW TABLE ~ records:', records);
@@ -12,7 +18,7 @@
 	 * @param {string} imagePath
 	 * @param {number|string} recordId
 	 */
-	function openImageModal(imagePath, recordId) {
+	function openImageModal(imagePath: string, recordId: number | string) {
 		modalImage = `/${imagePath}`;
 		modalAlt = `Record #${recordId} image`;
 		showModal = true;
@@ -27,66 +33,42 @@
 	/**
 	 * @param {{ key: string; }} event
 	 */
-	function handleKeydown(event) {
+	function handleKeydown(event: { key: string }) {
 		if (event.key === 'Escape' && showModal) {
 			closeModal();
 		}
 	}
 
-	// Correct formulas matching the cards
-	/**
-	 * @param {number} loaded
-	 */
-	function calculateDeliveryValue(loaded) {
-		return loaded * 4 * 1.23; // delivered * (4 + 23%)
-	}
-
-	/**
-	 * @param {number} collected
-	 */
-	function calculateCollectedValue(collected) {
-		return collected * 1.23; // collected * (1 + 23%)
-	}
-
-	/**
-	 * @param {string | number | bigint} value
-	 */
-	function formatCurrency(value) {
-		const num = typeof value === 'string' ? Number(value) : value;
-		return new Intl.NumberFormat('en-IE', {
-			style: 'currency',
-			currency: 'EUR',
-			minimumFractionDigits: 2
-		}).format(num);
-	}
-
-	const monthNames = [
-		'January',
-		'February',
-		'March',
-		'April',
-		'May',
-		'June',
-		'July',
-		'August',
-		'September',
-		'October',
-		'November',
-		'December'
-	];
-
 	// Calculate totals using $derived
 	let totals = $derived(() => {
 		return records.reduce(
 			(
-				/** @type {{ loaded: any; collected: any; cutters: any; returned: any; missplaced: any; delivered: any; loading: any; expense: any; deliveryValue: number; collectedValue: number; totalValue: number; }} */ acc,
-				/** @type {{ loaded: number; collected: number; cutters: any; returned: any; missplaced?: any; delivered?: any; loading?: any; expense?: any; }} */ record
+				/** @type {{ loaded: any; collected: any; cutters: any; returned: any; missplaced: any; delivered: number; expense: any; deliveryValue: number; collectedValue: number; totalValue: number; }} */ acc: {
+					loaded: any;
+					collected: any;
+					cutters: any;
+					returned: any;
+					missplaced: any;
+					delivered: number;
+					expense: any;
+					deliveryValue: number;
+					collectedValue: number;
+					totalValue: number;
+				},
+				/** @type {{ loaded: number; returned: any; missplaced: any; collected: number; cutters: any; expense: any; }} */ record: {
+					loaded: number;
+					returned: any;
+					missplaced: any;
+					collected: number;
+					cutters: any;
+					expense: any;
+				}
 			) => {
-				const deliveryValue = calculateDeliveryValue(
-					record.loaded - (record.returned + (record.missplaced || 0)) || 0
-				);
-				const collectedValue = calculateCollectedValue(record.collected);
 				const delivered = record.loaded - (record.returned + (record.missplaced || 0)) || 0;
+				const deliveryValue = calculateDeliveryValue(delivered, 4, 0.23);
+				const collectedValue = calculateCollectedValue(record.collected, 1, 0.23);
+				const totalValue = deliveryValue + collectedValue;
+
 				return {
 					loaded: acc.loaded + record.loaded,
 					collected: acc.collected + record.collected,
@@ -97,7 +79,7 @@
 					expense: acc.expense + (record.expense || 0),
 					deliveryValue: acc.deliveryValue + deliveryValue,
 					collectedValue: acc.collectedValue + collectedValue,
-					totalValue: acc.totalValue + deliveryValue + collectedValue
+					totalValue: acc.totalValue + totalValue
 				};
 			},
 			{
@@ -120,7 +102,7 @@
 
 <div class="table-section">
 	<div class="table-header">
-		<h3>Records for {monthNames[selectedMonth - 1]} {selectedYear}</h3>
+		<h3>Records for {getMonthName(selectedMonth)} {selectedYear}</h3>
 		<div class="record-count">
 			{records.length} record{records.length !== 1 ? 's' : ''} found
 		</div>
@@ -130,7 +112,7 @@
 		<div class="no-records">
 			<div class="no-records-icon">📋</div>
 			<h4>No records found</h4>
-			<p>No data available for {monthNames[selectedMonth - 1]} {selectedYear}</p>
+			<p>No data available for {getMonthName(selectedMonth - 1)} {selectedYear}</p>
 		</div>
 	{:else}
 		<div class="table-container">
@@ -166,8 +148,12 @@
 							<td class="number-cell">{record.collected}</td>
 							<td class="number-cell">{record.cutters}</td>
 							<td class="number-cell" class:expense={record.returned > 0}>{record.returned}</td>
-							<td class="number-cell" class:expense={record.missplaced > 0}>{record.missplaced || 0}</td>
-							<td class="number-cell success" >{record.loaded - (record.returned + record.missplaced) || 0}</td>
+							<td class="number-cell" class:expense={record.missplaced > 0}
+								>{record.missplaced || 0}</td
+							>
+							<td class="number-cell success"
+								>{record.loaded - (record.returned + record.missplaced) || 0}</td
+							>
 							<td class="currency-cell expense">{formatCurrency(record.expense)}</td>
 							<td class="currency-cell">{formatCurrency(deliveryValue)}</td>
 							<td class="currency-cell">{formatCurrency(collectedValue)}</td>
@@ -196,8 +182,12 @@
 						<td class="number-cell"><strong>{totals().loaded}</strong></td>
 						<td class="number-cell"><strong>{totals().collected}</strong></td>
 						<td class="number-cell"><strong>{totals().cutters}</strong></td>
-						<td class="number-cell" class:expense={totals().returned > 0}><strong>{totals().returned}</strong></td>
-						<td class="number-cell" class:expense={totals().missplaced > 0}><strong>{totals().missplaced || 0}</strong></td>
+						<td class="number-cell" class:expense={totals().returned > 0}
+							><strong>{totals().returned}</strong></td
+						>
+						<td class="number-cell" class:expense={totals().missplaced > 0}
+							><strong>{totals().missplaced || 0}</strong></td
+						>
 						<td class="number-cell success"><strong>{totals().delivered || 0}</strong></td>
 						<td class="currency-cell expense"
 							><strong>{formatCurrency(totals().expense)}</strong></td
@@ -205,7 +195,7 @@
 						<td class="currency-cell"><strong>{formatCurrency(totals().deliveryValue)}</strong></td>
 						<td class="currency-cell"><strong>{formatCurrency(totals().collectedValue)}</strong></td
 						>
-						<td class="total-cell "><strong>{formatCurrency(totals().totalValue)}</strong></td>
+						<td class="total-cell"><strong>{formatCurrency(totals().totalValue)}</strong></td>
 						<td class="image-cell">—</td>
 					</tr>
 				</tbody>
