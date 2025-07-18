@@ -20,6 +20,7 @@ export const actions: Actions = {
 			const collected = Number(formData.get('collected'));
 			const cutters = Number(formData.get('cutters'));
 			const returned = Number(formData.get('returned'));
+			const selectedDate = formData.get('selectedDate') as string;
 			const imageFile = formData.get('image') as File | null;
 
 			// Validate required fields
@@ -29,6 +30,32 @@ export const actions: Actions = {
 
 			if (loaded < 0 || collected < 0 || cutters < 0 || returned < 0) {
 				return fail(400, { error: 'All values must be non-negative' });
+			}
+
+			// Validate date
+			if (!selectedDate) {
+				return fail(400, { error: 'Entry date is required' });
+			}
+
+			// Validate date format and that it's not in the future
+			const entryDate = new Date(selectedDate);
+			const today = new Date();
+			today.setHours(23, 59, 59, 999); // Set to end of today
+
+			if (isNaN(entryDate.getTime())) {
+				return fail(400, { error: 'Invalid date format' });
+			}
+
+			if (entryDate > today) {
+				return fail(400, { error: 'Entry date cannot be in the future' });
+			}
+
+			// Check if date is too far in the past (optional - adjust as needed)
+			const oneYearAgo = new Date();
+			oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+			if (entryDate < oneYearAgo) {
+				return fail(400, { error: 'Entry date cannot be more than one year ago' });
 			}
 
 			let imagePath: string | undefined;
@@ -53,13 +80,14 @@ export const actions: Actions = {
 				}
 			}
 
-			// Save to database
+			// Save to database with custom date
 			await RecordService.createRecord({
 				loaded,
 				collected,
 				cutters,
 				returned,
-				image_path: imagePath
+				image_path: imagePath,
+				entry_date: selectedDate
 			});
 
 			return { success: true };

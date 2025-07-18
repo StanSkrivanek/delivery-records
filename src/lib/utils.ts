@@ -39,8 +39,32 @@ export function deleteImageFile(relativePath: string): void {
 }
 
 export function formatDate(dateString: string): string {
+	return new Date(dateString).toLocaleDateString('en-US', {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit'
+	});
+}
+
+export function formatDateOnly(dateString: string): string {
+	return new Date(dateString).toLocaleDateString('en-US', {
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric'
+	});
+}
+
+export function isToday(dateString: string): boolean {
 	const date = new Date(dateString);
-	const month = date.toLocaleString('en-US', { month: 'short' });
-	const day = date.getDate().toString().padStart(2, '0');
-	return `${month} ${day}`;
+	const today = new Date();
+	return date.toDateString() === today.toDateString();
+}
+
+export function isYesterday(dateString: string): boolean {
+	const date = new Date(dateString);
+	const yesterday = new Date();
+	yesterday.setDate(yesterday.getDate() - 1);
+	return date.toDateString() === yesterday.toDateString();
 }
