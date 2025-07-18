@@ -46,12 +46,19 @@
 	function handleFileSelect(event: Event) {
 		const target = event.target as HTMLInputElement;
 		const files = target.files;
-
+		if (disabled) return;
 		if (files && files.length > 0) {
-			selectedFile = files[0];
-			onFileSelected?.(files[0]);
-			// Do NOT reset target.value here; only reset on removeFile
+			const file = files[0];
+			if (file.type.startsWith('image/')) {
+				selectedFile = file;
+				onFileSelected?.(file);
+			}
 		}
+		// if (files && files.length > 0) {
+		// 	selectedFile = files[0];
+		// 	onFileSelected?.(files[0]);
+		// 	// Do NOT reset target.value here; only reset on removeFile
+		// }
 	}
 
 	function removeFile() {
