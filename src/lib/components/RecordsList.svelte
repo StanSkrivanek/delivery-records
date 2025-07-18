@@ -1,7 +1,7 @@
 <!-- src/lib/components/RecordsList.svelte - CLEAN VERSION -->
 <script lang="ts">
 	import type { Record } from '$lib/db.server';
-
+import { invalidateAll } from '$app/navigation';
 	let { records }: { records: Record[] } = $props();
 
 	let showModal = $state(false);
@@ -39,6 +39,7 @@
 			const idx = records.findIndex((r) => r.id === editRecord.id);
 			if (idx !== -1) records[idx] = { ...editRecord };
 			showEditModal = false;
+			 await invalidateAll()
 		} else {
 			alert('Failed to update record.');
 		}
