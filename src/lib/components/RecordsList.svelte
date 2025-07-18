@@ -297,11 +297,11 @@
 		border-bottom: none;
 	}
 
-	.id-cell {
+	/* .id-cell {
 		font-weight: 600;
 		color: #007bff;
 		width: 80px;
-	}
+	} */
 
 	.date-cell {
 		color: #666;
@@ -322,7 +322,7 @@
 	}
 
 	.image-btn {
-		background: #28a745;
+		background: #286ca7;
 		color: white;
 		border: none;
 		border-radius: 4px;
