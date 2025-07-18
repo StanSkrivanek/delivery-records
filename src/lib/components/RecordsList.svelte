@@ -24,7 +24,7 @@
 	let recordIdToDelete: number | null = $state(null);
 
 	function openEditModal(record: Record) {
-		console.log(record);
+		// console.log(record);
 		editRecord = { ...record };
 		showEditModal = true;
 	}
@@ -432,7 +432,7 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		background: rgba(0, 0, 0, 0.8);
+		background: rgba(0, 0, 0, 0.1);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -447,8 +447,9 @@
 		max-height: 90vh;
 		display: flex;
 		flex-direction: column;
-		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+		/* box-shadow: 0 6px 6px rgba(0, 0, 0, 0.3); */
 		animation: modalAppear 0.2s ease-out;
+		padding: 1.5rem;
 	}
 
 	@keyframes modalAppear {

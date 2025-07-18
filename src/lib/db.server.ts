@@ -126,7 +126,7 @@ export class RecordService {
           WHERE entry_date IS NULL
         `);
 
-				console.log('Successfully migrated existing records with entry_date');
+				// console.log('Successfully migrated existing records with entry_date');
 			}
 		} catch (error) {
 			console.error('Migration error:', error);

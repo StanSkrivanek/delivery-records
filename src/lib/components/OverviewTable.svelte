@@ -8,7 +8,7 @@
 	} from '$lib/utils';
 
 	let { records, selectedYear, selectedMonth } = $props();
-	console.log('🚀OVERVIEW TABLE ~ records:', records);
+	// console.log('🚀OVERVIEW TABLE ~ records:', records);
 
 	let showModal = $state(false);
 	let modalImage = $state('');
