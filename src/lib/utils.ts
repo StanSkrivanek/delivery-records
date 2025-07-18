@@ -56,15 +56,15 @@ export function formatDateOnly(dateString: string): string {
 	});
 }
 
-export function isToday(dateString: string): boolean {
-	const date = new Date(dateString);
-	const today = new Date();
-	return date.toDateString() === today.toDateString();
-}
+// export function isToday(dateString: string): boolean {
+// 	const date = new Date(dateString);
+// 	const today = new Date();
+// 	return date.toDateString() === today.toDateString();
+// }
 
-export function isYesterday(dateString: string): boolean {
-	const date = new Date(dateString);
-	const yesterday = new Date();
-	yesterday.setDate(yesterday.getDate() - 1);
-	return date.toDateString() === yesterday.toDateString();
-}
+// export function isYesterday(dateString: string): boolean {
+// 	const date = new Date(dateString);
+// 	const yesterday = new Date();
+// 	yesterday.setDate(yesterday.getDate() - 1);
+// 	return date.toDateString() === yesterday.toDateString();
+// }

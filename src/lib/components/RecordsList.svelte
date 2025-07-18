@@ -73,7 +73,7 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="records-container">
+<div class="main-container">
 	<h2>Recent Records</h2>
 
 	{#if records.length === 0}
@@ -86,12 +86,12 @@
 				<thead>
 					<tr>
 						<!-- <th>ID</th> -->
-						<th>Entry Date</th>
+						<th>Date</th>
 						<th>Loaded</th>
 						<th>Collected</th>
 						<th>Cutters</th>
 						<th>Returned</th>
-						<!-- <th>Zong</th> -->
+						<th>Zong</th>
 						<th>Expense</th>
 						<th>Image</th>
 						<th>Edit</th>
@@ -108,7 +108,7 @@
 							<td class="number-cell">{record.collected}</td>
 							<td class="number-cell">{record.cutters}</td>
 							<td class="number-cell">{record.returned}</td>
-							<!-- <td class="number-cell">{record.zong}</td> -->
+							<td class="number-cell">{record.zong}</td>
 							<td class="number-cell">{record.expense}</td>
 							<td class="image-cell">
 								{#if record.image_path}
@@ -180,10 +180,10 @@
 						<span>Returned:</span>
 						<input type="number" bind:value={editRecord.returned} min="0" />
 					</label>
-					<!-- <label class="form-field">
+					<label class="form-field">
 						<span>Zong:</span>
 						<input type="number" bind:value={editRecord.zong} min="0"/>
-					</label> -->
+					</label>
 					<label class="form-field">
 						<span>Expense:</span>
 						<input type="number" bind:value={editRecord.expense} min="0" />
@@ -235,8 +235,8 @@
 {/if}
 
 <style>
-	.records-container {
-		max-width: 1200px;
+	.main-container {
+		max-width: var(--max-w, 800px);
 		margin: 2rem auto;
 		padding: 0 2rem;
 	}
@@ -543,7 +543,7 @@
 	}
 	/* Responsive Design */
 	@media (max-width: 768px) {
-		.records-container {
+		.main-container {
 			padding: 0 1rem;
 		}
 

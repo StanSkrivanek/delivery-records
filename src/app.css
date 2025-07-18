@@ -57,7 +57,7 @@
 
 :root {
 	--font-family: 'regular', system-ui, sans-serif;
-	--max-w: 1680px;
+	--max-w: 1440px;
 	/* Brand Colors in OKLCH */
 	--brand-coral: oklch(0.68 0.18 25); /* #FF6652 */
 	--brand-mint: oklch(0.87 0.18 165); /* #16FFC5 */

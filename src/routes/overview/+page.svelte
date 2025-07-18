@@ -119,7 +119,7 @@
 	<title>Overview - Data Analytics</title>
 </svelte:head>
 
-<div class="overview-container">
+<div class="main-container">
 	<div class="header-section">
 		<h1>Overview & Analytics</h1>
 
@@ -239,7 +239,7 @@
   <title>Overview - Data Analytics</title>
 </svelte:head>
 
-<div class="overview-container">
+<div class="main-container">
   <div class="header-section">
     <h1>Overview & Analytics</h1>
     
@@ -274,7 +274,7 @@
 </div>
 
 <style>
-  .overview-container {
+  .main-container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 2rem;
@@ -346,7 +346,7 @@
   }
   
   @media (max-width: 768px) {
-    .overview-container {
+    .main-container {
       padding: 1rem;
     }
     
@@ -367,8 +367,8 @@
 </style> -->
 
 <style>
-	.overview-container {
-		max-width: 1400px;
+	.main-container {
+		max-width: var(--max-w, 800px);
 		margin: 0 auto;
 		padding: 2rem;
 	}
@@ -462,7 +462,7 @@
 	}
 
 	@media (max-width: 768px) {
-		.overview-container {
+		.main-container {
 			padding: 1rem;
 		}
 
