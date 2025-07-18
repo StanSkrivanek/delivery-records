@@ -61,7 +61,7 @@
 		const averagePerDay = records.length > 0 ? totalDelivered / records.length : 0;
 		const deliverySum = records.reduce((sum, record) => sum + (record.loaded || 0) * 4 * 1.23, 0);
 		const collectedSum = records.reduce((sum, record) => sum + (record.collected || 0) * 1.23, 0);
-		const expenseSum = records.reduce((sum, record) => sum + (record.expence || 0), 0);
+		const expenseSum = records.reduce((sum, record) => sum + (record.expense || 0), 0);
 		const toInvoice = deliverySum + collectedSum;
 
 		return {

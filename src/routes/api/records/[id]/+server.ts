@@ -1,7 +1,7 @@
 import { RecordService } from '$lib/db.server';
-import type { RequestHandler } from '@sveltejs/kit';
 import { deleteImageFile } from '$lib/utils';
-// UPDATE 
+import type { RequestHandler } from '@sveltejs/kit';
+// UPDATE
 export const PUT: RequestHandler = async ({ params, request }) => {
 	const id = Number(params.id);
 	if (isNaN(id)) {
@@ -16,7 +16,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 			collected,
 			cutters,
 			returned,
-			expence: data.expence, // Assuming expence is a new field
+			expense: data.expense, // Assuming expense is a new field
 			entry_date: data.entry_date, // Ensure entry_date is included
 			image_path
 		});
@@ -29,33 +29,32 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 	}
 };
 
-
-// DELETE 
+// DELETE
 export const DELETE: RequestHandler = async ({ params }) => {
-    const id = Number(params.id);
-    if (isNaN(id)) {
-        return new Response(JSON.stringify({ error: 'Invalid record id' }), { status: 400 });
-    }
-    try {
-        // 1. Get the record to find the image path
-        const record = await RecordService.getRecordById(id);
-        if (!record) {
-            return new Response(JSON.stringify({ error: 'Record not found' }), { status: 404 });
-        }
+	const id = Number(params.id);
+	if (isNaN(id)) {
+		return new Response(JSON.stringify({ error: 'Invalid record id' }), { status: 400 });
+	}
+	try {
+		// 1. Get the record to find the image path
+		const record = await RecordService.getRecordById(id);
+		if (!record) {
+			return new Response(JSON.stringify({ error: 'Record not found' }), { status: 404 });
+		}
 
-        // 2. Delete the image file if it exists
-        if (record.image_path) {
-            deleteImageFile(record.image_path);
-        }
+		// 2. Delete the image file if it exists
+		if (record.image_path) {
+			deleteImageFile(record.image_path);
+		}
 
-        // 3. Delete the record from the database
-        const deleted = await RecordService.deleteRecord(id);
-        if (!deleted) {
-            return new Response(JSON.stringify({ error: 'Failed to delete record' }), { status: 500 });
-        }
-        return new Response(JSON.stringify({ success: true }));
-    } catch (error) {
-        console.error('Failed to delete record:', error);
-        return new Response(JSON.stringify({ error: 'Failed to delete record' }), { status: 500 });
-    }
+		// 3. Delete the record from the database
+		const deleted = await RecordService.deleteRecord(id);
+		if (!deleted) {
+			return new Response(JSON.stringify({ error: 'Failed to delete record' }), { status: 500 });
+		}
+		return new Response(JSON.stringify({ success: true }));
+	} catch (error) {
+		console.error('Failed to delete record:', error);
+		return new Response(JSON.stringify({ error: 'Failed to delete record' }), { status: 500 });
+	}
 };

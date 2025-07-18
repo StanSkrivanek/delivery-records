@@ -1,7 +1,7 @@
-import { fail } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
 import { RecordService } from '$lib/db.server';
 import { createImagePath, saveImageFile } from '$lib/utils';
+import { fail } from '@sveltejs/kit';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
 	const records = await RecordService.getAllRecords();
@@ -20,7 +20,7 @@ export const actions: Actions = {
 			const collected = Number(formData.get('collected'));
 			const cutters = Number(formData.get('cutters'));
 			const returned = Number(formData.get('returned'));
-			const expence = Number(formData.get('expence')) || 0; // Default to 0 if not provided
+			const expense = Number(formData.get('expense')) || 0; // Default to 0 if not provided
 			const selectedDate = formData.get('selectedDate') as string;
 			const imageFile = formData.get('image') as File | null;
 
@@ -87,7 +87,7 @@ export const actions: Actions = {
 				collected,
 				cutters,
 				returned,
-				expence,
+				expense,
 				image_path: imagePath,
 				entry_date: selectedDate
 			});

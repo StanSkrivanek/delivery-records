@@ -1,6 +1,7 @@
-<!-- src/lib/components/RecordsList.svelte - CLEAN VERSION -->
+<!-- src/lib/components/RecordsList.svelte -->
 <script lang="ts">
 	import type { Record } from '$lib/db.server';
+	import { formatDate } from '$lib/utils';
 
 	let { records }: { records: Record[] } = $props();
 
@@ -8,15 +9,21 @@
 	let modalImage = $state('');
 	let modalAlt = $state('');
 
+	// calculate total for D-total column
+	function calculateTotal(record: Record): number {
+		// loaded - returned
+		return record.loaded - record.returned;
+	}
+
+	// Edit modal state
 	let showEditModal = $state(false);
 	let editRecord = $state<Record>({
 		loaded: 0,
 		collected: 0,
 		cutters: 0,
 		returned: 0,
-		expense: 0,
-		entry_date: '',
-		image_path: ''
+		image_path: '',
+		date_created: ''
 	});
 
 	function openEditModal(record: Record) {
@@ -43,7 +50,7 @@
 		}
 	}
 
-	function openImageModal(imagePath: any, recordId: any) {
+	function openImageModal(imagePath: string, recordId: number) {
 		modalImage = `/${imagePath}`;
 		modalAlt = `Record #${recordId} image`;
 		showModal = true;
@@ -55,19 +62,11 @@
 		modalAlt = '';
 	}
 
-	function handleKeydown(event: { key: string }) {
+	// Close modal on escape key
+	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Escape' && showModal) {
 			closeModal();
 		}
-	}
-
-	function formatEntryDate(dateString: string | number | Date) {
-		const date = new Date(dateString);
-		return date.toLocaleDateString('en-US', {
-			// year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
 	}
 </script>
 
@@ -85,14 +84,12 @@
 			<table class="records-table">
 				<thead>
 					<tr>
-						<!-- <th>ID</th> -->
-						<th>Entry Date</th>
+						<th>Date</th>
 						<th>Loaded</th>
 						<th>Collected</th>
 						<th>Cutters</th>
 						<th>Returned</th>
-						<!-- <th>Zong</th> -->
-						<th>Expense</th>
+						<th>D-total</th>
 						<th>Image</th>
 						<th>Edit</th>
 					</tr>
@@ -100,26 +97,20 @@
 				<tbody>
 					{#each records as record (record.id)}
 						<tr>
-							<!-- <td class="id-cell">#{record.id}</td> -->
-							<td class="date-cell">
-								{formatEntryDate(record.entry_date || record.entry_date)}
-							</td>
+							<td class="date-cell">{formatDate(record.date_created!)}</td>
 							<td class="number-cell">{record.loaded}</td>
 							<td class="number-cell">{record.collected}</td>
 							<td class="number-cell">{record.cutters}</td>
 							<td class="number-cell">{record.returned}</td>
-							<!-- <td class="number-cell">{record.zong}</td> -->
-							<td class="number-cell">{record.expense}</td>
+							<td class="number-cell">{calculateTotal(record)}</td>
 							<td class="image-cell">
 								{#if record.image_path}
 									<button
 										type="button"
 										class="image-btn"
-										onclick={() => openImageModal(record.image_path, record.id)}
-										title="View image"
+										onclick={() => openImageModal(record.image_path!, record.id!)}
+										title="View image">View Image</button
 									>
-										show Image
-									</button>
 								{:else}
 									<span class="no-image">No image</span>
 								{/if}
@@ -151,7 +142,7 @@
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<div class="modal-container edit-modal" role="document" onclick={(e) => e.stopPropagation()}>
 			<div class="modal-header">
-				<h3>Edit Record | {formatEntryDate(editRecord.entry_date || editRecord.entry_date)}</h3>
+				<h3>Edit Record</h3>
 				<button type="button" class="close-btn" onclick={closeEditModal} title="Close (Esc)"
 					>✕</button
 				>
@@ -166,38 +157,29 @@
 				<div class="edit-fields">
 					<label class="form-field">
 						<span>Loaded:</span>
-						<input type="number" bind:value={editRecord.loaded} min="0" />
+						<input type="number" bind:value={editRecord.loaded} min="0" required />
 					</label>
 					<label class="form-field">
 						<span>Collected:</span>
-						<input type="number" bind:value={editRecord.collected} min="0" />
+						<input type="number" bind:value={editRecord.collected} min="0" required />
 					</label>
 					<label class="form-field">
 						<span>Cutters:</span>
-						<input type="number" bind:value={editRecord.cutters} min="0" />
+						<input type="number" bind:value={editRecord.cutters} min="0" required />
 					</label>
 					<label class="form-field">
 						<span>Returned:</span>
-						<input type="number" bind:value={editRecord.returned} min="0" />
-					</label>
-					<!-- <label class="form-field">
-						<span>Zong:</span>
-						<input type="number" bind:value={editRecord.zong} min="0"/>
-					</label> -->
-					<label class="form-field">
-						<span>Expense:</span>
-						<input type="number" bind:value={editRecord.expense} min="0" />
+						<input type="number" bind:value={editRecord.returned} min="0" required />
 					</label>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn-secondary" onclick={closeEditModal}>Cancel</button>
 					<button type="submit" class="btn-primary">Save Changes</button>
+					<button type="button" class="btn-secondary" onclick={closeEditModal}>Cancel</button>
 				</div>
 			</form>
 		</div>
 	</div>
 {/if}
-
 <!-- Image Modal -->
 {#if showModal}
 	<div
@@ -206,7 +188,9 @@
 		tabindex="0"
 		aria-label="Close modal"
 		onclick={closeModal}
-		onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && closeModal()}
+		onkeydown={(e) => {
+			if (e.key === 'Enter' || e.key === ' ') closeModal();
+		}}
 	>
 		<div
 			class="modal-container"
@@ -215,7 +199,8 @@
 			onclick={(e) => e.stopPropagation()}
 			tabindex="0"
 			onkeydown={(e) => {
-				if (e.key === 'Escape') closeModal();
+				// Prevent propagation for keyboard events inside modal
+				e.stopPropagation();
 			}}
 		>
 			<div class="modal-header">
@@ -244,13 +229,23 @@
 	h2 {
 		color: #333;
 		margin-bottom: 1.5rem;
+		font-size: 1.5rem;
+		font-weight: 600;
 	}
 
 	.no-records {
 		text-align: center;
+		padding: 3rem;
+		background: white;
+		border-radius: 8px;
+		border: 1px solid #ddd;
+	}
+
+	.no-records p {
 		color: #666;
 		font-style: italic;
-		padding: 2rem;
+		margin: 0;
+		font-size: 1.1rem;
 	}
 
 	.table-container {
@@ -297,17 +292,16 @@
 		border-bottom: none;
 	}
 
-	.id-cell {
+	/* .id-cell {
 		font-weight: 600;
 		color: #007bff;
 		width: 80px;
-	}
+	} */
 
 	.date-cell {
 		color: #666;
-		font-size: 0.9rem;
-		width: 120px;
-		font-weight: 500;
+		font-size: 0.85rem;
+		width: 140px;
 	}
 
 	.number-cell {
@@ -459,6 +453,7 @@
 	.btn-secondary:hover {
 		background: #5a6268;
 	}
+
 	/* Edit Form Styles */
 	.edit-modal {
 		width: 400px;
@@ -477,6 +472,7 @@
 		flex-direction: column;
 		gap: 1rem;
 	}
+
 	.form-field {
 		display: flex;
 		flex-direction: row;
@@ -503,6 +499,7 @@
 		border-color: #80bdff;
 		box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 	}
+
 	.btn-primary {
 		background: #007bff;
 		color: white;
@@ -510,9 +507,7 @@
 		border-radius: 4px;
 		padding: 0.5rem 1rem;
 		cursor: pointer;
-		transition:
-			background-color 0.2s ease,
-			transform 0.1s ease;
+		transition: background-color 0.2s ease, transform 0.1s ease;
 		font-weight: 500;
 	}
 
@@ -524,23 +519,7 @@
 	.btn-primary:active {
 		transform: translateY(0);
 	}
-	.modal-footer {
-		display: flex;
-		justify-content: flex-end;
-		gap: 0.75rem;
-		padding: 1rem 0;
-	}
-	.modal-footer button {
-		padding: 0.5rem 1rem;
-		font-size: 0.9rem;
-		border-radius: 4px;
-		border: none;
-		cursor: pointer;
-	}
-	.modal-footer .btn-secondary {
-		background: #f85733;
-		color: white;
-	}
+
 	/* Responsive Design */
 	@media (max-width: 768px) {
 		.records-container {
@@ -558,6 +537,10 @@
 		.records-table th,
 		.records-table td {
 			padding: 0.5rem 0.4rem;
+		}
+
+		.date-cell {
+			font-size: 0.75rem;
 		}
 
 		.image-btn {
