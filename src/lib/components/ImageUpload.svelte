@@ -4,12 +4,14 @@
 		selectedFile = $bindable(),
 		disabled = false,
 		onFileSelected,
-		onFileRemoved
+		onFileRemoved,
+		imagePath = $bindable() 
 	}: {
 		selectedFile?: File | null;
 		disabled?: boolean;
 		onFileSelected?: (file: File) => void;
 		onFileRemoved?: () => void;
+		imagePath?: string;
 	} = $props();
 
 	let dragOver = $state(false);
