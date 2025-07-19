@@ -355,7 +355,9 @@ let showEditModal = $state(false);
 
 <!-- Image Modal -->
 {#if showModal}
-	<div class="modal-overlay" role="button" tabindex="0" aria-label="Close modal" onclick={closeModal}>
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_interactive_supports_focus -->
+	<div class="modal-overlay" role="button" tabindex="0" aria-label="Close modal" onclick={closeModal}>>
 		<div class="modal-container" role="dialog" aria-modal="true" onclick={(e) => e.stopPropagation()}>
 			<div class="modal-header">
 				<h3>Image Preview</h3>
@@ -626,12 +628,12 @@ let showEditModal = $state(false);
 	}
 
 	/* Edit Form Styles */
-	.edit-modal {
+	/* .edit-modal {
 		width: 500px;
 		max-width: 90vw;
 		max-height: 90vh;
 		overflow-y: auto;
-	}
+	} */
 
 	.edit-form {
 		padding: 1.5rem;
@@ -758,10 +760,10 @@ let showEditModal = $state(false);
 			padding: 0.4rem 0.6rem;
 		}
 
-		.edit-modal {
+		/* .edit-modal {
 			width: 90vw;
 			margin: 1rem;
-		}
+		} */
 
 		.form-field {
 			flex-direction: column;
@@ -772,4 +774,5 @@ let showEditModal = $state(false);
 			min-width: auto;
 		}
 	}
+	
 </style>
