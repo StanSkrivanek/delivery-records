@@ -8,7 +8,7 @@
 	let modalImage = $state('');
 	let modalAlt = $state('');
 
-	let showEditModal = $state(false);
+	let showEditModal = $state(true);
 	let editRecord = $state({
 		id: undefined as number | undefined,
 		loaded: 0,
@@ -22,7 +22,7 @@
 	});
 	
 	// Separate state for the image file in edit modal
-	let editImageFile = $state(null);
+	let editImageFile = $state<File | null>(null);
 
 	// Delete dialog state
 	let showDeleteModal = $state(false);
@@ -167,7 +167,7 @@
 	}
 	
 	// Handle image file selection in edit modal
-	function handleEditImageSelected(file: null) {
+	function handleEditImageSelected(file: File | null) {
 		editImageFile = file;
 	}
 	
@@ -252,7 +252,7 @@
 <!-- Delete Confirmation Modal -->
 {#if showDeleteModal}
 	<div class="modal-overlay" role="dialog" aria-modal="true" tabindex="0">
-		<div class="modal-container" role="document" onclick={(e) => e.stopPropagation()}>
+		<dialog class="modal-container"  open>
 			<div class="modal-header">
 				<h3>Confirm Delete</h3>
 			</div>
@@ -263,14 +263,15 @@
 				<button class="btn-secondary" onclick={closeDeleteModal}>Cancel</button>
 				<button class="btn-primary" onclick={confirmDeleteRecord}>Delete</button>
 			</div>
-		</div>
+		</dialog>
 	</div>
 {/if}
 
 <!-- Edit Modal -->
 {#if showEditModal}
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div class="modal-overlay" role="dialog" aria-modal="true" onclick={closeEditModal} tabindex="0">
-		<div class="modal-container edit-modal" role="document" onclick={(e) => e.stopPropagation()}>
+		<dialog class="modal-container "  onclick={(e) => e.stopPropagation()}>
 			<div class="modal-header">
 				<h3>Edit Record | {formatEntryDate(editRecord.entry_date)}</h3>
 				<button type="button" class="close-btn" onclick={closeEditModal} title="Close (Esc)">✕</button>
@@ -318,6 +319,7 @@
 						<div class="image-upload-wrapper">
 							{#if editRecord.image_path && !editImageFile}
 								<div class="current-image">
+									<!-- svelte-ignore a11y_img_redundant_alt -->
 									<img src="/{editRecord.image_path}" alt="Current image" class="current-image-preview" />
 									<p class="current-image-text">Current image</p>
 									<button 
@@ -345,7 +347,7 @@
 					<button type="submit" class="btn-primary">Save Changes</button>
 				</div>
 			</form>
-		</div>
+		</dialog>
 	</div>
 {/if}
 
@@ -568,7 +570,7 @@
 		justify-content: center;
 		align-items: center;
 		flex: 1;
-		overflow: hidden;
+		/* overflow: hidden; */
 	}
 
 	.modal-image {
