@@ -53,15 +53,6 @@
 		</div>
 
 		<div class="block">
-			<!-- To Invoice -->
-			<div class="card secondary">
-				<div class="card-header">
-					<h3>To Invoice</h3>
-					<!-- <div class="card-icon">🧾</div> -->
-				</div>
-				<div class="card-value">{formatCurrency(analytics.toInvoice)}</div>
-				<div class="card-subtitle">Total amount to invoice</div>
-			</div>
 			<!-- Average Delivered -->
 			<div class="card warning">
 				<div class="card-header">
@@ -70,6 +61,15 @@
 				</div>
 				<div class="card-value">{formatNumber(analytics.averagePerDay)}</div>
 				<div class="card-subtitle">Parcels / day</div>
+			</div>
+			<!-- To Invoice -->
+			<div class="card secondary">
+				<div class="card-header">
+					<h3>To Invoice</h3>
+					<!-- <div class="card-icon">🧾</div> -->
+				</div>
+				<div class="card-value">{formatCurrency(analytics.toInvoice)}</div>
+				<div class="card-subtitle">Total amount to invoice</div>
 			</div>
 		</div>
 		<div class="block">

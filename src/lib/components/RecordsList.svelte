@@ -133,7 +133,8 @@ let showEditModal = $state(false);
 		const date = new Date(dateString);
 		return date.toLocaleDateString('en-US', {
 			month: 'short',
-			day: 'numeric'
+			day: 'numeric',
+			weekday: 'short'
 		});
 	}
 
