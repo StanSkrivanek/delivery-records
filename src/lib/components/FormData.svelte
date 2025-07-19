@@ -95,118 +95,122 @@
 		}}
 	>
 		<!-- Date Selection Section -->
-		<div class="form-group date-section">
-			<label for="date-input">Entry Date:</label>
-			<div class="date-input-group">
-				<input
-					type="date"
-					id="date-input"
-					bind:value={selectedDate}
-					disabled={loading}
-					class="date-input"
-				/>
-				<div class="date-display">
-					<span class="date-text">
-						{formatDateForDisplay(selectedDate)}
-					</span>
-					{#if isToday(selectedDate)}
-						<span class="today-badge">Today</span>
-					{/if}
+		
+		<div class="form-grid">
+			<div class="form-column">
+				<div class="form-group date-section">
+					<label for="date-input">Entry Date:</label>
+					<div class="date-input-group">
+						<input
+							type="date"
+							id="date-input"
+							bind:value={selectedDate}
+							disabled={loading}
+							class="date-input"
+						/>
+						<div class="date-display">
+							<span class="date-text">
+								{formatDateForDisplay(selectedDate)}
+							</span>
+							{#if isToday(selectedDate)}
+								<span class="today-badge">Today</span>
+							{/if}
+						</div>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="input-group">
+						<label for="loaded">Loaded:</label>
+						<input
+							type="number"
+							id="loaded"
+							name="loaded"
+							bind:value={loaded}
+							min="0"
+							required
+							disabled={loading}
+						/>
+					</div>
+
+					<div class="input-group">
+						<label for="collected">Collected:</label>
+						<input
+							type="number"
+							id="collected"
+							name="collected"
+							bind:value={collected}
+							min="0"
+							required
+							disabled={loading}
+						/>
+					</div>
+
+					<div class="input-group">
+						<label for="cutters">Cutters:</label>
+						<input
+							type="number"
+							id="cutters"
+							name="cutters"
+							bind:value={cutters}
+							min="0"
+							required
+							disabled={loading}
+						/>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="input-group">
+						<label for="returned">Returned:</label>
+						<input
+							type="number"
+							id="returned"
+							name="returned"
+							bind:value={returned}
+							min="0"
+							required
+							disabled={loading}
+						/>
+					</div>
+					<div class="input-group">
+						<label for="missplaced">missplaced:</label>
+						<input
+							type="number"
+							id="missplaced"
+							name="missplaced"
+							bind:value={missplaced}
+							min="0"
+							required
+							disabled={loading}
+						/>
+					</div>
+					<div class="input-group">
+						<label for="expense">expense:</label>
+						<input
+							type="number"
+							id="expense"
+							name="expense"
+							bind:value={expense}
+							min="0"
+							required
+							disabled={loading}
+						/>
+					</div>
 				</div>
 			</div>
-		</div>
-
-		<div class="form-grid">
-			<div class="form-group">
-				<label for="loaded">Loaded:</label>
-				<input
-					type="number"
-					id="loaded"
-					name="loaded"
-					bind:value={loaded}
-					min="0"
-					required
+			<div class="form-column image-section">
+				<!-- Additional fields can be added here if needed -->
+				<ImageUpload
+					bind:selectedFile
 					disabled={loading}
+					onFileSelected={handleFileSelected}
+					onFileRemoved={handleFileRemoved}
 				/>
+				<div class="form-actions">
+					<button type="submit" disabled={loading} class="submit-btn">
+						{loading ? 'Saving...' : 'Submit'}
+					</button>
+				</div>
 			</div>
-
-			<div class="form-group">
-				<label for="collected">Collected:</label>
-				<input
-					type="number"
-					id="collected"
-					name="collected"
-					bind:value={collected}
-					min="0"
-					required
-					disabled={loading}
-				/>
-			</div>
-
-			<div class="form-group">
-				<label for="cutters">Cutters:</label>
-				<input
-					type="number"
-					id="cutters"
-					name="cutters"
-					bind:value={cutters}
-					min="0"
-					required
-					disabled={loading}
-				/>
-			</div>
-
-			<div class="form-group">
-				<label for="returned">Returned:</label>
-				<input
-					type="number"
-					id="returned"
-					name="returned"
-					bind:value={returned}
-					min="0"
-					required
-					disabled={loading}
-				/>
-			</div>
-			<div class="form-group">
-				<label for="missplaced">missplaced:</label>
-				<input
-					type="number"
-					id="missplaced"
-					name="missplaced"
-					bind:value={missplaced}
-					min="0"
-					required
-					disabled={loading}
-				/>
-			</div>
-			<div class="form-group">
-				<label for="expense">expense:</label>
-				<input
-					type="number"
-					id="expense"
-					name="expense"
-					bind:value={expense}
-					min="0"
-					required
-					disabled={loading}
-				/>
-			</div>
-		</div>
-
-		<div class="form-group image-section">
-			<ImageUpload
-				bind:selectedFile
-				disabled={loading}
-				onFileSelected={handleFileSelected}
-				onFileRemoved={handleFileRemoved}
-			/>
-		</div>
-
-		<div class="form-actions">
-			<button type="submit" disabled={loading} class="submit-btn">
-				{loading ? 'Saving...' : 'Submit'}
-			</button>
 		</div>
 	</form>
 
@@ -227,6 +231,8 @@
 		max-width: var(--max-w, 800px);
 		margin: 0 auto;
 		padding: 2rem;
+		border-bottom: 1px solid #ddd;
+		margin-bottom: 2rem;
 	}
 
 	h1 {
@@ -303,19 +309,36 @@
 
 	.form-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+		grid-template-columns: 2fr 1fr;
 		gap: 1rem;
 		margin-bottom: 2rem;
 	}
-
-	.form-group {
+	.form-column {
 		display: flex;
 		flex-direction: column;
+		/* align-items: flex-start; */
+		/* justify-content: space-evenly; */
+		/* gap: 1rem; */
+	}
+	.form-group {
+		display: flex;
+		/* flex-direction: column; */
 		gap: 0.5rem;
+
+		& .input-group {
+			display: flex;
+			flex-direction: column;
+			width: 100%;
+			gap: 0.5rem;
+			margin-bottom: 1rem;
+		}
 	}
 
 	.image-section {
-		grid-column: 1 / -1;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		/* grid-column: 1 / -1; */
 	}
 
 	label {
@@ -342,12 +365,13 @@
 	}
 
 	.form-actions {
-		display: flex;
-		justify-content: center;
+		/* display: flex; */
+		/* justify-content: center; */
 		margin-top: 2rem;
 	}
 
 	.submit-btn {
+		width:100%;
 		background: #007bff;
 		color: white;
 		border: none;
@@ -387,7 +411,7 @@
 		color: #721c24;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 1024px) {
 		.main-container {
 			padding: 1rem;
 		}
@@ -402,9 +426,19 @@
 			justify-content: center;
 			text-align: center;
 		}
-
+	}
+	@media (max-width: 960px) {
 		.form-grid {
 			grid-template-columns: 1fr;
+		}
+		.form-column {
+			/* flex-direction: column; */
+			/* align-items: center; */
+			gap: 1rem;
+			.form-group {
+				width: 100%;
+				flex-direction: column;
+			}
 		}
 	}
 

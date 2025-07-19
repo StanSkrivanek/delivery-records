@@ -119,7 +119,7 @@
 
 <style>
 	.image-upload {
-		width: 100%;
+		width: auto;
 	}
 
 	.drop-zone {

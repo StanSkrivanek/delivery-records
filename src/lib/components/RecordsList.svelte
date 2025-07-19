@@ -1,16 +1,15 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import ImageUpload from './ImageUpload.svelte';
-	
-	let { records} = $props();
-	// console.log("🚀 ~ records:", records)
 
+	let { records } = $props();
+	// console.log("🚀 ~ records:", records)
 
 	let showModal = $state(false);
 	let modalImage = $state('');
 	let modalAlt = $state('');
 
-let showEditModal = $state(false);
+	let showEditModal = $state(false);
 	let editRecord = $state({
 		id: undefined as number | undefined,
 		loaded: 0,
@@ -22,7 +21,7 @@ let showEditModal = $state(false);
 		entry_date: '',
 		image_path: ''
 	});
-	
+
 	// Separate state for the image file in edit modal
 	let editImageFile = $state<File | null>(null);
 
@@ -76,12 +75,12 @@ let showEditModal = $state(false);
 			formData.append('missplaced', editRecord.missplaced.toString());
 			formData.append('expense', editRecord.expense.toString());
 			formData.append('entry_date', editRecord.entry_date);
-			
+
 			// Add image file if a new one was selected
 			if (editImageFile) {
 				formData.append('image', editImageFile);
 			}
-			
+
 			// Add existing image path if no new image was selected
 			if (!editImageFile && editRecord.image_path) {
 				formData.append('existing_image_path', editRecord.image_path);
@@ -94,7 +93,7 @@ let showEditModal = $state(false);
 
 			if (res.ok) {
 				const updatedRecord = await res.json();
-				const idx = records.findIndex((r: { id: number | undefined; }) => r.id === editRecord.id);
+				const idx = records.findIndex((r: { id: number | undefined }) => r.id === editRecord.id);
 				if (idx !== -1) {
 					records[idx] = updatedRecord;
 				}
@@ -123,7 +122,7 @@ let showEditModal = $state(false);
 		modalAlt = '';
 	}
 
-	function handleKeydown(event: { key: string; }) {
+	function handleKeydown(event: { key: string }) {
 		if (event.key === 'Escape' && showModal) {
 			closeModal();
 		}
@@ -151,9 +150,9 @@ let showEditModal = $state(false);
 	async function confirmDeleteRecord() {
 		if (recordIdToDelete !== null) {
 			// Optimistically remove from local array for instant feedback
-			records = records.filter((r: { id: null; }) => r.id !== recordIdToDelete);
+			records = records.filter((r: { id: null }) => r.id !== recordIdToDelete);
 			showDeleteModal = false;
-			
+
 			try {
 				const res = await fetch(`/api/records/${recordIdToDelete}`, { method: 'DELETE' });
 				if (!res.ok) {
@@ -164,16 +163,16 @@ let showEditModal = $state(false);
 				console.error('Error deleting record:', error);
 				alert('Failed to delete record.');
 			}
-			
+
 			recordIdToDelete = null;
 		}
 	}
-	
+
 	// Handle image file selection in edit modal
 	function handleEditImageSelected(file: File | null) {
 		editImageFile = file;
 	}
-	
+
 	function handleEditImageRemoved() {
 		editImageFile = null;
 		editRecord.image_path = ''; // Also clear the existing image path
@@ -183,7 +182,9 @@ let showEditModal = $state(false);
 <svelte:window onkeydown={handleKeydown} />
 
 <div class="main-container">
-	<h2>Recent Records</h2>
+	<div class="header">
+		<h2>Recent Records</h2>
+	</div>
 
 	{#if records.length === 0}
 		<div class="no-records">
@@ -255,7 +256,7 @@ let showEditModal = $state(false);
 <!-- Delete Confirmation Modal -->
 {#if showDeleteModal}
 	<div class="modal-overlay" role="dialog" aria-modal="true" tabindex="0">
-		<dialog class="modal-container"  open>
+		<dialog class="modal-container" open>
 			<div class="modal-header">
 				<h3>Confirm Delete</h3>
 			</div>
@@ -274,10 +275,12 @@ let showEditModal = $state(false);
 {#if showEditModal}
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div class="modal-overlay" role="dialog" aria-modal="true" onclick={closeEditModal} tabindex="0">
-		<dialog class="modal-container "  onclick={(e) => e.stopPropagation()}>
+		<dialog class="modal-container" onclick={(e) => e.stopPropagation()}>
 			<div class="modal-header">
 				<h3>Edit Record | {formatEntryDate(editRecord.entry_date)}</h3>
-				<button type="button" class="close-btn" onclick={closeEditModal} title="Close (Esc)">✕</button>
+				<button type="button" class="close-btn" onclick={closeEditModal} title="Close (Esc)"
+					>✕</button
+				>
 			</div>
 			<form
 				class="modal-body edit-form"
@@ -315,7 +318,7 @@ let showEditModal = $state(false);
 						<span>Entry Date:</span>
 						<input type="date" bind:value={editRecord.entry_date} required />
 					</label>
-					
+
 					<!-- Image Upload Section -->
 					<div class="form-field image-upload-section">
 						<span>Image:</span>
@@ -323,12 +326,16 @@ let showEditModal = $state(false);
 							{#if editRecord.image_path && !editImageFile}
 								<div class="current-image">
 									<!-- svelte-ignore a11y_img_redundant_alt -->
-									<img src="/{editRecord.image_path}" alt="Current image" class="current-image-preview" />
+									<img
+										src="/{editRecord.image_path}"
+										alt="Current image"
+										class="current-image-preview"
+									/>
 									<p class="current-image-text">Current image</p>
-									<button 
-										type="button" 
+									<button
+										type="button"
 										class="btn-remove-current"
-										onclick={() => editRecord.image_path = ''}
+										onclick={() => (editRecord.image_path = '')}
 									>
 										Remove current image
 									</button>
@@ -358,8 +365,20 @@ let showEditModal = $state(false);
 {#if showModal}
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_interactive_supports_focus -->
-	<div class="modal-overlay" role="button" tabindex="0" aria-label="Close modal" onclick={closeModal}>>
-		<div class="modal-container" role="dialog" aria-modal="true" onclick={(e) => e.stopPropagation()}>
+	<div
+		class="modal-overlay"
+		role="button"
+		tabindex="0"
+		aria-label="Close modal"
+		onclick={closeModal}
+	>
+		>
+		<div
+			class="modal-container"
+			role="dialog"
+			aria-modal="true"
+			onclick={(e) => e.stopPropagation()}
+		>
 			<div class="modal-header">
 				<h3>Image Preview</h3>
 				<button type="button" class="close-btn" onclick={closeModal} title="Close (Esc)">✕</button>
@@ -380,10 +399,16 @@ let showEditModal = $state(false);
 		margin: 2rem auto;
 		padding: 0 2rem;
 	}
-
-	h2 {
-		color: #333;
-		margin-bottom: 1.5rem;
+	.header {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin-bottom: 2rem;
+		& h2 {
+			color: #333;
+			margin-bottom: 1.5rem;
+			font-size: 3rem;
+		}
 	}
 
 	.no-records {
@@ -615,7 +640,9 @@ let showEditModal = $state(false);
 		border-radius: 4px;
 		padding: 0.5rem 1rem;
 		cursor: pointer;
-		transition: background-color 0.2s ease, transform 0.1s ease;
+		transition:
+			background-color 0.2s ease,
+			transform 0.1s ease;
 		font-weight: 500;
 	}
 
@@ -775,5 +802,4 @@ let showEditModal = $state(false);
 			min-width: auto;
 		}
 	}
-	
 </style>
