@@ -71,12 +71,16 @@ This homepage gives users both an immediate view of current status and easy acce
 ## Features to Implement
 
 - [ ] Optimize Images on upload
-- [ ]implement Invoice generator with export to PDF.
+- [ ] create custom dropdown fro year, month, day
+- [ ] Create a custom date picker for selecting delivery dates.
+- [ ] Create automatic backup of db (on install create a backup in different place like cloud storage or local storage and update it every 24 hours)
+- [ ] Create a Home page with a dashboard overview of key statistics.
+- [ ] Implement Invoice generator with export to PDF.
 - [ ] Add pagination to the records list to improve performance and usability.
 - [ ] Enhance the filtering options to allow users to filter records by multiple criteria.
 - [ ] Create a detailed view for each record to display more information.
-- [ ] implement charts to visualize data trends over time.
-- [ ] Image have timestamp, on export convert timestamp to date format DD-MM-YYYY
+- [ ] Implement charts to visualize data trends over time.
+- [ ] Images have timestamps, on export convert timestamp to date format DD-MM-YYYY
 
 OPTIONS:
 

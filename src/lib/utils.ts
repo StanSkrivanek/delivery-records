@@ -42,7 +42,7 @@ export function formatDate(dateString: string): string {
 	return new Date(dateString).toLocaleDateString('en-US', {
 		// year: 'numeric',
 		month: 'short',
-		day: 'numeric',
+		day: 'numeric'
 		// hour: '2-digit',
 		// minute: '2-digit'
 	});
@@ -56,65 +56,69 @@ export function formatDateOnly(dateString: string): string {
 	});
 }
 
-
- //Calculates analytics from delivery records
- // @param records Array of delivery records
- // @returns Object containing calculated analytics
- //
+//Calculates analytics from delivery records
+// @param records Array of delivery records
+// @returns Object containing calculated analytics
+//
 export interface DeliveryRecord {
-  loaded: number;
-  returned: number;
-  missplaced?: number;
-  collected?: number;
-  expense?: number;
+	loaded: number;
+	returned: number;
+	missplaced?: number;
+	collected?: number;
+	cutters?: number;
+	expense?: number;
 }
 
-export function calculateAnalytics(records: DeliveryRecord[]) {
-  // Basic metrics
-  const totalDelivered = records.reduce(
-    (sum, record) => sum + (record.loaded - (record.returned + (record.missplaced || 0)) || 0), 
-    0
-  );
-  
-  const totalCollected = records.reduce(
-    (sum, record) => sum + (record.collected || 0), 
-    0
-  );
-  
-  const averagePerDay = records.length > 0 ? totalDelivered / records.length : 0;
-  
-  // Financial calculations
-  const deliveryRate = 4 * 1.23; // Price per delivery with tax
-  const collectionRate = 1.23;   // Price per collection with tax
-  
-  const deliverySum = records.reduce(
-    (sum, record) => sum + (record.loaded - (record.returned + (record.missplaced || 0))) * deliveryRate, 
-    0
-  );
-  
-  const collectedSum = records.reduce(
-    (sum, record) => sum + (record.collected || 0) * collectionRate, 
-    0
-  );
-  
-  const expenseSum = records.reduce(
-    (sum, record) => sum + (record.expense || 0), 
-    0
-  );
-  
-  const toInvoice = deliverySum + collectedSum;
-  const balance = toInvoice - expenseSum;
+const PPU_DELIVERY = 4; // Price per delivery without tax
+const PPU_COLLECTION = 1; // Price per collection without tax
+const TAX_RATE = 0.23; // Tax rate (23%)
 
-  return {
-    totalDelivered,
-    totalCollected,
-    averagePerDay,
-    deliverySum,
-    collectedSum,
-    expenseSum,
-    toInvoice,
-    balance
-  };
+export function calculateAnalytics(records: DeliveryRecord[]) {
+	// Basic metrics
+	const totalDelivered = records.reduce(
+		(sum, record) =>
+			sum +
+			(record.loaded -
+				((record.collected || 0) + (record.cutters || 0)) -
+				(record.returned + (record.missplaced || 0)) || 0),
+		0
+	);
+
+	const totalCollected = records.reduce((sum, record) => sum + (record.collected || 0), 0);
+
+	const averagePerDay = records.length > 0 ? totalDelivered / records.length : 0;
+
+	// Financial calculations
+	// const deliveryRate = 4 * 1.23; // Price per delivery with tax
+	// const collectionRate = 1 * 1.23; // Price per collection with tax
+
+	const deliverySum = records.reduce(
+		(sum, record) =>
+			sum +
+			(record.loaded - (record.returned + (record.missplaced || 0))) * PPU_DELIVERY * (1 + TAX_RATE),
+		0
+	);
+
+	const collectedSum = records.reduce(
+		(sum, record) => sum + (record.collected || 0) * PPU_COLLECTION * (1 + TAX_RATE),
+		0
+	);
+
+	const expenseSum = records.reduce((sum, record) => sum + (record.expense || 0), 0);
+
+	const toInvoice = deliverySum + collectedSum;
+	const balance = toInvoice - expenseSum;
+
+	return {
+		totalDelivered,
+		totalCollected,
+		averagePerDay,
+		deliverySum,
+		collectedSum,
+		expenseSum,
+		toInvoice,
+		balance
+	};
 }
 
 /**
@@ -123,11 +127,11 @@ export function calculateAnalytics(records: DeliveryRecord[]) {
  * @returns Formatted currency string
  */
 export function formatCurrency(value: string | number | bigint) {
-  return new Intl.NumberFormat('en-IE', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2
-  }).format(typeof value === 'string' ? Number(value) : value);
+	return new Intl.NumberFormat('en-IE', {
+		style: 'currency',
+		currency: 'EUR',
+		minimumFractionDigits: 2
+	}).format(typeof value === 'string' ? Number(value) : value);
 }
 
 /**
@@ -136,10 +140,10 @@ export function formatCurrency(value: string | number | bigint) {
  * @returns Formatted number string
  */
 export function formatNumber(value: string | number | bigint) {
-  return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1
-  }).format(typeof value === 'string' ? Number(value) : value);
+	return new Intl.NumberFormat('en-US', {
+		minimumFractionDigits: 1,
+		maximumFractionDigits: 1
+	}).format(typeof value === 'string' ? Number(value) : value);
 }
 
 /**
@@ -148,13 +152,22 @@ export function formatNumber(value: string | number | bigint) {
  * @returns Month name
  */
 export function getMonthName(month: number) {
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-  return monthNames[month - 1];
+	const monthNames = [
+		'January',
+		'February',
+		'March',
+		'April',
+		'May',
+		'June',
+		'July',
+		'August',
+		'September',
+		'October',
+		'November',
+		'December'
+	];
+	return monthNames[month - 1];
 }
-
 
 /**
  * Calculate the monetary value of delivered items
@@ -165,8 +178,12 @@ export function getMonthName(month: number) {
  * @default taxRate 0.23
  * @returns Monetary value including tax
  */
-export function calculateDeliveryValue(delivered: number, price: number = 4, taxRate: number = 0.23) {
-  return delivered * price * (1 + taxRate);
+export function calculateDeliveryValue(
+	delivered: number,
+	price: number = PPU_DELIVERY,
+	taxRate: number = TAX_RATE
+) {
+	return delivered * price * (1 + taxRate);
 }
 
 /**
@@ -174,12 +191,16 @@ export function calculateDeliveryValue(delivered: number, price: number = 4, tax
  * @param collected Number of collected items
  * @param price Price per collected item
  * @param taxRate Tax rate to apply
-  * @default price 1
-  * @default taxRate 0.23
+ * @default price 1
+ * @default taxRate 0.23
  * @returns Monetary value including tax
  */
-export function calculateCollectedValue(collected: number, price: number = 1, taxRate: number = 0.23) {
-  return collected * price * (1 + taxRate);
+export function calculateCollectedValue(
+	collected: number,
+	price: number = PPU_COLLECTION,
+	taxRate: number = TAX_RATE
+) {
+	return collected * price * (1 + taxRate);
 }
 // export function isToday(dateString: string): boolean {
 // 	const date = new Date(dateString);

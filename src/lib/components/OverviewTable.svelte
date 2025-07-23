@@ -64,7 +64,10 @@
 					expense: any;
 				}
 			) => {
-				const delivered = record.loaded - (record.returned + (record.missplaced || 0)) || 0;
+				const delivered =
+					record.loaded -
+						((record.collected || 0) + (record.cutters || 0)) -
+						(record.returned + (record.missplaced || 0)) || 0;
 				const deliveryValue = calculateDeliveryValue(delivered, 4, 0.23);
 				const collectedValue = calculateCollectedValue(record.collected, 1, 0.23);
 				const totalValue = deliveryValue + collectedValue;
@@ -121,7 +124,7 @@
 					<tr>
 						<th>ID</th>
 						<th>Date</th>
-						<th>Loaded</th>
+						<th>Operations</th>
 						<th>Collected</th>
 						<th>Cutters</th>
 						<th>Returned</th>
@@ -137,7 +140,7 @@
 				<tbody>
 					{#each records as record (record.id)}
 						{@const deliveryValue = calculateDeliveryValue(
-							record.loaded - (record.returned + record.missplaced) || 0
+							(record.loaded - record.collected) - (record.returned + record.missplaced) || 0
 						)}
 						{@const collectedValue = calculateCollectedValue(record.collected)}
 						{@const totalValue = deliveryValue + collectedValue}
@@ -152,7 +155,7 @@
 								>{record.missplaced || 0}</td
 							>
 							<td class="number-cell success"
-								>{record.loaded - (record.returned + record.missplaced) || 0}</td
+								>{(record.loaded - record.collected) - (record.returned + record.missplaced) || 0}</td
 							>
 							<td class="currency-cell expense">{formatCurrency(record.expense)}</td>
 							<td class="currency-cell">{formatCurrency(deliveryValue)}</td>
@@ -188,7 +191,7 @@
 						<td class="number-cell" class:expense={totals().missplaced > 0}
 							><strong>{totals().missplaced || 0}</strong></td
 						>
-						<td class="number-cell success"><strong>{totals().delivered || 0}</strong></td>
+						<td class="number-cell success"><strong>{totals().delivered || 0 }</strong></td>
 						<td class="currency-cell expense"
 							><strong>{formatCurrency(totals().expense)}</strong></td
 						>
