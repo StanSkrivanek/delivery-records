@@ -44,24 +44,24 @@
 		return records.reduce(
 			(
 				/** @type {{ loaded: any; collected: any; cutters: any; returned: any; missplaced: any; delivered: number; expense: any; deliveryValue: number; collectedValue: number; totalValue: number; }} */ acc: {
-					loaded: any;
-					collected: any;
-					cutters: any;
-					returned: any;
-					missplaced: any;
+					loaded: number;
+					collected: number;
+					cutters: number;
+					returned: number;
+					missplaced: number;
 					delivered: number;
-					expense: any;
+					expense: number;
 					deliveryValue: number;
 					collectedValue: number;
 					totalValue: number;
 				},
 				/** @type {{ loaded: number; returned: any; missplaced: any; collected: number; cutters: any; expense: any; }} */ record: {
 					loaded: number;
-					returned: any;
-					missplaced: any;
+					returned: number;
+					missplaced: number;
 					collected: number;
-					cutters: any;
-					expense: any;
+					cutters: number;
+					expense: number;
 				}
 			) => {
 				const delivered =
