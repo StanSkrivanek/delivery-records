@@ -1,3 +1,7 @@
+// SINGLE RECORD API HANDLER
+// This file handles the API requests for a single delivery record.
+// It includes PUT and DELETE methods to update and delete records respectively.
+
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { RecordService } from '$lib/db.server';

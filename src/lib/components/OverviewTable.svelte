@@ -4,7 +4,8 @@
 		calculateDeliveryValue,
 		formatCurrency,
 		formatDate,
-		getMonthName
+		getMonthName,
+		dlvpd
 	} from '$lib/utils';
 
 	let { records, selectedYear, selectedMonth } = $props();
@@ -155,7 +156,7 @@
 								>{record.missplaced || 0}</td
 							>
 							<td class="number-cell success"
-								>{(record.loaded - record.collected) - (record.returned + record.missplaced) || 0}</td
+								>{dlvpd(record)}</td
 							>
 							<td class="currency-cell expense">{formatCurrency(record.expense)}</td>
 							<td class="currency-cell">{formatCurrency(deliveryValue)}</td>

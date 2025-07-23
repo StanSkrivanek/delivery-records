@@ -66,6 +66,7 @@ export class RecordService {
 		return stmt.get(id) as Record | null;
 	}
 
+
 	static async updateRecord(
 		id: number,
 		record: Partial<Omit<Record, 'id' | 'created_at'>>
