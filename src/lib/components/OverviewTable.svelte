@@ -13,6 +13,8 @@
 	// console.log('🚀OVERVIEW TABLE ~ records:', records);
 	// Use utility function to calculate totals
 	let totals = $derived.by(() => calculateRecordTotals(records));
+
+
 	let showModal = $state(false);
 	let modalImage = $state('');
 	let modalAlt = $state('');
@@ -97,7 +99,7 @@
 							<td class="number-cell" class:red={record.returned > 0}>{record.returned ?? 0}</td>
 							<td class="number-cell" class:red={record.missplaced > 0}>{record.missplaced ?? 0}</td
 							>
-							<td class="number-cell success">{delivered}</td>
+							<td class="number-cell" class:green={delivered >= 65} class:red={delivered < 55}>{delivered}</td>
 							<td class="currency-cell expense">{formatCurrency(record.expense ?? 0)}</td>
 							<td class="currency-cell">{formatCurrency(deliveryValue)}</td>
 							<td class="currency-cell">{formatCurrency(collectedValue)}</td>
@@ -314,7 +316,10 @@
 		color: #2870a7;
 		background: #e3ecff;
 	}
-
+.green{
+		color: #06ae6e;
+		background: #e8ffed;
+	}
 	.expense {
 		text-align: right;
 		font-weight: 500;
@@ -326,9 +331,9 @@
 	.success {
 		text-align: right;
 		font-weight: 500;
-		color: #06ae6e;
-		/* background: #d4edda; */
-		width: 100px;
+		/* color: #06ae6e; */
+		background: #e8ffed;
+		/* width: 100px; */
 	}
 	.total-cell {
 		text-align: right;
