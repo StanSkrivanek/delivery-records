@@ -12,6 +12,7 @@
 	let missplaced = $state(0);
 	let expense = $state(0);
 	let selectedFile: File | null = $state(null);
+	
 
 	// Date picker functionality - simplified
 	let selectedDate = $state(getCurrentDate());
@@ -213,16 +214,21 @@
 			</div>
 		</div>
 	</form>
-
-	{#if form?.success}
-		<div class="message success">Record saved successfully!</div>
-	{/if}
-
-	{#if form?.error}
-		<div class="message error">
-			{form.error}
+<!-- close msg after 5s -->
+	{#if form?.success || form?.error}
+		<div class="message">
+			{#if form.success}
+				
+				<div class="message success">Record saved successfully!</div>
+			{:else if form.error}
+				
+				<div class="message error">
+					{form.error}
+				</div>
+			{/if}
 		</div>
 	{/if}
+	
 </div>
 
 <!-- Same CSS as before... -->
