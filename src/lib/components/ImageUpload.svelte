@@ -120,16 +120,21 @@
 <style>
 	.image-upload {
 		width: auto;
+		max-width: 100%;
+		margin: 0 auto;
+		height: 100%;
 	}
 
 	.drop-zone {
+		
 		border: 2px dashed #ddd;
 		border-radius: 8px;
-		padding: 2rem;
+		
 		text-align: center;
 		cursor: pointer;
 		transition: all 0.3s ease;
 		min-height: 200px;
+		height: 100%;
 		display: flex;
 		align-items: center;
 		justify-content: center;

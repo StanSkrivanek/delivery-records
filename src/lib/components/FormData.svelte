@@ -95,7 +95,7 @@
 		}}
 	>
 		<!-- Date Selection Section -->
-		
+
 		<div class="form-grid">
 			<div class="form-column">
 				<div class="form-group date-section">
@@ -108,14 +108,14 @@
 							disabled={loading}
 							class="date-input"
 						/>
-						<div class="date-display">
+						<!-- <div class="date-display">
 							<span class="date-text">
 								{formatDateForDisplay(selectedDate)}
 							</span>
 							{#if isToday(selectedDate)}
 								<span class="today-badge">Today</span>
 							{/if}
-						</div>
+						</div> -->
 					</div>
 				</div>
 				<div class="form-group">
@@ -205,11 +205,11 @@
 					onFileSelected={handleFileSelected}
 					onFileRemoved={handleFileRemoved}
 				/>
-				<div class="form-actions">
-					<button type="submit" disabled={loading} class="submit-btn">
-						{loading ? 'Saving...' : 'Submit'}
-					</button>
-				</div>
+			</div>
+			<div class="form-actions">
+				<button type="submit" disabled={loading} class="submit-btn">
+					{loading ? 'Saving...' : 'Save Record Data'}
+				</button>
 			</div>
 		</div>
 	</form>
@@ -233,6 +233,7 @@
 		padding: 2rem;
 		border-bottom: 1px solid #ddd;
 		margin-bottom: 2rem;
+		background: #f8f9fa;
 	}
 
 	h1 {
@@ -245,12 +246,10 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
-		background: #f8f9fa;
-		border: 1px solid #dee2e6;
-		/* border-radius: 8px; */
-		padding: 1.5rem;
+		/* background: #f8f9fa; */
+		border-bottom: 1px solid #dee2e6;
+		padding-bottom: 2rem;
 		margin-bottom: 2rem;
-		/* border-left: 4px solid #007bff; */
 	}
 
 	.date-input-group {
@@ -314,8 +313,8 @@
 		margin-bottom: 2rem;
 	}
 	.form-column {
-		display: flex;
-		flex-direction: column;
+		/* display: flex; */
+		/* flex-direction: column; */
 		/* align-items: flex-start; */
 		/* justify-content: space-evenly; */
 		/* gap: 1rem; */
@@ -330,15 +329,18 @@
 			flex-direction: column;
 			width: 100%;
 			gap: 0.5rem;
-			margin-bottom: 1rem;
+			padding-top: 1rem;
+			/* margin-bottom: 1rem; */
 		}
 	}
 
 	.image-section {
-		height: 100%;
-		display: flex;
-		flex-direction: column;
-		/* grid-column: 1 / -1; */
+		/* height: 100%; */
+
+		/* justify-content: stretch; */
+		/* flex-direction: column; */
+
+		grid-column: 2/ -1;
 	}
 
 	label {
@@ -365,13 +367,14 @@
 	}
 
 	.form-actions {
+		grid-column: 2/-1;
 		/* display: flex; */
 		/* justify-content: center; */
-		margin-top: 2rem;
+		/* margin-top: 2rem; */
 	}
 
 	.submit-btn {
-		width:100%;
+		width: 100%;
 		background: #007bff;
 		color: white;
 		border: none;
@@ -422,14 +425,14 @@
 			gap: 0.75rem;
 		}
 
-		.date-display {
+		/* .date-display {
 			justify-content: center;
 			text-align: center;
-		}
+		} */
 	}
 	@media (max-width: 960px) {
 		.form-grid {
-			grid-template-columns: 1fr;
+			grid-template-columns: 1fr 1fr;
 		}
 		.form-column {
 			/* flex-direction: column; */
@@ -438,6 +441,22 @@
 			.form-group {
 				width: 100%;
 				flex-direction: column;
+			}
+		}
+	}
+	@media (max-width: 768px) {
+		.date-input-group {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 0.75rem;
+		}
+		.form-grid {
+			grid-template-columns: 1fr;
+			& .image-section {
+				grid-column: 1 / -1;
+			}
+			& .form-actions {
+				grid-column: 1 / -1;
 			}
 		}
 	}
@@ -451,8 +470,8 @@
 			padding: 1rem;
 		}
 
-		.date-text {
+		/* .date-text {
 			font-size: 1rem;
-		}
+		} */
 	}
 </style>
