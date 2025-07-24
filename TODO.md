@@ -71,7 +71,7 @@ This homepage gives users both an immediate view of current status and easy acce
 ## Features to Implement
 
 - [ ] Optimize Images on upload
-- [ ] create custom dropdown fro year, month, day
+- [ ] create custom dropdown for year, month, day
 - [ ] Create a custom date picker for selecting delivery dates.
 - [ ] Create automatic backup of db (on install create a backup in different place like cloud storage or local storage and update it every 24 hours)
 - [ ] Create a Home page with a dashboard overview of key statistics.

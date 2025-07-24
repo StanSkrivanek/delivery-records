@@ -18,8 +18,9 @@
 					<h3>Total Delivered</h3>
 					<!-- <div class="card-icon">📦</div> -->
 				</div>
-				<div class="card-value">{analytics.totalDelivered}</div>
-				<div class="card-subtitle">Delivered</div>
+				<div class="card-value">{analytics.totalDelivered} pcs</div>
+				 <!-- <p class="label">Total delivered ({getMonthName(selectedMonth)} {selectedYear})</p> -->
+				<p class="card-subtitle">Delivered</p>
 			</div>
 			<!-- Delivery Sum Money -->
 			<div class="card success">

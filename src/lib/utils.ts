@@ -127,44 +127,14 @@ const TAX_RATE = 0.23; // Tax rate (23%)
 
 export function calculateAnalytics(records: DeliveryRecord[]) {
 	// Basic metrics
-	const totalDelivered = records.reduce(
-		(sum, record) =>
-			sum +
-			(record.loaded -
-				((record.collected ?? 0) + (record.cutters ?? 0)) -
-				(record.returned + (record.missplaced ?? 0)) || 0),
-		0
-	);
-
-	const totalCollected = records.reduce(
-		(sum, record) => sum + ((record.collected ?? 0) + (record.cutters ?? 0)) || 0,
-		0
-	);
-
+	const totalDelivered = calculateTotalDelivered(records);
+	const totalCollected = calculateTotalCollected(records);
 	const averagePerDay = records.length > 0 ? totalDelivered / records.length : 0;
 
 	// Financial calculations
-	// const deliveryRate = 4 * 1.23; // Price per delivery with tax
-	// const collectionRate = 1 * 1.23; // Price per collection with tax
-
-	const deliverySum = records.reduce(
-		(sum, record) =>
-			sum +
-			(record.loaded -
-				((record.collected ?? 0) + (record.cutters ?? 0)) -
-				(record.returned + (record.missplaced ?? 0)) || 0) *
-				PPU_DELIVERY *
-				(1 + TAX_RATE),
-		0
-	);
-
-	const collectedSum = records.reduce(
-		(sum, record) =>
-			sum + ((record.collected ?? 0) + (record.cutters ?? 0)) * PPU_COLLECTION * (1 + TAX_RATE),
-		0
-	);
-
-	const expenseSum = records.reduce((sum, record) => sum + (record.expense ?? 0), 0);
+	const deliverySum = calculateTotalDeliveryValue(records);
+	const collectedSum = calculateTotalCollectionValue(records);
+	const expenseSum = calculateTotalExpense(records);
 
 	const toInvoice = deliverySum + collectedSum;
 	const balance = toInvoice - expenseSum;
@@ -262,15 +232,113 @@ export function calculateCollectedValue(
 ) {
 	return collected * price * (1 + taxRate);
 }
-// export function isToday(dateString: string): boolean {
-// 	const date = new Date(dateString);
-// 	const today = new Date();
-// 	return date.toDateString() === today.toDateString();
-// }
 
-// export function isYesterday(dateString: string): boolean {
-// 	const date = new Date(dateString);
-// 	const yesterday = new Date();
-// 	yesterday.setDate(yesterday.getDate() - 1);
-// 	return date.toDateString() === yesterday.toDateString();
-// }
+/**
+ * Calculates the total items delivered from an array of records
+ * @param records Array of delivery records
+ * @returns Total number of items delivered
+ */
+export function calculateTotalDelivered(records: DeliveryRecord[]): number {
+	return records.reduce((sum, record) => sum + dlvPd(record), 0);
+}
+
+/**
+ * Calculates the total items collected from an array of records
+ * @param records Array of delivery records
+ * @returns Total number of collected items
+ */
+export function calculateTotalCollected(records: DeliveryRecord[]): number {
+	return records.reduce(
+		(sum, record) => sum + ((record.collected ?? 0) + (record.cutters ?? 0)),
+		0
+	);
+}
+
+/**
+ * Calculates the total monetary value of delivered items
+ * @param records Array of delivery records
+ * @returns Total value of delivered items
+ */
+export function calculateTotalDeliveryValue(records: DeliveryRecord[]): number {
+	return records.reduce((sum, record) => sum + calculateDeliveryValue(dlvPd(record)), 0);
+}
+
+/**
+ * Calculates the total monetary value of collected items
+ * @param records Array of delivery records
+ * @returns Total value of collected items
+ */
+export function calculateTotalCollectionValue(records: DeliveryRecord[]): number {
+	return records.reduce(
+		(sum, record) => sum + calculateCollectedValue((record.collected ?? 0) + (record.cutters ?? 0)),
+		0
+	);
+}
+
+/**
+ * Calculates the total expenses from an array of records
+ * @param records Array of delivery records
+ * @returns Total expenses
+ */
+export function calculateTotalExpense(records: DeliveryRecord[]): number {
+	return records.reduce((sum, record) => sum + (record.expense ?? 0), 0);
+}
+
+/**
+ * Type definition for record totals
+ */
+interface RecordTotals {
+	loaded: number;
+	collected: number;
+	cutters: number;
+	returned: number;
+	missplaced: number;
+	delivered: number;
+	expense: number;
+	deliveryValue: number;
+	collectedValue: number;
+	totalValue: number;
+}
+
+/**
+ * Calculates all record totals needed for tables and analytics
+ * @param records Array of delivery records
+ * @returns Object with all calculated totals
+ */
+export function calculateRecordTotals(records: DeliveryRecord[]): RecordTotals {
+	const totals: RecordTotals = {
+		loaded: 0,
+		collected: 0,
+		cutters: 0,
+		returned: 0,
+		missplaced: 0,
+		delivered: 0,
+		expense: 0,
+		deliveryValue: 0,
+		collectedValue: 0,
+		totalValue: 0
+	};
+
+	if (records.length === 0) {
+		return totals;
+	}
+
+	return records.reduce((acc: RecordTotals, record) => {
+		const delivered = dlvPd(record);
+		const deliveryValue = calculateDeliveryValue(delivered);
+		const collectedValue = calculateCollectedValue((record.collected ?? 0) + (record.cutters ?? 0));
+
+		return {
+			loaded: acc.loaded + (record.loaded ?? 0),
+			collected: acc.collected + (record.collected ?? 0),
+			cutters: acc.cutters + (record.cutters ?? 0),
+			returned: acc.returned + (record.returned ?? 0),
+			missplaced: acc.missplaced + (record.missplaced ?? 0),
+			delivered: acc.delivered + delivered,
+			expense: acc.expense + (record.expense ?? 0),
+			deliveryValue: acc.deliveryValue + deliveryValue,
+			collectedValue: acc.collectedValue + collectedValue,
+			totalValue: acc.totalValue + deliveryValue + collectedValue
+		};
+	}, totals);
+}

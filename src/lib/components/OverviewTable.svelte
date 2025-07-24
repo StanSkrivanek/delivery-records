@@ -2,6 +2,7 @@
 	import {
 		calculateCollectedValue,
 		calculateDeliveryValue,
+		calculateRecordTotals,
 		dlvPd,
 		formatCurrency,
 		formatDate,
@@ -10,7 +11,8 @@
 
 	let { records, selectedYear, selectedMonth } = $props();
 	// console.log('🚀OVERVIEW TABLE ~ records:', records);
-
+	// Use utility function to calculate totals
+	let totals = $derived.by(() => calculateRecordTotals(records));
 	let showModal = $state(false);
 	let modalImage = $state('');
 	let modalAlt = $state('');
@@ -39,67 +41,6 @@
 			closeModal();
 		}
 	}
-
-	// Calculate totals using $derived
-	let totals = $derived(() => {
-		return records.reduce(
-			(
-				/** @type {{ loaded: any; collected: any; cutters: any; returned: any; missplaced: any; delivered: number; expense: any; deliveryValue: number; collectedValue: number; totalValue: number; }} */ acc: {
-					loaded: number;
-					collected: number;
-					cutters: number;
-					returned: number;
-					missplaced: number;
-					delivered: number;
-					expense: number;
-					deliveryValue: number;
-					collectedValue: number;
-					totalValue: number;
-				},
-				/** @type {{ loaded: number; returned: any; missplaced: any; collected: number; cutters: any; expense: any; }} */ record: {
-					loaded: number;
-					returned: number;
-					missplaced: number;
-					collected: number;
-					cutters: number;
-					expense: number;
-				}
-			) => {
-				const delivered =
-					record.loaded -
-						((record.collected || 0) + (record.cutters || 0)) -
-						(record.returned + (record.missplaced || 0)) || 0;
-				const deliveryValue = calculateDeliveryValue(delivered, 4, 0.23);
-				const collectedValue = calculateCollectedValue((record.collected ?? 0) + (record.cutters ?? 0));
-				const totalValue = deliveryValue + collectedValue;
-
-				return {
-					loaded: acc.loaded + record.loaded,
-					collected: acc.collected + record.collected,
-					cutters: acc.cutters + record.cutters,
-					returned: acc.returned + record.returned,
-					missplaced: acc.missplaced + (record.missplaced || 0),
-					delivered: acc.delivered + delivered,
-					expense: acc.expense + (record.expense || 0),
-					deliveryValue: acc.deliveryValue + deliveryValue,
-					collectedValue: acc.collectedValue + collectedValue,
-					totalValue: acc.totalValue + totalValue
-				};
-			},
-			{
-				loaded: 0,
-				collected: 0,
-				cutters: 0,
-				returned: 0,
-				missplaced: 0,
-				delivered: 0,
-				expense: 0,
-				deliveryValue: 0,
-				collectedValue: 0,
-				totalValue: 0
-			}
-		);
-	});
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -140,35 +81,36 @@
 				</thead>
 				<tbody>
 					{#each records as record (record.id)}
-						{@const dayDelivery: number = dlvPd(record) }
-						{@const deliveryValue = calculateDeliveryValue(dayDelivery)}
+						<!-- {@const dayDelivery: number = dlvPd(record) } -->
+						{@const delivered = dlvPd(record)}
+						{@const deliveryValue = calculateDeliveryValue(delivered)}
 						{@const collectedValue = calculateCollectedValue(
-							(record.collected || 0) + (record.cutters || 0)
+							(record.collected ?? 0) + (record.cutters ?? 0)
 						)}
-						{@const totalValue = deliveryValue + collectedValue}
+						{@const dailyValue = deliveryValue + collectedValue}
 						<tr>
 							<!-- <td class="id-cell">#{record.id}</td> -->
-							<td class="date-cell">{formatDate(record.entry_date)}</td>
+							<td class="date-cell">{formatDate(record.entry_date || record.created_at)}</td>
 							<td class="number-cell">{record.loaded}</td>
-							<td class="number-cell" class:blue={record.collected > 0}>{record.collected}</td>
-							<td class="number-cell" class:blue={record.cutters > 0}>{record.cutters}</td>
-							<td class="number-cell" class:red={record.returned > 0}>{record.returned}</td>
-							<td class="number-cell" class:red={record.missplaced > 0}>{record.missplaced || 0}</td
+							<td class="number-cell" class:blue={record.collected > 0}>{record.collected ?? 0}</td>
+							<td class="number-cell" class:blue={record.cutters > 0}>{record.cutters ?? 0}</td>
+							<td class="number-cell" class:red={record.returned > 0}>{record.returned ?? 0}</td>
+							<td class="number-cell" class:red={record.missplaced > 0}>{record.missplaced ?? 0}</td
 							>
-							<td class="number-cell success">{dayDelivery}</td>
-							<td class="currency-cell expense">{formatCurrency(record.expense)}</td>
+							<td class="number-cell success">{delivered}</td>
+							<td class="currency-cell expense">{formatCurrency(record.expense ?? 0)}</td>
 							<td class="currency-cell">{formatCurrency(deliveryValue)}</td>
 							<td class="currency-cell">{formatCurrency(collectedValue)}</td>
-							<td class="total-cell">{formatCurrency(totalValue)}</td>
+							<td class="total-cell">{formatCurrency(dailyValue)}</td>
 							<td class="image-cell">
 								{#if record.image_path}
 									<button
 										type="button"
 										class="image-btn"
 										onclick={() => openImageModal(record.image_path, record.id)}
-										title="View image"
+										title="Preview image"
 									>
-										View
+										Preview image
 									</button>
 								{:else}
 									<span class="no-image">No image</span>
@@ -177,30 +119,29 @@
 						</tr>
 					{/each}
 
-					<!-- Totals Row -->
+				</tbody>
+				<!-- Totals Row -->
+				<tfoot>
 					<tr class="totals-row">
 						<!-- <td class="id-cell"><strong>TOTAL</strong></td> -->
-						<td class="date-cell">TOTAL</td>
-						<td class="number-cell"><strong>{totals().loaded}</strong></td>
-						<td class="number-cell"><strong>{totals().collected}</strong></td>
-						<td class="number-cell"><strong>{totals().cutters}</strong></td>
-						<td class="number-cell" class:expense={totals().returned > 0}
-							><strong>{totals().returned}</strong></td
+						<td class="date-cell bold">TOTAL</td>
+						<td class="number-cell"><strong>{totals.loaded}</strong></td>
+						<td class="number-cell"><strong>{totals.collected}</strong></td>
+						<td class="number-cell"><strong>{totals.cutters}</strong></td>
+						<td class="number-cell" class:expense={totals.returned > 0}
+							><strong>{totals.returned}</strong></td
 						>
-						<td class="number-cell" class:expense={totals().missplaced > 0}
-							><strong>{totals().missplaced || 0}</strong></td
+						<td class="number-cell" class:expense={totals.missplaced > 0}
+							><strong>{totals.missplaced || 0}</strong></td
 						>
-						<td class="number-cell success"><strong>{totals().delivered || 0}</strong></td>
-						<td class="currency-cell expense"
-							><strong>{formatCurrency(totals().expense)}</strong></td
-						>
-						<td class="currency-cell"><strong>{formatCurrency(totals().deliveryValue)}</strong></td>
-						<td class="currency-cell"><strong>{formatCurrency(totals().collectedValue)}</strong></td
-						>
-						<td class="total-cell"><strong>{formatCurrency(totals().totalValue)}</strong></td>
+						<td class="number-cell success"><strong>{totals.delivered || 0}</strong></td>
+						<td class="currency-cell expense"><strong>{formatCurrency(totals.expense)}</strong></td>
+						<td class="currency-cell"><strong>{formatCurrency(totals.deliveryValue)}</strong></td>
+						<td class="currency-cell"><strong>{formatCurrency(totals.collectedValue)}</strong></td>
+						<td class="total-cell"><strong>{formatCurrency(totals.totalValue)}</strong></td>
 						<td class="image-cell">—</td>
 					</tr>
-				</tbody>
+				</tfoot>
 			</table>
 		</div>
 	{/if}
