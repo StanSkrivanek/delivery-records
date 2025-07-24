@@ -22,6 +22,6 @@ Thumbs.db
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-database.db
-database.sqlite
-database.sqlite3
+# database.db
+# database.sqlite
+# database.sqlite3

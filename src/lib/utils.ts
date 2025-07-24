@@ -70,16 +70,11 @@ export function deleteImageFile(relativePath: string): void {
 
 
 // DATE HELPER FUNCTIONS
-// This function formats a date string to a more readable format.
-// It takes a date string as input and returns a formatted date string in the format "MMM d, yyyy" (e.g., "Oct 1, 2023").
-// The function uses the `toLocaleDateString` method with the 'en-IE' locale to ensure consistent formatting across different environments.
 /**
- * Format date string to a more readable format
- * @param dateString Date string to format
- * @returns Formatted date string
+ * Format a date string to a more readable format (e.g., "Oct 1, 2023").
+ * @param {string} dateString - The date string to format.
+ * @returns {string} - The formatted date string.
  */
-// Example input: "2023-10-01T12:00:00Z"
-// Example output: "Oct 1, 2023"
 export function formatDate(dateString: string): string {
 	return new Date(dateString).toLocaleDateString('en-IE', {
 		// year: 'numeric',
@@ -90,20 +85,17 @@ export function formatDate(dateString: string): string {
 	});
 }
 
-// export function formatDateOnly(dateString: string): string {
-// 	return new Date(dateString).toLocaleDateString('en-IE', {
-// 		year: 'numeric',
-// 		month: 'long',
-// 		day: 'numeric'
-// 	});
-// }
 
 
 
+// DELIVERY ANALYTICS HELPER FUNCTIONS
+/**
+ * Calculates the total delivered items from a delivery record.
+ * @param {DeliveryRecord} record The delivery record to calculate from.
+ * @returns {number} The total delivered items.
+ */
 
-// Day calc Functions
-// delivery per day {(record.loaded - record.collected) - (record.returned + record.missplaced) || 0}
-export function dlvpd( record : DeliveryRecord): number {
+export function dlvPd( record : DeliveryRecord): number {
 	return (
 		record.loaded -
 		((record.collected ?? 0) + (record.cutters ?? 0)) -
@@ -112,7 +104,11 @@ export function dlvpd( record : DeliveryRecord): number {
 }
 
 
-// delivery per month
+/**
+ * Calculates the average delivered items per day from an array of delivery records.
+ * @param {DeliveryRecord[]} records - Array of delivery records.
+ * @returns {number} - The average delivered items per day.
+ */
 export function dpm(records: DeliveryRecord[]): number {
 	const totalDelivered = records.reduce(
 		(sum, record) =>

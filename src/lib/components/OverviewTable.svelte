@@ -2,10 +2,10 @@
 	import {
 		calculateCollectedValue,
 		calculateDeliveryValue,
+		dlvPd,
 		formatCurrency,
 		formatDate,
-		getMonthName,
-		dlvpd
+		getMonthName
 	} from '$lib/utils';
 
 	let { records, selectedYear, selectedMonth } = $props();
@@ -140,9 +140,8 @@
 				</thead>
 				<tbody>
 					{#each records as record (record.id)}
-						{@const deliveryValue = calculateDeliveryValue(
-							(record.loaded - record.collected) - (record.returned + record.missplaced) || 0
-						)}
+					{@const dayDelivery: number = dlvPd(record) }
+						{@const deliveryValue = calculateDeliveryValue(dayDelivery)}
 						{@const collectedValue = calculateCollectedValue(record.collected)}
 						{@const totalValue = deliveryValue + collectedValue}
 						<tr>
@@ -155,9 +154,7 @@
 							<td class="number-cell" class:expense={record.missplaced > 0}
 								>{record.missplaced || 0}</td
 							>
-							<td class="number-cell success"
-								>{dlvpd(record)}</td
-							>
+							<td class="number-cell success">{dayDelivery}</td>
 							<td class="currency-cell expense">{formatCurrency(record.expense)}</td>
 							<td class="currency-cell">{formatCurrency(deliveryValue)}</td>
 							<td class="currency-cell">{formatCurrency(collectedValue)}</td>
@@ -192,7 +189,7 @@
 						<td class="number-cell" class:expense={totals().missplaced > 0}
 							><strong>{totals().missplaced || 0}</strong></td
 						>
-						<td class="number-cell success"><strong>{totals().delivered || 0 }</strong></td>
+						<td class="number-cell success"><strong>{totals().delivered || 0}</strong></td>
 						<td class="currency-cell expense"
 							><strong>{formatCurrency(totals().expense)}</strong></td
 						>
@@ -339,7 +336,7 @@
 
 	.id-cell {
 		font-weight: 600;
-		color: #007bff;
+		color: #273340;
 		width: 70px;
 	}
 
@@ -350,7 +347,7 @@
 	}
 
 	.number-cell {
-		text-align: center;
+		text-align: right;
 		font-weight: 500;
 		width: 80px;
 	}
@@ -365,22 +362,22 @@
 		text-align: right;
 		font-weight: 500;
 		color: #c0392b;
-		background: #f8d7da;
+		/* background: #f8d7da; */
 		width: 100px;
 	}
 
 	.success {
 		text-align: right;
 		font-weight: 500;
-		color: #28a745;
-		background: #d4edda;
+		color: #06ae6e;
+		/* background: #d4edda; */
 		width: 100px;
 	}
 	.total-cell {
 		text-align: right;
 		font-weight: 600;
-		color: #e9eefd;
-		background: #0f1219;
+		color: #0f1219;
+		background: #e3ecff;
 		width: 100px;
 	}
 
