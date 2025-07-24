@@ -167,6 +167,7 @@
 		color: #333;
 		margin-bottom: 0.5rem;
 		line-height: 1;
+		letter-spacing: 0.075rem;
 	}
 
 	.card-subtitle {

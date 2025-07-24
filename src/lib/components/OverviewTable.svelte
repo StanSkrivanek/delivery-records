@@ -14,7 +14,6 @@
 	// Use utility function to calculate totals
 	let totals = $derived.by(() => calculateRecordTotals(records));
 
-
 	let showModal = $state(false);
 	let modalImage = $state('');
 	let modalAlt = $state('');
@@ -99,7 +98,9 @@
 							<td class="number-cell" class:red={record.returned > 0}>{record.returned ?? 0}</td>
 							<td class="number-cell" class:red={record.missplaced > 0}>{record.missplaced ?? 0}</td
 							>
-							<td class="number-cell" class:green={delivered >= 65} class:red={delivered < 55}>{delivered}</td>
+							<td class="number-cell" class:green={delivered >= 65} class:red={delivered < 55}
+								>{delivered}</td
+							>
 							<td class="currency-cell expense">{formatCurrency(record.expense ?? 0)}</td>
 							<td class="currency-cell">{formatCurrency(deliveryValue)}</td>
 							<td class="currency-cell">{formatCurrency(collectedValue)}</td>
@@ -120,7 +121,6 @@
 							</td>
 						</tr>
 					{/each}
-
 				</tbody>
 				<!-- Totals Row -->
 				<tfoot>
@@ -263,6 +263,7 @@
 		padding: 0.75rem;
 		border-bottom: 1px solid #dee2e6;
 		vertical-align: right;
+		letter-spacing: 0.15em;
 	}
 
 	.overview-table tbody tr:hover:not(.totals-row) {
@@ -278,12 +279,12 @@
 		border-bottom: none;
 	}
 
-	.id-cell {
+	/* .id-cell {
 		font-weight: 600;
 		color: #273340;
-		/* width: 70px; */
+		width: 70px;
 		border-right: 1px solid #dee2e6;
-	}
+	} */
 
 	.date-cell {
 		color: #666;
@@ -316,12 +317,19 @@
 		color: #2870a7;
 		background: #e3ecff;
 	}
-.green{
+	.green {
 		color: #06ae6e;
 		background: #e8ffed;
 	}
+	.bold {
+		font-weight: 600;
+		color: #273340;
+	}
+	.bold {
+		font-weight: 600;
+	}
 	.expense {
-		text-align: right;
+		
 		font-weight: 500;
 		color: #c0392b;
 		/* background: #f8d7da; */
@@ -329,19 +337,17 @@
 	}
 
 	.success {
-		text-align: right;
+		
 		font-weight: 500;
-		/* color: #06ae6e; */
+	
 		background: #e8ffed;
-		/* width: 100px; */
+		
 	}
 	.total-cell {
 		text-align: right;
-		font-weight: 600;
-		color: #0f1219;
-		/* background: #f0f0f0; */
+	
 		border-inline: 2px solid #12171d;
-		/* width: 100px; */
+		
 	}
 
 	.image-cell {
