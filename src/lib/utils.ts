@@ -160,7 +160,7 @@ export function calculateAnalytics(records: DeliveryRecord[]) {
 
 	const collectedSum = records.reduce(
 		(sum, record) =>
-			sum + (record.collected ?? 0) + (record.cutters ?? 0) * PPU_COLLECTION * (1 + TAX_RATE),
+			sum + ((record.collected ?? 0) + (record.cutters ?? 0)) * PPU_COLLECTION * (1 + TAX_RATE),
 		0
 	);
 

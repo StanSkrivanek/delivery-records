@@ -24,7 +24,7 @@
 			<!-- Delivery Sum Money -->
 			<div class="card success">
 				<div class="card-header">
-					<h3>Delivery Sum</h3>
+					<h3>Value</h3>
 					<!-- <div class="card-icon">💰</div> -->
 				</div>
 				<div class="card-value">{formatCurrency(analytics.deliverySum)}</div>
@@ -44,7 +44,7 @@
 			<!-- Collected Sum Money -->
 			<div class="card success">
 				<div class="card-header">
-					<h3>Collected Sum</h3>
+					<h3>Value</h3>
 					<!-- <div class="card-icon">💵</div> -->
 				</div>
 				<div class="card-value">{formatCurrency(analytics.collectedSum)}</div>
