@@ -16,9 +16,9 @@
 			<div class="card primary">
 				<div class="card-header">
 					<h3>Total Delivered</h3>
-					<!-- <div class="card-icon">📦</div> -->
+				
 				</div>
-				<div class="card-value">{analytics.totalDelivered} pcs</div>
+				<p class="card-value">{analytics.totalDelivered} pcs</p>
 				 <!-- <p class="label">Total delivered ({getMonthName(selectedMonth)} {selectedYear})</p> -->
 				<p class="card-subtitle">Delivered</p>
 			</div>
@@ -26,10 +26,10 @@
 			<div class="card success">
 				<div class="card-header">
 					<h3>Value</h3>
-					<!-- <div class="card-icon">💰</div> -->
+				
 				</div>
-				<div class="card-value">{formatCurrency(analytics.deliverySum)}</div>
-				<div class="card-subtitle">Delivered</div>
+				<p class="card-value">{formatCurrency(analytics.deliverySum)}</p>
+				<p class="card-subtitle">Delivered</p>
 			</div>
 		</div>
 		<div class="block">
@@ -37,19 +37,19 @@
 			<div class="card primary">
 				<div class="card-header">
 					<h3>Total Collected</h3>
-					<!-- <div class="card-icon">📋</div> -->
+					
 				</div>
-				<div class="card-value">{analytics.totalCollected}</div>
-				<div class="card-subtitle">Collected</div>
+				<p class="card-value">{analytics.totalCollected}</p>
+				<p class="card-subtitle">Collected</p>
 			</div>
 			<!-- Collected Sum Money -->
 			<div class="card success">
 				<div class="card-header">
 					<h3>Value</h3>
-					<!-- <div class="card-icon">💵</div> -->
+					
 				</div>
-				<div class="card-value">{formatCurrency(analytics.collectedSum)}</div>
-				<div class="card-subtitle">Collected</div>
+				<p class="card-value">{formatCurrency(analytics.collectedSum)}</p>
+				<p class="card-subtitle">Collected</p>
 			</div>
 		</div>
 
@@ -58,19 +58,19 @@
 			<div class="card warning">
 				<div class="card-header">
 					<h3>Average</h3>
-					<!-- <div class="card-icon">📊</div> -->
+				
 				</div>
-				<div class="card-value">{formatNumber(analytics.averagePerDay)}</div>
-				<div class="card-subtitle">Parcels / day</div>
+				<p class="card-value">{formatNumber(analytics.averagePerDay)}</p>
+				<p class="card-subtitle">Parcels / day</p>
 			</div>
 			<!-- To Invoice -->
 			<div class="card secondary">
 				<div class="card-header">
 					<h3>To Invoice</h3>
-					<!-- <div class="card-icon">🧾</div> -->
+					
 				</div>
-				<div class="card-value">{formatCurrency(analytics.toInvoice)}</div>
-				<div class="card-subtitle">Total amount to invoice</div>
+				<p class="card-value">{formatCurrency(analytics.toInvoice)}</p>
+				<p class="card-subtitle">Total amount to invoice</p>
 			</div>
 		</div>
 		<div class="block">
@@ -78,20 +78,20 @@
 			<div class="card total">
 				<div class="card-header">
 					<h3>Expenses</h3>
-					<!-- <div class="card-icon">💵</div> -->
+					
 				</div>
-				<div class="card-value">{formatCurrency(analytics.expenseSum)}</div>
-				<div class="card-subtitle">Fuel, Car Maintenance, etc.</div>
+				<p class="card-value">{formatCurrency(analytics.expenseSum)}</p>
+				<p class="card-subtitle">Fuel, Car Maintenance, etc.</p>
 			</div>
 
 			<!-- Balance -->
 			<div class="card info">
 				<div class="card-header">
 					<h3>Ballance</h3>
-					<!-- <div class="card-icon">🧾</div> -->
+					
 				</div>
-				<div class="card-value">{formatCurrency(analytics.toInvoice - analytics.expenseSum)}</div>
-				<div class="card-subtitle">Netto amount</div>
+				<p class="card-value">{formatCurrency(analytics.toInvoice - analytics.expenseSum)}</p>
+				<p class="card-subtitle">Netto amount</p>
 			</div>
 		</div>
 	</div>
