@@ -131,7 +131,7 @@
 		text-align: right;
 		padding: 1rem;
 		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-		border-left: 4px solid;
+		border-left: 12px solid;
 		transition:
 			transform 0.2s ease,
 			box-shadow 0.2s ease;
@@ -156,10 +156,6 @@
 		color: #555;
 	}
 
-	/* .card-icon {
-    font-size: 1.5rem;
-    opacity: 0.8;
-  } */
 
 	.card-value {
 		font-size: 2rem;
