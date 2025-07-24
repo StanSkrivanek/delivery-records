@@ -18,7 +18,7 @@
 					<h3>Total Delivered</h3>
 					<!-- <div class="card-icon">📦</div> -->
 				</div>
-				<div class="card-value">{analytics.totalDelivered.toLocaleString()}</div>
+				<div class="card-value">{analytics.totalDelivered}</div>
 				<div class="card-subtitle">Delivered</div>
 			</div>
 			<!-- Delivery Sum Money -->
@@ -38,7 +38,7 @@
 					<h3>Total Collected</h3>
 					<!-- <div class="card-icon">📋</div> -->
 				</div>
-				<div class="card-value">{analytics.totalCollected.toLocaleString()}</div>
+				<div class="card-value">{analytics.totalCollected}</div>
 				<div class="card-subtitle">Collected</div>
 			</div>
 			<!-- Collected Sum Money -->
@@ -126,6 +126,8 @@
 	.card {
 		background: white;
 		/* border-radius: 12px; */
+		width: auto;
+		text-align: right;
 		padding: 1rem;
 		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 		border-left: 4px solid;
@@ -149,7 +151,7 @@
 	.card-header h3 {
 		margin: 0;
 		font-size: 1rem;
-		font-weight: 500;
+		font-weight: 600;
 		color: #555;
 	}
 

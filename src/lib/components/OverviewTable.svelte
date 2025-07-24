@@ -70,7 +70,7 @@
 						((record.collected || 0) + (record.cutters || 0)) -
 						(record.returned + (record.missplaced || 0)) || 0;
 				const deliveryValue = calculateDeliveryValue(delivered, 4, 0.23);
-				const collectedValue = calculateCollectedValue(record.collected, 1, 0.23);
+				const collectedValue = calculateCollectedValue((record.collected ?? 0) + (record.cutters ?? 0));
 				const totalValue = deliveryValue + collectedValue;
 
 				return {
@@ -123,7 +123,7 @@
 			<table class="overview-table">
 				<thead>
 					<tr>
-						<th>ID</th>
+						<!-- <th>ID</th> -->
 						<th>Date</th>
 						<th>Operations</th>
 						<th>Collected</th>
@@ -132,27 +132,28 @@
 						<th>Missplaced</th>
 						<th>Delivered</th>
 						<th>Expense</th>
-						<th>Delivery Value</th>
-						<th>Collected Value</th>
-						<th>Total Value</th>
+						<th>Delivery</th>
+						<th>Collected</th>
+						<th>Total</th>
 						<th>Image</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each records as record (record.id)}
-					{@const dayDelivery: number = dlvPd(record) }
+						{@const dayDelivery: number = dlvPd(record) }
 						{@const deliveryValue = calculateDeliveryValue(dayDelivery)}
-						{@const collectedValue = calculateCollectedValue(record.collected)}
+						{@const collectedValue = calculateCollectedValue(
+							(record.collected || 0) + (record.cutters || 0)
+						)}
 						{@const totalValue = deliveryValue + collectedValue}
 						<tr>
-							<td class="id-cell">#{record.id}</td>
+							<!-- <td class="id-cell">#{record.id}</td> -->
 							<td class="date-cell">{formatDate(record.entry_date)}</td>
 							<td class="number-cell">{record.loaded}</td>
-							<td class="number-cell">{record.collected}</td>
-							<td class="number-cell">{record.cutters}</td>
-							<td class="number-cell" class:expense={record.returned > 0}>{record.returned}</td>
-							<td class="number-cell" class:expense={record.missplaced > 0}
-								>{record.missplaced || 0}</td
+							<td class="number-cell" class:blue={record.collected > 0}>{record.collected}</td>
+							<td class="number-cell" class:blue={record.cutters > 0}>{record.cutters}</td>
+							<td class="number-cell" class:red={record.returned > 0}>{record.returned}</td>
+							<td class="number-cell" class:red={record.missplaced > 0}>{record.missplaced || 0}</td
 							>
 							<td class="number-cell success">{dayDelivery}</td>
 							<td class="currency-cell expense">{formatCurrency(record.expense)}</td>
@@ -178,8 +179,8 @@
 
 					<!-- Totals Row -->
 					<tr class="totals-row">
-						<td class="id-cell"><strong>TOTAL</strong></td>
-						<td class="date-cell">—</td>
+						<!-- <td class="id-cell"><strong>TOTAL</strong></td> -->
+						<td class="date-cell">TOTAL</td>
 						<td class="number-cell"><strong>{totals().loaded}</strong></td>
 						<td class="number-cell"><strong>{totals().collected}</strong></td>
 						<td class="number-cell"><strong>{totals().cutters}</strong></td>
@@ -305,7 +306,7 @@
 
 	.overview-table th {
 		padding: 1rem 0.75rem;
-		text-align: left;
+		text-align: center;
 		font-weight: 600;
 		color: #333;
 		border-bottom: 2px solid #dee2e6;
@@ -318,7 +319,7 @@
 	.overview-table td {
 		padding: 0.75rem;
 		border-bottom: 1px solid #dee2e6;
-		vertical-align: middle;
+		vertical-align: right;
 	}
 
 	.overview-table tbody tr:hover:not(.totals-row) {
@@ -337,33 +338,48 @@
 	.id-cell {
 		font-weight: 600;
 		color: #273340;
-		width: 70px;
+		/* width: 70px; */
+		border-right: 1px solid #dee2e6;
 	}
 
 	.date-cell {
 		color: #666;
 		font-size: 0.85rem;
-		width: 130px;
+		/* width: 130px; */
+		border-right: 1px solid #dee2e6;
 	}
 
 	.number-cell {
 		text-align: right;
 		font-weight: 500;
-		width: 80px;
+		/* width: 80px; */
+		border-right: 1px solid #dee2e6;
 	}
 
 	.currency-cell {
 		text-align: right;
 		font-weight: 500;
 		color: #2870a7;
-		width: 100px;
+		/* width: 100px; */
+		border-right: 1px solid #dee2e6;
 	}
+
+	.red {
+		color: #c0392b;
+		background: #ffeced;
+	}
+
+	.blue {
+		color: #2870a7;
+		background: #e3ecff;
+	}
+
 	.expense {
 		text-align: right;
 		font-weight: 500;
 		color: #c0392b;
 		/* background: #f8d7da; */
-		width: 100px;
+		/* width: 100px; */
 	}
 
 	.success {
@@ -377,13 +393,14 @@
 		text-align: right;
 		font-weight: 600;
 		color: #0f1219;
-		background: #e3ecff;
-		width: 100px;
+		/* background: #f0f0f0; */
+		border-inline: 2px solid #12171d;
+		/* width: 100px; */
 	}
 
 	.image-cell {
 		text-align: center;
-		width: 90px;
+		/* width: 90px; */
 	}
 
 	.image-btn {

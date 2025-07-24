@@ -138,7 +138,7 @@
 </main>
 
 <style>
-	:global(body) {
+	/* :global(body) {
 		margin: 0;
 		padding: 0;
 		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -149,7 +149,7 @@
 	main {
 		min-height: 100vh;
 		padding: 2rem 0;
-	}
+	} */
 
   .filters {
     display: flex;

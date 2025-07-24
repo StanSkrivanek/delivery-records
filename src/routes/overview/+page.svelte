@@ -142,11 +142,11 @@
 
 
 <style>
-	.main-container {
+	/* .main-container {
 		max-width: var(--max-w, 800px);
 		margin: 0 auto;
 		padding: 2rem;
-	}
+	} */
 
 	.header-section {
 		display: flex;

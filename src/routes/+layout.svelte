@@ -5,10 +5,9 @@
 </script>
 
 <nav>
-  <a href="/">Home</a>
-  <a href="/overview">Overview</a>
+	<a href="/">Home</a>
+	<a href="/overview">Overview</a>
 </nav>
-{@render children()}
-
-
-
+<main>
+	{@render children()}
+</main>

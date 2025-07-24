@@ -68,7 +68,6 @@ export function deleteImageFile(relativePath: string): void {
 	}
 }
 
-
 // DATE HELPER FUNCTIONS
 /**
  * Format a date string to a more readable format (e.g., "Oct 1, 2023").
@@ -85,9 +84,6 @@ export function formatDate(dateString: string): string {
 	});
 }
 
-
-
-
 // DELIVERY ANALYTICS HELPER FUNCTIONS
 /**
  * Calculates the total delivered items from a delivery record.
@@ -95,14 +91,13 @@ export function formatDate(dateString: string): string {
  * @returns {number} The total delivered items.
  */
 
-export function dlvPd( record : DeliveryRecord): number {
+export function dlvPd(record: DeliveryRecord): number {
 	return (
 		record.loaded -
-		((record.collected ?? 0) + (record.cutters ?? 0)) -
-		(record.returned + (record.missplaced ?? 0)) || 0
+			((record.collected ?? 0) + (record.cutters ?? 0)) -
+			(record.returned + (record.missplaced ?? 0)) || 0
 	);
 }
-
 
 /**
  * Calculates the average delivered items per day from an array of delivery records.
@@ -121,12 +116,10 @@ export function dpm(records: DeliveryRecord[]): number {
 	return records.length > 0 ? totalDelivered / records.length : 0;
 }
 
-
 //Calculates analytics from delivery records
 // @param records Array of delivery records
 // @returns Object containing calculated analytics
 //
-
 
 const PPU_DELIVERY = 4; // Price per delivery without tax
 const PPU_COLLECTION = 1; // Price per collection without tax
@@ -138,12 +131,15 @@ export function calculateAnalytics(records: DeliveryRecord[]) {
 		(sum, record) =>
 			sum +
 			(record.loaded -
-				((record.collected || 0) + (record.cutters || 0)) -
-				(record.returned + (record.missplaced || 0)) || 0),
+				((record.collected ?? 0) + (record.cutters ?? 0)) -
+				(record.returned + (record.missplaced ?? 0)) || 0),
 		0
 	);
 
-	const totalCollected = records.reduce((sum, record) => sum + (record.collected || 0), 0);
+	const totalCollected = records.reduce(
+		(sum, record) => sum + ((record.collected ?? 0) + (record.cutters ?? 0)) || 0,
+		0
+	);
 
 	const averagePerDay = records.length > 0 ? totalDelivered / records.length : 0;
 
@@ -154,18 +150,21 @@ export function calculateAnalytics(records: DeliveryRecord[]) {
 	const deliverySum = records.reduce(
 		(sum, record) =>
 			sum +
-			(record.loaded - (record.returned + (record.missplaced || 0))) *
+			(record.loaded -
+				((record.collected ?? 0) + (record.cutters ?? 0)) -
+				(record.returned + (record.missplaced ?? 0)) || 0) *
 				PPU_DELIVERY *
 				(1 + TAX_RATE),
 		0
 	);
 
 	const collectedSum = records.reduce(
-		(sum, record) => sum + (record.collected || 0) * PPU_COLLECTION * (1 + TAX_RATE),
+		(sum, record) =>
+			sum + (record.collected ?? 0) + (record.cutters ?? 0) * PPU_COLLECTION * (1 + TAX_RATE),
 		0
 	);
 
-	const expenseSum = records.reduce((sum, record) => sum + (record.expense || 0), 0);
+	const expenseSum = records.reduce((sum, record) => sum + (record.expense ?? 0), 0);
 
 	const toInvoice = deliverySum + collectedSum;
 	const balance = toInvoice - expenseSum;
