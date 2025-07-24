@@ -15,12 +15,12 @@
 			<!-- Total Delivered -->
 			<div class="card primary">
 				<div class="card-header">
-					<h3>Total Delivered</h3>
+					<h3>Delivered</h3>
 				
 				</div>
 				<p class="card-value">{analytics.totalDelivered} pcs</p>
 				 <!-- <p class="label">Total delivered ({getMonthName(selectedMonth)} {selectedYear})</p> -->
-				<p class="card-subtitle">Delivered</p>
+				<p class="card-subtitle">Delivered parcels</p>
 			</div>
 			<!-- Delivery Sum Money -->
 			<div class="card success">
@@ -29,14 +29,14 @@
 				
 				</div>
 				<p class="card-value">{formatCurrency(analytics.deliverySum)}</p>
-				<p class="card-subtitle">Delivered</p>
+				<p class="card-subtitle">Delivered parcels</p>
 			</div>
 		</div>
 		<div class="block">
 			<!-- Total Collected -->
 			<div class="card primary">
 				<div class="card-header">
-					<h3>Total Collected</h3>
+					<h3>Collected</h3>
 					
 				</div>
 				<p class="card-value">{analytics.totalCollected}</p>
@@ -66,7 +66,7 @@
 			<!-- To Invoice -->
 			<div class="card secondary">
 				<div class="card-header">
-					<h3>To Invoice</h3>
+					<h3>Invoice</h3>
 					
 				</div>
 				<p class="card-value">{formatCurrency(analytics.toInvoice)}</p>
@@ -147,6 +147,7 @@
 		justify-content: space-between;
 		align-items: center;
 		margin-bottom: 1rem;
+		text-transform: uppercase;
 	}
 
 	.card-header h3 {
