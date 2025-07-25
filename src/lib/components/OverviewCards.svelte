@@ -6,14 +6,14 @@
 </script>
 
 <div class="cards-section">
-	<div class="period-info">
+	<div class="period-teal">
 		<h2>{getMonthName(selectedMonth - 1)} {selectedYear}</h2>
 	</div>
 
 	<div class="cards-grid">
 		<div class="block">
 			<!-- Total Delivered -->
-			<div class="card primary">
+			<div class="card blue">
 				<div class="card-header">
 					<h3>Delivered</h3>
 				
@@ -34,7 +34,7 @@
 		</div>
 		<div class="block">
 			<!-- Total Collected -->
-			<div class="card primary">
+			<div class="card blue">
 				<div class="card-header">
 					<h3>Collected</h3>
 					
@@ -64,7 +64,7 @@
 				<p class="card-subtitle">Parcels / day</p>
 			</div>
 			<!-- To Invoice -->
-			<div class="card secondary">
+			<div class="card purple">
 				<div class="card-header">
 					<h3>Invoice</h3>
 					
@@ -85,7 +85,7 @@
 			</div>
 
 			<!-- Balance -->
-			<div class="card info">
+			<div class="card teal">
 				<div class="card-header">
 					<h3>Ballance</h3>
 					
@@ -102,12 +102,12 @@
 		margin-bottom: 3rem;
 	}
 
-	.period-info {
+	.period-teal {
 		text-align: center;
 		margin-bottom: 2rem;
 	}
 
-	.period-info h2 {
+	.period-teal h2 {
 		color: #333;
 		font-size: 1.5rem;
 		font-weight: 500;
@@ -152,9 +152,11 @@
 
 	.card-header h3 {
 		margin: 0;
-		font-size: 1rem;
-		font-weight: 600;
-		color: #555;
+		font-family: "regular", sans-serif;
+		font-size: 1.4rem;
+		line-height: 1;
+		/* color: var(--color-slate-700); */
+		letter-spacing: 0.05rem;
 	}
 
 
@@ -174,20 +176,20 @@
 	}
 
 	/* Card color themes */
-	.card.primary {
-		border-left-color: #007bff;
+	.card.blue {
+		border-left-color: #3c9aff;
 	}
 
-	.card.secondary {
-		border-left-color: #6c757d;
+	.card.purple {
+		border-left-color: #c686ff;
 	}
 
-	.card.info {
+	.card.teal {
 		border-left-color: #17a2b8;
 	}
 
 	.card.success {
-		border-left-color: #28a745;
+		border-left-color: #61e47f;
 	}
 
 	.card.warning {
@@ -195,7 +197,7 @@
 	}
 
 	.card.total {
-		border-left-color: #dc3545;
+		border-left-color: #ef5766;
 		background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
 	}
 

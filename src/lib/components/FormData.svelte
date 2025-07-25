@@ -67,7 +67,7 @@
 </script>
 
 <div class="main-container">
-	<h1>Data Entry Form</h1>
+	<h1>New Record Form</h1>
 
 	<form
 		method="POST"
@@ -243,9 +243,11 @@
 	}
 
 	h1 {
-		text-align: center;
-		color: #333;
+		/* text-align: center; */
+		/* color: #333; */
+		/* background: #f8f9fa; */
 		margin-bottom: 2rem;
+		border-bottom: 1px solid #dee2e6;
 	}
 
 	.date-section {
@@ -288,20 +290,20 @@
 		cursor: not-allowed;
 	}
 
-	.date-display {
+	/* .date-display {
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
 		flex: 1;
-	}
+	} */
 
-	.date-text {
+	/* .date-text {
 		font-weight: 500;
 		color: #333;
 		font-size: 1.1rem;
-	}
+	} */
 
-	.today-badge {
+	/* .today-badge {
 		background: #28a745;
 		color: white;
 		padding: 0.25rem 0.5rem;
@@ -310,7 +312,7 @@
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
-	}
+	} */
 
 	.form-grid {
 		display: grid;
@@ -351,7 +353,7 @@
 
 	label {
 		font-weight: 500;
-		color: #333;
+		/* color: #333; */
 	}
 
 	input[type='number'] {

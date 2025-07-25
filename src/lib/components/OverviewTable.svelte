@@ -124,7 +124,7 @@
 				</tbody>
 				<!-- Totals Row -->
 				<tfoot>
-					<tr class="totals-row">
+					<tr class="footer-row">
 						<!-- <td class="id-cell"><strong>TOTAL</strong></td> -->
 						<td class="date-cell bold">TOTAL</td>
 						<td class="number-cell"><strong>{totals.loaded}</strong></td>
@@ -136,10 +136,10 @@
 						<td class="number-cell" class:expense={totals.missplaced > 0}
 							><strong>{totals.missplaced || 0}</strong></td
 						>
-						<td class="number-cell success"><strong>{totals.delivered || 0}</strong></td>
-						<td class="currency-cell expense"><strong>{formatCurrency(totals.expense)}</strong></td>
-						<td class="currency-cell"><strong>{formatCurrency(totals.deliveryValue)}</strong></td>
-						<td class="currency-cell"><strong>{formatCurrency(totals.collectedValue)}</strong></td>
+						<td class="number-cell green"><strong>{totals.delivered || 0}</strong></td>
+						<td class="currency-cell red"><strong>{formatCurrency(totals.expense)}</strong></td>
+						<td class="currency-cell blue"><strong>{formatCurrency(totals.deliveryValue)}</strong></td>
+						<td class="currency-cell blue"><strong>{formatCurrency(totals.collectedValue)}</strong></td>
 						<td class="total-cell"><strong>{formatCurrency(totals.totalValue)}</strong></td>
 						<td class="image-cell">—</td>
 					</tr>
@@ -187,13 +187,14 @@
 	.table-section {
 		background: white;
 		border-radius: 12px;
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		/* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
 		overflow: hidden;
+		border: 1px solid #dee2e6;
 	}
 
 	.table-header {
 		padding: 1.5rem;
-		border-bottom: 1px solid #dee2e6;
+		border-bottom: 1px solid #ff7f7f;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
@@ -252,11 +253,12 @@
 		text-align: center;
 		font-weight: 600;
 		color: #333;
-		border-bottom: 2px solid #dee2e6;
+		border-bottom: 1px solid #ff7f7f;
 		background: #f8f9fa;
 		position: sticky;
 		top: 0;
 		z-index: 10;
+		border-inline: 1px solid #dee2e6;
 	}
 
 	.overview-table td {
@@ -268,15 +270,8 @@
 
 	.overview-table tbody tr:hover:not(.totals-row) {
 		background-color: #f8f9fa;
-	}
-
-	.totals-row {
-		background: #e9ecef !important;
-		border-top: 2px solid #adb5bd;
-	}
-
-	.totals-row td {
-		border-bottom: none;
+		/* border-block: 1px solid red; */
+	
 	}
 
 	/* .id-cell {
@@ -329,34 +324,50 @@
 		font-weight: 600;
 	}
 	.expense {
-		
 		font-weight: 500;
 		color: #c0392b;
 		/* background: #f8d7da; */
 		/* width: 100px; */
 	}
 
-	.success {
-		
+	/* .success {
 		font-weight: 500;
-	
+
 		background: #e8ffed;
-		
-	}
+	} */
 	.total-cell {
 		text-align: right;
-	
-		border-inline: 2px solid #12171d;
+		border-inline: 1px solid #dee2e6;
 		
 	}
+	.footer-row {
+		background: #e9ecef !important;
+		border-top: 2px solid #ff7f7f;
+		& td{
+			border-inline: 1px solid #bec1c5;
+			font-weight: 600;
+			color: #273340;
+			border-bottom: none;
+		}
+		
+		& .total-cell {
+			font-weight: 600;
+			color: #323235;
+			background: #ebbffa;
+			
+		}
+	}
 
+	.footer-row td {
+		border-bottom: none;
+	}
 	.image-cell {
 		text-align: center;
 		/* width: 90px; */
 	}
 
 	.image-btn {
-		background: #28a745;
+		background: #317fd3;
 		color: white;
 		border: none;
 		border-radius: 4px;
@@ -367,7 +378,7 @@
 	}
 
 	.image-btn:hover {
-		background: #218838;
+		background: #2869ae;
 		transform: translateY(-1px);
 	}
 

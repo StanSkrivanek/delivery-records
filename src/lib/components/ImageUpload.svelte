@@ -162,11 +162,14 @@
 		align-items: center;
 		gap: 1rem;
 		width: 100%;
+		padding:12px;
 	}
-
+	
 	.preview-image {
-		max-width: 200px;
-		max-height: 200px;
+		/* width: 100%; */
+		height: auto;
+		max-width: 160px;
+		max-height: 160px;
 		object-fit: cover;
 		border-radius: 4px;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -190,8 +193,8 @@
 
 	.remove-btn {
 		position: absolute;
-		top: -8px;
-		right: -8px;
+		top: 8px;
+		right: 16px;
 		background: #dc3545;
 		color: white;
 		border: none;

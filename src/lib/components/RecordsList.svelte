@@ -223,7 +223,7 @@
 								{#if record.image_path}
 									<button
 										type="button"
-										class="image-btn"
+										class="btn blue"
 										onclick={() => openImageModal(record.image_path, record.id)}
 										title="View image"
 									>
@@ -234,11 +234,11 @@
 								{/if}
 							</td>
 							<td>
-								<button class="image-btn" onclick={() => openEditModal(record)}>Edit</button>
+								<button class="btn green" onclick={() => openEditModal(record)}>Edit</button>
 							</td>
 							<td>
 								<button
-									class="image-btn btn-danger"
+									class="btn red"
 									onclick={() => record.id !== undefined && openDeleteModal(record.id)}
 									title="Delete record"
 								>
@@ -264,8 +264,8 @@
 				<p>Are you sure you want to delete this record?</p>
 			</div>
 			<div class="modal-footer">
-				<button class="btn-secondary" onclick={closeDeleteModal}>Cancel</button>
-				<button class="btn-primary" onclick={confirmDeleteRecord}>Delete</button>
+				<button class="btn red" onclick={closeDeleteModal}>Cancel</button>
+				<button class="btn blue" onclick={confirmDeleteRecord}>Delete</button>
 			</div>
 		</dialog>
 	</div>
@@ -278,7 +278,7 @@
 		<dialog class="modal-container" onclick={(e) => e.stopPropagation()}>
 			<div class="modal-header">
 				<h3>Edit Record | {formatEntryDate(editRecord.entry_date)}</h3>
-				<button type="button" class="close-btn" onclick={closeEditModal} title="Close (Esc)"
+				<button type="button" class="btn red" onclick={closeEditModal} title="Close (Esc)"
 					>✕</button
 				>
 			</div>
@@ -353,8 +353,8 @@
 					</div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn-secondary" onclick={closeEditModal}>Cancel</button>
-					<button type="submit" class="btn-primary">Save Changes</button>
+					<button type="button" class="btn red" onclick={closeEditModal}>Cancel</button>
+					<button type="submit" class="btn blue">Save Changes</button>
 				</div>
 			</form>
 		</dialog>
@@ -405,7 +405,7 @@
 		align-items: center;
 		margin-bottom: 2rem;
 		& h2 {
-			color: #333;
+			/* justify-content: ; */
 			margin-bottom: 1.5rem;
 			font-size: 3rem;
 		}
@@ -413,7 +413,7 @@
 
 	.no-records {
 		text-align: center;
-		color: #666;
+		/* color: #666; */
 		font-style: italic;
 		padding: 2rem;
 	}
@@ -440,7 +440,7 @@
 		padding: 1rem 0.75rem;
 		text-align: left;
 		font-weight: 600;
-		color: #333;
+		/* color: #333; */
 		border-bottom: 2px solid #dee2e6;
 		position: sticky;
 		top: 0;
@@ -463,7 +463,7 @@
 	}
 
 	.date-cell {
-		color: #666;
+		/* color: #666; */
 		font-size: 0.9rem;
 		font-weight: 500;
 	}
@@ -477,9 +477,9 @@
 		text-align: center;
 	}
 
-	.image-btn {
-		background: #34d393;
-		color: black;
+	.btn {
+		/* background: #719ffb; */
+		/* color: black; */
 		border: none;
 		border-radius: 4px;
 		padding: 0.5rem 0.75rem;
@@ -491,19 +491,19 @@
 		gap: 0.25rem;
 	}
 
-	.image-btn:hover {
-		background: #3fb586;
+	.btn:hover {
+		/* background: #3f5bb5; */
 		color: white;
 		transform: translateY(-1px);
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 	}
 
-	.image-btn:active {
+	.btn:active {
 		transform: translateY(0);
 	}
 
 	.no-image {
-		color: #999;
+		color: var(--color-slate-400);
 		font-style: italic;
 		font-size: 0.8rem;
 	}
@@ -570,7 +570,7 @@
 
 	.modal-header h3 {
 		margin: 0;
-		color: #333;
+		/* color: #333; */
 		font-size: 1.25rem;
 	}
 
@@ -579,7 +579,7 @@
 		border: none;
 		font-size: 1.5rem;
 		cursor: pointer;
-		color: #666;
+		/* color: #666; */
 		width: 32px;
 		height: 32px;
 		display: flex;
@@ -591,7 +591,7 @@
 
 	.close-btn:hover {
 		background: #f8f9fa;
-		color: #333;
+		/* color: #333; */
 	}
 
 	.modal-body {
@@ -634,7 +634,7 @@
 	}
 
 	.btn-primary {
-		background: #007bff;
+		/* background: #007bff; */
 		color: white;
 		border: none;
 		border-radius: 4px;
@@ -647,7 +647,7 @@
 	}
 
 	.btn-primary:hover {
-		background: #0069d9;
+		/* background: #0069d9; */
 		transform: translateY(-1px);
 	}
 
@@ -757,6 +757,25 @@
 		background: #c82333;
 	}
 
+	.blue {
+			background: var(--color-blue-500);
+			color: white;
+		}
+		.purple {
+			background: #c686ff;
+			color: white;
+		}
+		.green {
+			background: var(--color-emerald-500);
+			color: white;
+		}
+
+		.red {
+			background: var(--color-red-500);
+			color: white;
+		}
+
+
 	.new-image-text {
 		margin: 0;
 		font-size: 0.85rem;
@@ -783,11 +802,11 @@
 			padding: 0.5rem 0.4rem;
 		}
 
-		.image-btn {
+		.btn {
 			font-size: 0.7rem;
 			padding: 0.4rem 0.6rem;
 		}
-
+	
 		/* .edit-modal {
 			width: 90vw;
 			margin: 1rem;

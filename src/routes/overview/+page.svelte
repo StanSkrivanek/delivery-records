@@ -125,9 +125,9 @@
 				</select>
 			</div>
 
-			<div class="filter-info">
+			<!-- <div class="filter-info">
 				<small>{filteredRecords.length} records found</small>
-			</div>
+			</div> -->
 
 			<button type="button" class="refresh-btn" onclick={refreshData} title="Refresh data">
 				Refresh
