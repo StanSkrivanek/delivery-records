@@ -70,7 +70,6 @@ This homepage gives users both an immediate view of current status and easy acce
 
 ## Features to Implement
 
-- [ ] Optimize Images on upload
 - [ ] create custom dropdown for year, month, day
 - [ ] Create a custom date picker for selecting delivery dates.
 - [ ] Create automatic backup of db (on install create a backup in different place like cloud storage or local storage and update it every 24 hours)
@@ -82,6 +81,7 @@ This homepage gives users both an immediate view of current status and easy acce
 - [ ] Implement charts to visualize data trends over time.
 - [ ] Images have timestamps, on export convert timestamp to date format DD-MM-YYYY
 
+- [ ] Optimize Images on upload (find some aggressive Client side compression otherwise use SQUOOSH web app)
 OPTIONS:
 
 - Implement a search feature to allow users to find specific records quickly.
