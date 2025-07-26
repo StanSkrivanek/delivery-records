@@ -1,140 +1,131 @@
-import { RecordService } from '$lib/db.server';
-import { createImagePath, saveImageFile } from '$lib/utils';
-import { fail } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
+import { RecordService as rs } from '$lib/db.server';
+// import { createImagePath, saveImageFile } from '$lib/utils';
+// import { fail } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
-	const records = await RecordService.getAllRecords();
+	const records = await rs.getAllRecords();
+    
+    const monthly = await rs.getRecordsByCurrentMonth();
 
-	// Extract unique years and months from the data
-	const yearsSet = new Set<number>();
-	const monthsSet = new Set<number>();
+  
+return {
+        records,
+        monthly
+}
 
-	records.forEach((record) => {
-		if (record.entry_date || record.entry_date === null) {
-			// Use entry_date if available, fallback to date_created for older records
-			const dateString = record.entry_date || record.created_at;
-			if (typeof dateString === 'string') {
-				const date = new Date(dateString);
-				yearsSet.add(date.getFullYear());
-				monthsSet.add(date.getMonth() + 1); // getMonth() returns 0-11, so add 1
-			}
-		}
-	});
 
-	// Convert sets to sorted arrays
-	const availableYears = Array.from(yearsSet).sort((a, b) => b - a); // Newest first
-	const availableMonths = Array.from(monthsSet).sort((a, b) => a - b); // January to December
 
-	// Get current date for defaults
-	const now = new Date();
-	const currentYear = now.getFullYear();
-	const currentMonth = now.getMonth() + 1;
 
-	// Set default year and month
-	const defaultYear = availableYears.includes(currentYear)
-		? currentYear
-		: availableYears[0] || currentYear;
-	const defaultMonth = availableMonths.includes(currentMonth)
-		? currentMonth
-		: availableMonths[0] || currentMonth;
 
-	return {
-		records,
-		availableYears,
-		availableMonths,
-		defaultYear,
-		defaultMonth
-	};
-};
 
-export const actions: Actions = {
-	create: async ({ request }) => {
-		try {
-			const formData = await request.formData();
+// 	// Extract unique years and months from the data
+// 	const yearsSet = new Set<number>();
+// 	const monthsSet = new Set<number>();
 
-			const loaded = Number(formData.get('loaded'));
-			const collected = Number(formData.get('collected'));
-			const cutters = Number(formData.get('cutters'));
-			const returned = Number(formData.get('returned'));
-			const missplaced = Number(formData.get('missplaced')) || 0;
-			const expense = Number(formData.get('expense')) || 0; // Default to 0 if not provided
-			const selectedDate = formData.get('selectedDate') as string;
-			const imageFile = formData.get('image') as File | null;
+// 	records.forEach((record) => {
+// 		if (record.entry_date || record.entry_date === null) {
+// 			// Use entry_date if available, fallback to date_created for older records
+// 			const dateString = record.entry_date || record.created_at;
+// 			if (typeof dateString === 'string') {
+// 				const date = new Date(dateString);
+// 				yearsSet.add(date.getFullYear());
+// 				monthsSet.add(date.getMonth() + 1); // getMonth() returns 0-11, so add 1
+// 			}
+// 		}
+// 	});
 
-			// Validate required fields
-			if (isNaN(loaded) || isNaN(collected) || isNaN(cutters) || isNaN(returned)) {
-				return fail(400, { error: 'All numeric fields are required' });
-			}
+// 	// Convert sets to sorted arrays
+// 	const availableYears = Array.from(yearsSet).sort((a, b) => b - a); // Newest first
+// 	const availableMonths = Array.from(monthsSet).sort((a, b) => a - b); // January to December
 
-			if (loaded < 0 || collected < 0 || cutters < 0 || returned < 0) {
-				return fail(400, { error: 'All values must be non-negative' });
-			}
+// 	// Get current date for defaults
+// 	const now = new Date();
+// 	const currentYear = now.getFullYear();
+// 	const currentMonth = now.getMonth() + 1;
 
-			// Validate date
-			if (!selectedDate) {
-				return fail(400, { error: 'Entry date is required' });
-			}
+// 	// Set default year and month
+// 	const defaultYear = availableYears.includes(currentYear)
+// 		? currentYear
+// 		: availableYears[0] || currentYear;
+// 	const defaultMonth = availableMonths.includes(currentMonth)
+// 		? currentMonth
+// 		: availableMonths[0] || currentMonth;
 
-			// Validate date format and that it's not in the future
-			const entryDate = new Date(selectedDate);
-			const today = new Date();
-			today.setHours(23, 59, 59, 999); // Set to end of today
+// 	return {
+// 		records,
+// 		availableYears,
+// 		availableMonths,
+// 		defaultYear,
+// 		defaultMonth
+// 	};
+// };
 
-			if (isNaN(entryDate.getTime())) {
-				return fail(400, { error: 'Invalid date format' });
-			}
+// export const actions: Actions = {
+// 	create: async ({ request }) => {
+// 		try {
+// 			const formData = await request.formData();
 
-			if (entryDate > today) {
-				return fail(400, { error: 'Entry date cannot be in the future' });
-			}
+// 			const loaded = Number(formData.get('loaded'));
+// 			const collected = Number(formData.get('collected'));
+// 			const cutters = Number(formData.get('cutters'));
+// 			const returned = Number(formData.get('returned'));
+// 			const missplaced = Number(formData.get('missplaced')) || 0;
+// 			const expense = Number(formData.get('expense')) || 0; // Default to 0 if not provided
+// 			const selectedDate = formData.get('selectedDate') as string;
+// 			// const imageFile = formData.get('image') as File | null;
 
-			// Check if date is too far in the past (optional - adjust as needed)
-			const oneYearAgo = new Date();
-			oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+// 			// Validate required fields
+// 			if (isNaN(loaded) || isNaN(collected) || isNaN(cutters) || isNaN(returned)) {
+// 				return fail(400, { error: 'All numeric fields are required' });
+// 			}
 
-			if (entryDate < oneYearAgo) {
-				return fail(400, { error: 'Entry date cannot be more than one year ago' });
-			}
+// 			if (loaded < 0 || collected < 0 || cutters < 0 || returned < 0) {
+// 				return fail(400, { error: 'All values must be non-negative' });
+// 			}
 
-			let imagePath: string | undefined;
+// 			// Validate date
+// 			if (!selectedDate) {
+// 				return fail(400, { error: 'Entry date is required' });
+// 			}
 
-			// Handle image upload if provided
-			if (imageFile && imageFile.size > 0) {
-				if (!imageFile.type.startsWith('image/')) {
-					return fail(400, { error: 'Please upload a valid image file' });
-				}
+// 			// Validate date format and that it's not in the future
+// 			const entryDate = new Date(selectedDate);
+// 			const today = new Date();
+// 			today.setHours(23, 59, 59, 999); // Set to end of today
 
-				if (imageFile.size > 5 * 1024 * 1024) {
-					// 5MB limit
-					return fail(400, { error: 'Image file must be smaller than 5MB' });
-				}
+// 			if (isNaN(entryDate.getTime())) {
+// 				return fail(400, { error: 'Invalid date format' });
+// 			}
 
-				try {
-					imagePath = createImagePath(imageFile);
-					await saveImageFile(imageFile, imagePath);
-				} catch (error) {
-					console.error('Failed to save image:', error);
-					return fail(500, { error: 'Failed to save image' });
-				}
-			}
+// 			if (entryDate > today) {
+// 				return fail(400, { error: 'Entry date cannot be in the future' });
+// 			}
 
-			// Save to database with custom date
-			await RecordService.createRecord({
-				loaded,
-				collected,
-				cutters,
-				returned,
-				missplaced,
-				expense,
-				image_path: imagePath,
-				entry_date: selectedDate
-			});
+// 			// Check if date is too far in the past (optional - adjust as needed)
+// 			const oneYearAgo = new Date();
+// 			oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
-			return { success: true };
-		} catch (error) {
-			console.error('Form submission error:', error);
-			return fail(500, { error: 'An unexpected error occurred' });
-		}
-	}
+// 			if (entryDate < oneYearAgo) {
+// 				return fail(400, { error: 'Entry date cannot be more than one year ago' });
+// 			}
+
+		
+// 			// Save to database with custom date
+// 			await RecordService.createRecord({
+// 				loaded,
+// 				collected,
+// 				cutters,
+// 				returned,
+// 				missplaced,
+// 				expense,
+// 				entry_date: selectedDate
+// 			});
+
+// 			return { success: true };
+// 		} catch (error) {
+// 			console.error('Form submission error:', error);
+// 			return fail(500, { error: 'An unexpected error occurred' });
+// 		}
+// 	}
 };

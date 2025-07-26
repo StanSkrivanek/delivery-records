@@ -1,5 +1,5 @@
-import Database from 'better-sqlite3';
 import { dev } from '$app/environment';
+import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
 
@@ -66,7 +66,6 @@ export class RecordService {
 		return stmt.get(id) as Record | null;
 	}
 
-
 	static async updateRecord(
 		id: number,
 		record: Partial<Omit<Record, 'id' | 'created_at'>>
@@ -116,6 +115,15 @@ export class RecordService {
       ORDER BY entry_date DESC, created_at DESC
     `);
 		return stmt.all(startDate, endDate) as Record[];
+	}
+
+	//  get all records for current month
+	static async getRecordsByCurrentMonth() {
+		const stmt = db.prepare(`
+	  SELECT * FROM records
+	  WHERE strftime('%Y-%m', entry_date) = strftime('%Y-%m', 'now')
+	`);
+		return stmt.all() as Record[];
 	}
 
 	static async getRecordsByMonth(year: number, month: number): Promise<Record[]> {

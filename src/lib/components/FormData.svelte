@@ -67,7 +67,7 @@
 </script>
 
 <div class="main-container">
-	<h1>New Record Form</h1>
+	<h1>Add New Record</h1>
 
 	<form
 		method="POST"
