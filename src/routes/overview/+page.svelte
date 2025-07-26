@@ -199,19 +199,19 @@
 		box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 	}
 
-	.filter-info {
+	/* .filter-info {
 		display: flex;
 		align-items: center;
 		padding: 0.5rem 1rem;
 		background: #f8f9fa;
 		border-radius: 20px;
 		border: 1px solid #dee2e6;
-	}
+	} */
 
-	.filter-info small {
+	/* .filter-info small {
 		color: #666;
 		font-weight: 500;
-	}
+	} */
 
 	.refresh-btn {
 		background: #17a2b8;

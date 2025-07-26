@@ -30,7 +30,7 @@
 
 		// Chart appearance
 		width = '100%' as number | string,
-		height = "auto" as number | string,
+		height = 'auto' as number | string,
 		padding = 60,
 
 		// Interactivity
@@ -137,7 +137,7 @@
 			if (typeof height === 'string' && (height.includes('%') || height === '100%')) {
 				return containerHeight;
 			}
-			console.log("HEIGHT",getNumericValue(height));
+			console.log('HEIGHT', getNumericValue(height));
 			return getNumericValue(height);
 		})()
 	);
@@ -332,9 +332,7 @@
 			barHeights.forEach((heights, groupIndex) => {
 				heights.forEach((height, metricIndex) => {
 					// Remove setTimeout for the last group to avoid choppy ending
-					const isLast =
-						groupIndex === barHeights.length - 1 &&
-						metricIndex === heights.length - 1;
+					const isLast = groupIndex === barHeights.length - 1 && metricIndex === heights.length - 1;
 					if (isLast) {
 						animatedHeights[groupIndex][metricIndex].target = height;
 					} else {
@@ -392,11 +390,11 @@
 		height
 	)}; --legend-gap: {legendGap}px; --legend-height: {legendHeight}px; --title-height: {titleHeight}px;"
 >
-{#if title}
-	<div class="chart-title">
-		<h3>{title}</h3>
-	</div>
-{/if}
+	{#if title}
+		<div class="chart-title">
+			<h3>{title}</h3>
+		</div>
+	{/if}
 	<!-- Chart Title -->
 
 	<svg
@@ -445,7 +443,7 @@
 						text-anchor="middle"
 						class="value-label"
 						fill="#333"
-						font-size="9"
+						font-size="16"
 						font-weight="500"
 					>
 						{valueFormatter(value)}
@@ -463,7 +461,7 @@
 					text-anchor="middle"
 					class="x-label"
 					fill="#666"
-					font-size="10"
+					font-size="14"
 					font-weight="500"
 				>
 					{item.xLabel}
@@ -492,7 +490,7 @@
 				text-anchor="end"
 				class="axis-label"
 				fill="#9ca3af"
-				font-size="10"
+				font-size="14"
 			>
 				{valueFormatter(value)}
 			</text>
@@ -524,7 +522,7 @@
 				text-anchor="middle"
 				class="axis-title"
 				fill="#4b5563"
-				font-size="12"
+				font-size="14"
 				font-weight="500"
 			>
 				{xAxisLabel}
@@ -583,6 +581,7 @@
 		border: 1px solid #e5e7eb;
 		border-radius: 8px;
 		padding: 16px;
+		margin-bottom: 2rem;
 	}
 
 	.chart-title {

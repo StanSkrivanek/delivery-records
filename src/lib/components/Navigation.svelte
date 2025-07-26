@@ -1,6 +1,6 @@
 <nav>
 	<a href="/">Home</a>
-	<a href="/records">New Record</a>
+	<a href="/records">AED Record</a>
 	<a href="/overview">Overview</a>
 	<!-- <a href="/settings">Settings</a> -->
     <a href="/demos">Demos</a>
