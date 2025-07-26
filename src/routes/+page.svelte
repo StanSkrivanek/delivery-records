@@ -22,10 +22,10 @@
 	data={monthly}
 	xKey="date"
 	yKeys={['delivery', 'collections', 'fails']}
-	metrics={[{key: "delivery", name: "Delivery", color: "#4f46e5"}, {key: "collections", name: "Collections", color: "#10b981"}, {key: "fails", name: "Fails", color: "#ef4444"}]}
+	height="400"
 	fillMissingDates={false}
-
 />
+
 <!-- 	yLabels={['Delivery', 'Collections', 'Fails']}
 	xLabel="Date"
 	xType="time"
@@ -50,4 +50,3 @@
 	tooltipValueFormat={(d) => d.toLocaleString()}
 	tooltipLabel="Date"		
 	fillMissingDates={true} -->
-	 

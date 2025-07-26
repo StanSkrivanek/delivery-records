@@ -56,7 +56,7 @@
 		} as { [key: string]: string },
 		
 		width = '100%' as number | string,
-		height = 400 as number | string,
+		height = "auto" as number | string,
 		padding = 60,
 		showTooltip = true,
 		animate = true,

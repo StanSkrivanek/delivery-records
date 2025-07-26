@@ -22,9 +22,11 @@
 		data = [] as DataPoint[],
 		xKey = 'date' as string,
 		yKeys = ['value1', 'value2', 'value3'] as string[],
-
-		// Metric configuration - can override yKeys if provided
-		metrics = [] as MetricConfig[],
+		// Optional metrics configuration
+		// metrics={[{key: "delivery", name: "Delivery", color: "#4f46e5"}, {key: "collections", name: "Collections", color: "#10b981"}, {key: "fails", name: "Fails", color: "#ef4444"}]} -->
+		// If provided, this will override yKeys
+		// If not provided, it will auto-generate based on yKeys
+		metrics = [] as MetricConfig[], // Metric configuration - can override yKeys if provided
 
 		// Chart appearance
 		width = '100%' as number | string,
@@ -135,6 +137,7 @@
 			if (typeof height === 'string' && (height.includes('%') || height === '100%')) {
 				return containerHeight;
 			}
+			console.log("HEIGHT",getNumericValue(height));
 			return getNumericValue(height);
 		})()
 	);
@@ -389,12 +392,12 @@
 		height
 	)}; --legend-gap: {legendGap}px; --legend-height: {legendHeight}px; --title-height: {titleHeight}px;"
 >
+{#if title}
+	<div class="chart-title">
+		<h3>{title}</h3>
+	</div>
+{/if}
 	<!-- Chart Title -->
-	{#if title}
-		<div class="chart-title">
-			<h3>{title}</h3>
-		</div>
-	{/if}
 
 	<svg
 		width="100%"
