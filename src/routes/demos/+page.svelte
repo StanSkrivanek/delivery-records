@@ -1,5 +1,5 @@
 <script lang="ts">
-	import UniversalChart from '$lib/components/charts/UniversalChart.svelte';
+	import UniversalChart from '$lib/components/charts/BarGoups.svelte';
 
 	// Example 1: Sales data by month
 	let salesData = $state([

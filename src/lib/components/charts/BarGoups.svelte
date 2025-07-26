@@ -178,7 +178,9 @@
 		});
 
 		let allXValues: any[] = [];
-
+		// Determine x values based on fillMissingDates and dateRange
+		// if true it will generate a complete date range
+		// if false it will use existing x values
 		if (fillMissingDates && typeof data[0]?.[xKey] === 'string') {
 			// Handle date-based data
 			if (dateRange) {
@@ -516,7 +518,7 @@
 	.chart-container {
 		position: relative;
 		display: inline-block;
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		font-family: "regular",-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 		box-sizing: border-box;
 		background: #fefefe;
 		border: 1px solid #e5e7eb;
@@ -535,13 +537,14 @@
 
 	.chart-title h3 {
 		margin: 0;
-		font-size: 16px;
+		font-size: 24px;
 		font-weight: 600;
-		color: #1f2937;
+		/* color: #1f2937; */
 	}
 
 	.chart-container svg {
 		width: 100%;
+		height: 100%;
 		display: block;
 		overflow: visible;
 	}
@@ -563,6 +566,7 @@
 	.legend {
 		display: flex;
 		justify-content: center;
+		align-items: center;
 		flex-wrap: wrap;
 		gap: 20px;
 		margin-top: var(--legend-gap);
@@ -571,7 +575,6 @@
 		border-radius: 6px;
 		border: 1px solid #e5e7eb;
 		height: calc(var(--legend-height, 0px) - 12px);
-		align-items: center;
 	}
 
 	.legend-item {
