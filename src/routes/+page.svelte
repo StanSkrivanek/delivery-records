@@ -22,8 +22,8 @@
 	data={monthly}
 	xKey="date"
 	yKeys={['delivery', 'collections', 'fails']}
-	
-	 fillMissingDates={false} 
+	metrics={[{key: "delivery", name: "Delivery", color: "#4f46e5"}, {key: "collections", name: "Collections", color: "#10b981"}, {key: "fails", name: "Fails", color: "#ef4444"}]}
+	fillMissingDates={false}
 
 />
 <!-- 	yLabels={['Delivery', 'Collections', 'Fails']}

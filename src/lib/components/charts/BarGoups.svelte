@@ -22,42 +22,50 @@
 		data = [] as DataPoint[],
 		xKey = 'date' as string,
 		yKeys = ['value1', 'value2', 'value3'] as string[],
-		
+
 		// Metric configuration - can override yKeys if provided
 		metrics = [] as MetricConfig[],
-		
+
 		// Chart appearance
 		width = '100%' as number | string,
 		height = 400 as number | string,
 		padding = 60,
-		
+
 		// Interactivity
 		showTooltip = true,
 		animate = true,
 		showLegend = true,
 		showValues = false,
-		
+
 		// Spacing
 		groupSpacing = 4,
 		barSpacing = 2,
 		legendGap = 10,
-		
+
 		// Customization
 		title = '' as string,
 		xAxisLabel = '' as string,
 		yAxisLabel = '' as string,
-		
+
 		// Data processing options
 		fillMissingDates = false, // For date-based charts
-		dateRange = null as { start: string, end: string } | null, // For date ranges
-		
+		dateRange = null as { start: string; end: string } | null, // For date ranges
+
 		// Number formatting
 		valueFormatter = (value: number) => value.toLocaleString(),
-		
+
 		// Color scheme
 		defaultColors = [
-			'#10b981', '#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6',
-			'#06b6d4', '#84cc16', '#f97316', '#ec4899', '#6366f1'
+			'#10b981',
+			'#3b82f6',
+			'#ef4444',
+			'#f59e0b',
+			'#8b5cf6',
+			'#06b6d4',
+			'#84cc16',
+			'#f97316',
+			'#ec4899',
+			'#6366f1'
 		] as string[]
 	} = $props();
 
@@ -83,7 +91,7 @@
 	// Helper functions to handle responsive dimensions
 	const getNumericValue = (value: number | string): number => {
 		if (typeof value === 'number') return value;
-		
+
 		if (typeof value === 'string') {
 			if (value.includes('vw')) {
 				const num = parseFloat(value);
@@ -108,51 +116,57 @@
 			const parsed = parseFloat(value);
 			return isNaN(parsed) ? 800 : parsed;
 		}
-		
+
 		return 800;
 	};
 
 	// Get actual dimensions
-	const actualWidth = $derived((() => {
-		if (typeof width === 'string' && (width.includes('%') || width === '100%')) {
-			return containerWidth;
-		}
-		return getNumericValue(width);
-	})());
+	const actualWidth = $derived(
+		(() => {
+			if (typeof width === 'string' && (width.includes('%') || width === '100%')) {
+				return containerWidth;
+			}
+			return getNumericValue(width);
+		})()
+	);
 
-	const actualHeight = $derived((() => {
-		if (typeof height === 'string' && (height.includes('%') || height === '100%')) {
-			return containerHeight;
-		}
-		return getNumericValue(height);
-	})());
+	const actualHeight = $derived(
+		(() => {
+			if (typeof height === 'string' && (height.includes('%') || height === '100%')) {
+				return containerHeight;
+			}
+			return getNumericValue(height);
+		})()
+	);
 
 	// Process metrics configuration
-	const processedMetrics = $derived((() => {
-		if (metrics.length > 0) {
-			return metrics;
-		}
-		
-		// Auto-generate metrics from yKeys
-		return yKeys.map((key, index) => ({
-			key,
-			name: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
-			color: defaultColors[index % defaultColors.length]
-		}));
-	})());
+	const processedMetrics = $derived(
+		(() => {
+			if (metrics.length > 0) {
+				return metrics;
+			}
+
+			// Auto-generate metrics from yKeys
+			return yKeys.map((key, index) => ({
+				key,
+				name: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
+				color: defaultColors[index % defaultColors.length]
+			}));
+		})()
+	);
 
 	// Helper function to generate date range
 	const generateDateRange = (start: string, end: string): string[] => {
 		const dates: string[] = [];
 		const startDate = new Date(start);
 		const endDate = new Date(end);
-		
+
 		const currentDate = new Date(startDate);
 		while (currentDate <= endDate) {
 			dates.push(currentDate.toISOString().split('T')[0]);
 			currentDate.setDate(currentDate.getDate() + 1);
 		}
-		
+
 		return dates;
 	};
 
@@ -160,7 +174,7 @@
 	const getAllDatesInMonth = (yearMonth: string): string[] => {
 		const [year, month] = yearMonth.split('-').map(Number);
 		const daysInMonth = new Date(year, month, 0).getDate();
-		
+
 		const dates: string[] = [];
 		for (let day = 1; day <= daysInMonth; day++) {
 			const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
@@ -170,78 +184,83 @@
 	};
 
 	// Process data for charting
-	const processedData = $derived((() => {
-		// Create a map of existing data
-		const dataMap = new Map<any, DataPoint>();
-		data.forEach(item => {
-			dataMap.set(item[xKey], item);
-		});
-
-		let allXValues: any[] = [];
-		// Determine x values based on fillMissingDates and dateRange
-		// if true it will generate a complete date range
-		// if false it will use existing x values
-		if (fillMissingDates && typeof data[0]?.[xKey] === 'string') {
-			// Handle date-based data
-			if (dateRange) {
-				allXValues = generateDateRange(dateRange.start, dateRange.end);
-			} else {
-				// Auto-detect month from first date
-				const firstDate = data[0]?.[xKey];
-				if (firstDate && firstDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-					const yearMonth = firstDate.slice(0, 7);
-					allXValues = getAllDatesInMonth(yearMonth);
-				} else {
-					allXValues = [...new Set(data.map(item => item[xKey]))].sort();
-				}
-			}
-		} else {
-			// Use existing data x values
-			allXValues = [...new Set(data.map(item => item[xKey]))];
-			
-			// Try to sort if possible
-			try {
-				allXValues.sort((a, b) => {
-					if (typeof a === 'number' && typeof b === 'number') return a - b;
-					if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
-					return 0;
-				});
-			} catch (e) {
-				// Keep original order if sorting fails
-			}
-		}
-
-		// Process each x value
-		return allXValues.map(xValue => {
-			const existingData = dataMap.get(xValue);
-			const yValues: { [key: string]: number } = {};
-			
-			// Fill y values
-			processedMetrics.forEach(metric => {
-				yValues[metric.key] = existingData?.[metric.key] || 0;
+	const processedData = $derived(
+		(() => {
+			// Create a map of existing data
+			const dataMap = new Map<any, DataPoint>();
+			data.forEach((item) => {
+				dataMap.set(item[xKey], item);
 			});
 
-			// Generate x label
-			let xLabel = String(xValue);
-			if (typeof xValue === 'string' && xValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
-				// Format date
-				const date = new Date(xValue);
-				xLabel = date.getDate().toString();
+			let allXValues: any[] = [];
+			// Determine x values based on fillMissingDates and dateRange
+			// if true it will generate a complete date range
+			// if false it will use existing x values
+			if (fillMissingDates && typeof data[0]?.[xKey] === 'string') {
+				// Handle date-based data
+				if (dateRange) {
+					allXValues = generateDateRange(dateRange.start, dateRange.end);
+				} else {
+					// Auto-detect month from first date
+					const firstDate = data[0]?.[xKey];
+					if (firstDate && firstDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+						const yearMonth = firstDate.slice(0, 7);
+						allXValues = getAllDatesInMonth(yearMonth);
+					} else {
+						allXValues = [...new Set(data.map((item) => item[xKey]))].sort();
+					}
+				}
+			} else {
+				// Use existing data x values
+				allXValues = [...new Set(data.map((item) => item[xKey]))];
+
+				// Try to sort if possible
+				try {
+					allXValues.sort((a, b) => {
+						if (typeof a === 'number' && typeof b === 'number') return a - b;
+						if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
+						return 0;
+					});
+				} catch (e) {
+					// Keep original order if sorting fails
+				}
 			}
 
-			return {
-				xValue,
-				xLabel,
-				yValues
-			} as ProcessedDataPoint;
-		});
-	})());
+			// Process each x value
+			return allXValues.map((xValue) => {
+				const existingData = dataMap.get(xValue);
+				const yValues: { [key: string]: number } = {};
+
+				// Fill y values
+				processedMetrics.forEach((metric) => {
+					yValues[metric.key] = existingData?.[metric.key] || 0;
+				});
+
+				// Generate x label
+				let xLabel = String(xValue);
+				if (typeof xValue === 'string' && xValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+					// Format date
+					const date = new Date(xValue);
+					xLabel = date.getDate().toString();
+				}
+
+				return {
+					xValue,
+					xLabel,
+					yValues
+				} as ProcessedDataPoint;
+			});
+		})()
+	);
 
 	// Calculate dimensions
 	const legendHeight = showLegend ? 40 : 0;
 	const titleHeight = title ? 40 : 0;
 	const chartWidth = $derived(actualWidth - padding * 2);
 	const chartHeight = $derived(actualHeight - padding * 2 - legendHeight - titleHeight);
+
+	// Calculate the SVG height directly
+	const svgHeight = $derived(actualHeight - legendHeight - titleHeight);
 
 	// Calculate bar dimensions
 	const groupWidth = $derived(
@@ -252,16 +271,18 @@
 	);
 
 	// Find max value for scaling
-	const maxValue = $derived((() => {
-		let max = 0;
-		processedData.forEach(item => {
-			processedMetrics.forEach(metric => {
-				const value = item.yValues[metric.key] || 0;
-				if (value > max) max = value;
+	const maxValue = $derived(
+		(() => {
+			let max = 0;
+			processedData.forEach((item) => {
+				processedMetrics.forEach((metric) => {
+					const value = item.yValues[metric.key] || 0;
+					if (value > max) max = value;
+				});
 			});
-		});
-		return max || 100; // Fallback
-	})());
+			return max || 100; // Fallback
+		})()
+	);
 
 	// Create Spring instances for each bar
 	const animatedHeights = $derived(
@@ -272,8 +293,8 @@
 
 	// Calculate bar heights
 	const barHeights = $derived(
-		processedData.map(item =>
-			processedMetrics.map(metric => {
+		processedData.map((item) =>
+			processedMetrics.map((metric) => {
 				const value = item.yValues[metric.key] || 0;
 				return (value / maxValue) * chartHeight;
 			})
@@ -282,7 +303,7 @@
 
 	onMount(() => {
 		mounted = true;
-		
+
 		// Set up ResizeObserver
 		if (containerElement) {
 			const updateContainerSize = () => {
@@ -290,12 +311,12 @@
 				containerWidth = rect.width;
 				containerHeight = rect.height;
 			};
-			
+
 			updateContainerSize();
-			
+
 			const resizeObserver = new ResizeObserver(updateContainerSize);
 			resizeObserver.observe(containerElement);
-			
+
 			return () => {
 				resizeObserver.disconnect();
 			};
@@ -307,9 +328,20 @@
 		if (mounted && animate) {
 			barHeights.forEach((heights, groupIndex) => {
 				heights.forEach((height, metricIndex) => {
-					setTimeout(() => {
+					// Remove setTimeout for the last group to avoid choppy ending
+					const isLast =
+						groupIndex === barHeights.length - 1 &&
+						metricIndex === heights.length - 1;
+					if (isLast) {
 						animatedHeights[groupIndex][metricIndex].target = height;
-					}, (groupIndex * processedMetrics.length + metricIndex) * 20);
+					} else {
+						setTimeout(
+							() => {
+								animatedHeights[groupIndex][metricIndex].target = height;
+							},
+							(groupIndex * processedMetrics.length + metricIndex) * 20
+						);
+					}
 				});
 			});
 		} else if (mounted) {
@@ -353,7 +385,9 @@
 <div
 	bind:this={containerElement}
 	class="chart-container"
-	style="width: {formatDimension(width)}; height: {formatDimension(height)}; --legend-gap: {legendGap}px; --legend-height: {legendHeight}px; --title-height: {titleHeight}px;"
+	style="width: {formatDimension(width)}; height: {formatDimension(
+		height
+	)}; --legend-gap: {legendGap}px; --legend-height: {legendHeight}px; --title-height: {titleHeight}px;"
 >
 	<!-- Chart Title -->
 	{#if title}
@@ -362,9 +396,9 @@
 		</div>
 	{/if}
 
-	<svg 
-		width="100%" 
-		height="calc(100% - var(--legend-height, 0px) - var(--title-height, 0px))" 
+	<svg
+		width="100%"
+		height={svgHeight}
 		viewBox="0 0 {actualWidth} {actualHeight - legendHeight - titleHeight}"
 	>
 		<!-- Chart bars -->
@@ -378,7 +412,8 @@
 					? animatedHeights[groupIndex][metricIndex].current
 					: barHeights[groupIndex][metricIndex]}
 				{@const y = padding + chartHeight - barHeight}
-				{@const isHovered = hoveredBar.groupIndex === groupIndex && hoveredBar.metricIndex === metricIndex}
+				{@const isHovered =
+					hoveredBar.groupIndex === groupIndex && hoveredBar.metricIndex === metricIndex}
 
 				<rect
 					{x}
@@ -416,7 +451,8 @@
 			{/each}
 
 			<!-- X-axis labels -->
-			{@const shouldShowLabel = groupWidth > 20 || groupIndex % Math.max(1, Math.floor(processedData.length / 15)) === 0}
+			{@const shouldShowLabel =
+				groupWidth > 20 || groupIndex % Math.max(1, Math.floor(processedData.length / 15)) === 0}
 			{#if shouldShowLabel}
 				<text
 					x={groupX + groupWidth / 2}
@@ -460,8 +496,22 @@
 		{/each}
 
 		<!-- Axes -->
-		<line x1={padding} y1={padding} x2={padding} y2={padding + chartHeight} stroke="#d1d5db" stroke-width="1" />
-		<line x1={padding} y1={padding + chartHeight} x2={padding + chartWidth} y2={padding + chartHeight} stroke="#d1d5db" stroke-width="1" />
+		<line
+			x1={padding}
+			y1={padding}
+			x2={padding}
+			y2={padding + chartHeight}
+			stroke="#d1d5db"
+			stroke-width="1"
+		/>
+		<line
+			x1={padding}
+			y1={padding + chartHeight}
+			x2={padding + chartWidth}
+			y2={padding + chartHeight}
+			stroke="#d1d5db"
+			stroke-width="1"
+		/>
 
 		<!-- Axis labels -->
 		{#if xAxisLabel}
@@ -518,7 +568,13 @@
 	.chart-container {
 		position: relative;
 		display: inline-block;
-		font-family: "regular",-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		font-family:
+			'regular',
+			-apple-system,
+			BlinkMacSystemFont,
+			'Segoe UI',
+			Roboto,
+			sans-serif;
 		box-sizing: border-box;
 		background: #fefefe;
 		border: 1px solid #e5e7eb;
@@ -558,7 +614,10 @@
 		filter: brightness(1.1);
 	}
 
-	.value-label, .x-label, .axis-label, .axis-title {
+	.value-label,
+	.x-label,
+	.axis-label,
+	.axis-title {
 		pointer-events: none;
 		font-family: inherit;
 	}
@@ -632,16 +691,16 @@
 		.chart-container {
 			padding: 12px;
 		}
-		
+
 		.chart-title h3 {
 			font-size: 14px;
 		}
-		
+
 		.legend {
 			gap: 12px;
 			padding: 8px 12px;
 		}
-		
+
 		.legend-label {
 			font-size: 12px;
 		}
