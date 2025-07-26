@@ -30,7 +30,7 @@
 
 		// Chart appearance
 		width = '100%' as number | string,
-		height = 400 as number | string,
+		height = "auto" as number | string,
 		padding = 60,
 
 		// Interactivity
@@ -81,8 +81,8 @@
 	let hoveredBar = $state({ groupIndex: -1, metricIndex: -1 });
 	let mounted = $state(false);
 	let containerElement: HTMLDivElement;
-	let containerWidth = $state(800);
-	let containerHeight = $state(400);
+	let containerWidth = $state(0);
+	let containerHeight = $state(0);
 
 	// Helper function to format dimension for CSS
 	const formatDimension = (value: number | string): string => {
