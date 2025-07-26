@@ -1,6 +1,6 @@
 <script>
 	import BarGroups from '$lib/components/charts/BarGoups.svelte';
-	import { dlvPd } from '$lib/utils.js';
+	import { dlvPd, getMonthName } from '$lib/utils.js';
 	let { data } = $props();
 	// console.log('🚀 ~ data:', data.monthly);
 	// Map through each record in the array and process it, or process the entire array
@@ -17,7 +17,7 @@
 	const deliverySum = monthly.reduce((acc, item) => acc + item.delivery, 0);
 	const collectionSum = monthly.reduce((acc, item) => acc + item.collections, 0);
 	const failsSum = monthly.reduce((acc, item) => acc + item.fails, 0);
-	const m = 'July';
+	const currentMonth = new Date().getMonth();
 </script>
 
 <svelte:head>
@@ -28,7 +28,7 @@
 	<h1>Monthly Overview</h1>
 </header>
 <BarGroups
-	title="Delivery Records - {m} "
+	title="Delivery Records - {getMonthName(currentMonth)} "
 	data={monthly}
 	xKey="date"
 	yKeys={['delivery', 'collections', 'fails']}
