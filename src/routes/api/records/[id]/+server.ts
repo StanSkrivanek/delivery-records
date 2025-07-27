@@ -21,6 +21,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		}
 
 		const formData = await request.formData();
+		console.log("formData:", formData);
 
 		// Extract form fields
 		const loaded = Number(formData.get('loaded'));
@@ -29,6 +30,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		const returned = Number(formData.get('returned'));
 		const missplaced = Number(formData.get('missplaced')) || 0;
 		const expense = Number(formData.get('expense')) || 0;
+		const odometer = Number(formData.get('odometer')) || 0;
 		const entryDate = formData.get('entry_date') as string;
 		const imageFile = formData.get('image') as File | null;
 		const existingImagePath = formData.get('existing_image_path') as string | null;
@@ -99,9 +101,12 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 			returned,
 			missplaced,
 			expense,
+			odometer,
+			
 			entry_date: entryDate,
 			image_path: finalImagePath
 		});
+		console.log("🚀 ~ PUT ~ updatedRecord:", updatedRecord)
 
 		return json(updatedRecord);
 	} catch (err) {

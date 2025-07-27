@@ -6,7 +6,11 @@
 		dlvPd,
 		formatCurrency,
 		formatDate,
-		getMonthName
+		formatNumber,
+		getMonthName,
+
+		NumberNoDecimals
+
 	} from '$lib/utils';
 
 	let { records, selectedYear, selectedMonth } = $props();
@@ -77,6 +81,7 @@
 						<th>Delivery</th>
 						<th>Collected</th>
 						<th>Total</th>
+						<th>Odometer</th>
 						<th>Image</th>
 					</tr>
 				</thead>
@@ -105,6 +110,7 @@
 							<td class="currency-cell">{formatCurrency(deliveryValue)}</td>
 							<td class="currency-cell">{formatCurrency(collectedValue)}</td>
 							<td class="total-cell">{formatCurrency(dailyValue)}</td>
+							<td class="number-cell">{record.odometer ? NumberNoDecimals(record.odometer) : '—'}</td>
 							<td class="image-cell">
 								{#if record.image_path}
 									<button
@@ -141,6 +147,7 @@
 						<td class="currency-cell blue"><strong>{formatCurrency(totals.deliveryValue)}</strong></td>
 						<td class="currency-cell blue"><strong>{formatCurrency(totals.collectedValue)}</strong></td>
 						<td class="total-cell"><strong>{formatCurrency(totals.totalValue)}</strong></td>
+						<td class="number-cell">{NumberNoDecimals(totals.odometer || 0)}</td>
 						<td class="image-cell">—</td>
 					</tr>
 				</tfoot>

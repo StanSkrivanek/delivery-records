@@ -3,7 +3,6 @@
 	import ImageUpload from './ImageUpload.svelte';
 
 	let { records } = $props();
-	// console.log("🚀 ~ records:", records)
 
 	let showModal = $state(false);
 	let modalImage = $state('');
@@ -18,6 +17,7 @@
 		returned: 0,
 		missplaced: 0,
 		expense: 0,
+		odometer: 0,
 		entry_date: '',
 		image_path: ''
 	});
@@ -40,6 +40,7 @@
 		returned: number;
 		missplaced?: number;
 		expense?: number;
+		odometer?: number;
 		entry_date: string;
 		image_path?: string;
 		created_at?: string;
@@ -52,6 +53,7 @@
 			returned: record.returned,
 			missplaced: record.missplaced ?? 0,
 			expense: record.expense ?? 0,
+			odometer: record.odometer ?? 0,
 			entry_date: record.entry_date,
 			image_path: record.image_path ?? ''
 		};
@@ -63,6 +65,7 @@
 		showEditModal = false;
 		editImageFile = null;
 	}
+// function to format number 123.456
 
 	async function saveEdit() {
 		try {
@@ -74,6 +77,7 @@
 			formData.append('returned', editRecord.returned.toString());
 			formData.append('missplaced', editRecord.missplaced.toString());
 			formData.append('expense', editRecord.expense.toString());
+			formData.append('odometer', editRecord.odometer.toString());
 			formData.append('entry_date', editRecord.entry_date);
 
 			// Add image file if a new one was selected
@@ -202,6 +206,7 @@
 						<th>Returned</th>
 						<th>Missplaced</th>
 						<th>Expense</th>
+						<th>Odometer</th>
 						<th>Image</th>
 						<th>Edit</th>
 						<th>Delete</th>
@@ -219,6 +224,7 @@
 							<td class="number-cell">{record.returned}</td>
 							<td class="number-cell">{record.missplaced || 0}</td>
 							<td class="number-cell">{record.expense || 0}</td>
+							<td class="number-cell">{record.odometer || 0}</td>
 							<td class="image-cell">
 								{#if record.image_path}
 									<button
@@ -313,6 +319,10 @@
 					<label class="form-field">
 						<span>Expense:</span>
 						<input type="number" bind:value={editRecord.expense} min="0" step="0.01" />
+					</label>
+					<label class="form-field">
+						<span>Odometer:</span>
+						<input type="number" bind:value={editRecord.odometer} min="0" required />
 					</label>
 					<label class="form-field">
 						<span>Entry Date:</span>

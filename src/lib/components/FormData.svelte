@@ -11,9 +11,10 @@
 	let returned = $state(0);
 	let missplaced = $state(0);
 	let expense = $state(0);
+	let odometer = $state(0);
 	let selectedFile: File | null = $state(null);
-	
 
+	$inspect(odometer, 'Odometer reading'); // Inspect the odometer state
 	// Date picker functionality - simplified
 	let selectedDate = $state(getCurrentDate());
 
@@ -51,6 +52,7 @@
 			returned = 0;
 			missplaced = 0;
 			expense = 0;
+			odometer = 0;
 			selectedFile = null;
 			selectedDate = getCurrentDate(); // Reset to current date
 		}
@@ -81,6 +83,9 @@
 
 			// Add the selected date to form data
 			formData.append('selectedDate', selectedDate);
+			formData.set('odometer', odometer.toString());
+
+			// console.log('Form data odometer:', formData.get('odometer'));
 
 			loading = true;
 
@@ -109,14 +114,6 @@
 							disabled={loading}
 							class="date-input"
 						/>
-						<!-- <div class="date-display">
-							<span class="date-text">
-								{formatDateForDisplay(selectedDate)}
-							</span>
-							{#if isToday(selectedDate)}
-								<span class="today-badge">Today</span>
-							{/if}
-						</div> -->
 					</div>
 				</div>
 				<div class="form-group">
@@ -196,6 +193,18 @@
 							disabled={loading}
 						/>
 					</div>
+					<div class="input-group">
+						<label for="odometer">Odometer:</label>
+						<input
+							type="number"
+							id="odometer"
+							name="odometer"
+							bind:value={odometer}
+							min="0"
+							required
+							disabled={loading}
+						/>
+					</div>
 				</div>
 			</div>
 			<div class="form-column image-section">
@@ -214,21 +223,18 @@
 			</div>
 		</div>
 	</form>
-<!-- close msg after 5s -->
+	<!-- close msg after 5s -->
 	{#if form?.success || form?.error}
 		<div class="message">
 			{#if form.success}
-				
 				<div class="message success">Record saved successfully!</div>
 			{:else if form.error}
-				
 				<div class="message error">
 					{form.error}
 				</div>
 			{/if}
 		</div>
 	{/if}
-	
 </div>
 
 <!-- Same CSS as before... -->

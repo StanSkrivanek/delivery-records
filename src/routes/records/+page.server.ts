@@ -61,6 +61,7 @@ export const actions: Actions = {
 			const expense = Number(formData.get('expense')) || 0; // Default to 0 if not provided
 			const selectedDate = formData.get('selectedDate') as string;
 			const imageFile = formData.get('image') as File | null;
+			const odometer = Number(formData.get('odometer')) || 0;
 
 			// Validate required fields
 			if (isNaN(loaded) || isNaN(collected) || isNaN(cutters) || isNaN(returned)) {
@@ -127,6 +128,7 @@ export const actions: Actions = {
 				returned,
 				missplaced,
 				expense,
+				odometer,
 				image_path: imagePath,
 				entry_date: selectedDate
 			});

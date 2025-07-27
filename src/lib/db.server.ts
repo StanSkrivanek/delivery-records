@@ -16,6 +16,7 @@ db.exec(`
     returned INTEGER NOT NULL,
     missplaced INTEGER DEFAULT 0,
     expense REAL DEFAULT 0,
+	odometer INTEGER DEFAULT 0,
     image_path TEXT,
     entry_date DATE NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -30,6 +31,7 @@ export interface Record {
 	returned: number;
 	missplaced?: number;
 	expense?: number;
+	odometer?: number;
 	image_path?: string;
 	entry_date: string;
 	created_at?: string;
@@ -38,8 +40,8 @@ export interface Record {
 export class RecordService {
 	static async createRecord(record: Omit<Record, 'id' | 'created_at'>): Promise<number> {
 		const stmt = db.prepare(`
-      INSERT INTO records (loaded, collected, cutters, returned, missplaced, expense, image_path, entry_date)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO records (loaded, collected, cutters, returned, missplaced, expense, odometer, image_path, entry_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
 		const result = stmt.run(
@@ -49,6 +51,7 @@ export class RecordService {
 			record.returned,
 			record.missplaced || 0,
 			record.expense || 0,
+			record.odometer || 0,
 			record.image_path || null,
 			record.entry_date
 		);
@@ -73,7 +76,7 @@ export class RecordService {
 		const stmt = db.prepare(`
       UPDATE records 
       SET loaded = ?, collected = ?, cutters = ?, returned = ?, 
-          missplaced = ?, expense = ?, image_path = ?, entry_date = ?
+          missplaced = ?, expense = ?, odometer = ?, image_path = ?, entry_date = ?
       WHERE id = ?
     `);
 
@@ -84,6 +87,7 @@ export class RecordService {
 			record.returned,
 			record.missplaced || 0,
 			record.expense || 0,
+			record.odometer || 0,
 			record.image_path || null,
 			record.entry_date,
 			id
@@ -139,6 +143,7 @@ export class RecordService {
 			const hasEntryDate = columns.some((col) => col.name === 'entry_date');
 			const hasMissplaced = columns.some((col: { name: string }) => col.name === 'missplaced');
 			const hasExpense = columns.some((col: { name: string }) => col.name === 'expense');
+			const hasOdometer = columns.some((col: { name: string }) => col.name === 'odometer');
 
 			if (!hasEntryDate) {
 				db.exec('ALTER TABLE records ADD COLUMN entry_date DATE');
@@ -154,6 +159,12 @@ export class RecordService {
 			if (!hasExpense) {
 				db.exec('ALTER TABLE records ADD COLUMN expense REAL DEFAULT 0');
 				console.log('Added expense column');
+			}
+
+			// Ensure odometer column exists
+			if (!hasOdometer) {
+				db.exec('ALTER TABLE records ADD COLUMN odometer INTEGER DEFAULT 0');
+				console.log('Added odometer column');
 			}
 		} catch (error) {
 			console.error('Migration error:', error);

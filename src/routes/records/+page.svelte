@@ -13,7 +13,7 @@
 		data: PageData;
 		form: import('./$types').ActionData;
 	} = $props();
-	console.log('🚀 ~ data:', data);
+	// console.log('🚀 ~ data:', data);
 
 	let loading = $state(false);
 

@@ -8,6 +8,7 @@ interface DeliveryRecord {
 	collected?: number;
 	cutters?: number;
 	expense?: number;
+	odometer?: number;
 }
 // IMAGE HELPER-fn-
 
@@ -176,6 +177,18 @@ export function formatNumber(value: string | number | bigint) {
 	}).format(typeof value === 'string' ? Number(value) : value);
 }
 
+export function NumberNoDecimals(value: string | number | bigint) {
+	return new Intl.NumberFormat('en-US', {
+		minimumFractionDigits: 0,
+		maximumFractionDigits: 0
+	}).format(typeof value === 'string' ? Number(value) : value);
+}
+export function formatNumberWithCommas(value: string | number | bigint) {
+	return new Intl.NumberFormat('en-US', {
+		minimumFractionDigits: 0,
+		maximumFractionDigits: 2
+	}).format(typeof value === 'string' ? Number(value) : value);
+}
 /**
  * Get month name from month number
  * @param month Month number (1-12)
@@ -295,6 +308,7 @@ interface RecordTotals {
 	missplaced: number;
 	delivered: number;
 	expense: number;
+	odometer: number;
 	deliveryValue: number;
 	collectedValue: number;
 	totalValue: number;
@@ -314,6 +328,7 @@ export function calculateRecordTotals(records: DeliveryRecord[]): RecordTotals {
 		missplaced: 0,
 		delivered: 0,
 		expense: 0,
+		odometer: 0,
 		deliveryValue: 0,
 		collectedValue: 0,
 		totalValue: 0
@@ -336,6 +351,7 @@ export function calculateRecordTotals(records: DeliveryRecord[]): RecordTotals {
 			missplaced: acc.missplaced + (record.missplaced ?? 0),
 			delivered: acc.delivered + delivered,
 			expense: acc.expense + (record.expense ?? 0),
+			odometer: acc.odometer + (record.odometer ?? 0),
 			deliveryValue: acc.deliveryValue + deliveryValue,
 			collectedValue: acc.collectedValue + collectedValue,
 			totalValue: acc.totalValue + deliveryValue + collectedValue
