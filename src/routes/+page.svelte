@@ -18,6 +18,8 @@
 	const collectionSum = monthly.reduce((acc, item) => acc + item.collections, 0);
 	const failsSum = monthly.reduce((acc, item) => acc + item.fails, 0);
 	const currentMonth = new Date().getMonth();
+	const latestOdometer = data.getLatestOdometer ? data.getLatestOdometer : 0;
+	console.log("🚀 ~ latestOdometer:", latestOdometer)
 </script>
 
 <svelte:head>
@@ -60,6 +62,13 @@
 		</div>
 		<p class="card-value">{failsSum} pcs</p>
 		<p class="card-subtitle">Failed deliveries</p>
+	</div>
+	<div class="card red">
+		<div class="card-header">
+			<h3>Odometer</h3>
+		</div>
+		<p class="card-value">{latestOdometer} km</p>
+		<p class="card-subtitle">Odometer in  km</p>
 	</div>
 </div>
 

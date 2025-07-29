@@ -64,6 +64,12 @@ export class RecordService {
 		return stmt.all() as Record[];
 	}
 
+	static async getLatestOdometer(): Promise<number | null> {
+		const stmt = db.prepare('SELECT odometer FROM records ORDER BY entry_date DESC, created_at DESC LIMIT 1');
+		const record = stmt.get() as Record | undefined;
+		return record && typeof record.odometer === 'number' ? record.odometer : null;
+	}
+
 	static async getRecordById(id: number): Promise<Record | null> {
 		const stmt = db.prepare('SELECT * FROM records WHERE id = ?');
 		return stmt.get(id) as Record | null;
@@ -121,7 +127,6 @@ export class RecordService {
 		return stmt.all(startDate, endDate) as Record[];
 	}
 
-	//  get all records for current month
 	static async getRecordsByCurrentMonth() {
 		const stmt = db.prepare(`
 	  SELECT * FROM records

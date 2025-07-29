@@ -7,10 +7,11 @@ export const load: PageServerLoad = async () => {
 	// const records = await rs.getAllRecords();
     
     const monthly = await rs.getRecordsByCurrentMonth();
-
+const getLatestOdometer = await rs.getLatestOdometer();
   
 return {
         // records,
+        getLatestOdometer,
         monthly
 }
 
