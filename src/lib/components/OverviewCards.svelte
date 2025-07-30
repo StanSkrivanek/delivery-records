@@ -7,7 +7,7 @@
 
 <div class="cards-section">
 	<div class="period-teal">
-		<h2>{getMonthName(selectedMonth - 1)} {selectedYear}</h2>
+		<h2>{getMonthName(selectedMonth)} {selectedYear}</h2>
 	</div>
 
 	<div class="cards-grid">
