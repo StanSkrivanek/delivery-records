@@ -259,31 +259,9 @@
 	}
 
 	h1 {
-		/* text-align: center; */
-		/* color: #333; */
-		/* background: #f8f9fa; */
 		margin-bottom: 2rem;
 		border-bottom: 1px solid #dee2e6;
 	}
-
-	/* .date-section {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		background: #f8f9fa;
-		border-bottom: 1px solid #dee2e6;
-		padding-bottom: 2rem;
-		margin-bottom: 2rem;
-	} */
-
-	/* .date-input-group {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 1rem;
-		margin-top: 0.5rem;
-	} */
 
 	.date-input {
 		padding: 0.75rem;
@@ -306,30 +284,6 @@
 		cursor: not-allowed;
 	}
 
-	/* .date-display {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		flex: 1;
-	} */
-
-	/* .date-text {
-		font-weight: 500;
-		color: #333;
-		font-size: 1.1rem;
-	} */
-
-	/* .today-badge {
-		background: #28a745;
-		color: white;
-		padding: 0.25rem 0.5rem;
-		border-radius: 12px;
-		font-size: 0.75rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-	} */
-
 	.form-grid {
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
@@ -337,8 +291,6 @@
 		margin-bottom: 2rem;
 	}
 	.form-column {
-		/* flex-direction: column; */
-		/* align-items: center; */
 		gap: 1rem;
 		.form-group {
 			width: 100%;
@@ -356,8 +308,6 @@
 			width: 100%;
 			gap: 0.5rem;
 			padding-top: 1rem;
-			/* grid-column: 1/-1; */
-			/* margin-bottom: 1rem; */
 		}
 	}
 	.form-group.textarea-section {
@@ -381,17 +331,11 @@
 		resize: none;
 	}
 	.image-section {
-		/* height: 100%; */
-
-		/* justify-content: stretch; */
-		/* flex-direction: column; */
-
 		grid-column: 2/ -1;
 	}
 
 	label {
 		font-weight: 500;
-		/* color: #333; */
 	}
 
 	input[type='number'] {
@@ -399,7 +343,6 @@
 		border: 1px solid #ddd;
 		border-radius: 4px;
 		font-size: 1rem;
-		/* max-width: 120px; */
 	}
 
 	input[type='number']:focus {
@@ -415,9 +358,6 @@
 
 	.form-actions {
 		grid-column: 2/-1;
-		/* display: flex; */
-		/* justify-content: center; */
-		/* margin-top: 2rem; */
 	}
 
 	.submit-btn {
@@ -465,17 +405,6 @@
 		.main-container {
 			padding: 1rem;
 		}
-
-		/* .date-input-group {
-			flex-direction: column;
-			align-items: stretch;
-			gap: 0.75rem;
-		} */
-
-		/* .date-display {
-			justify-content: center;
-			text-align: center;
-		} */
 	}
 	@media (max-width: 960px) {
 		.form-grid {
