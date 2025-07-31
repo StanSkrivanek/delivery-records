@@ -8,7 +8,7 @@
 	let modalImage = $state('');
 	let modalAlt = $state('');
 
-	let showEditModal = $state(false);
+	let showEditModal = $state(true);
 	let editRecord = $state({
 		id: undefined as number | undefined,
 		loaded: 0,
@@ -65,7 +65,7 @@
 		showEditModal = false;
 		editImageFile = null;
 	}
-// function to format number 123.456
+	// function to format number 123.456
 
 	async function saveEdit() {
 		try {
@@ -207,6 +207,7 @@
 						<th>Missplaced</th>
 						<th>Expense</th>
 						<th>Odometer</th>
+						<th>Note</th>
 						<th>Image</th>
 						<th>Edit</th>
 						<th>Delete</th>
@@ -225,6 +226,7 @@
 							<td class="number-cell">{record.missplaced || 0}</td>
 							<td class="number-cell">{record.expense || 0}</td>
 							<td class="number-cell">{record.odometer || 0}</td>
+							<td>record note</td>
 							<td class="image-cell">
 								{#if record.image_path}
 									<button
@@ -284,8 +286,7 @@
 		<dialog class="modal-container" onclick={(e) => e.stopPropagation()}>
 			<div class="modal-header">
 				<h3>Edit Record | {formatEntryDate(editRecord.entry_date)}</h3>
-				<button type="button" class="btn red" onclick={closeEditModal} title="Close (Esc)"
-					>✕</button
+				<button type="button" class="btn red" onclick={closeEditModal} title="Close (Esc)">✕</button
 				>
 			</div>
 			<form
@@ -296,66 +297,79 @@
 				}}
 			>
 				<div class="edit-fields">
-					<label class="form-field">
-						<span>Loaded:</span>
-						<input type="number" bind:value={editRecord.loaded} min="0" required />
-					</label>
-					<label class="form-field">
-						<span>Collected:</span>
-						<input type="number" bind:value={editRecord.collected} min="0" required />
-					</label>
-					<label class="form-field">
-						<span>Cutters:</span>
-						<input type="number" bind:value={editRecord.cutters} min="0" required />
-					</label>
-					<label class="form-field">
-						<span>Returned:</span>
-						<input type="number" bind:value={editRecord.returned} min="0" required />
-					</label>
-					<label class="form-field">
-						<span>Missplaced:</span>
-						<input type="number" bind:value={editRecord.missplaced} min="0" />
-					</label>
-					<label class="form-field">
-						<span>Expense:</span>
-						<input type="number" bind:value={editRecord.expense} min="0" step="0.01" />
-					</label>
-					<label class="form-field">
-						<span>Odometer:</span>
-						<input type="number" bind:value={editRecord.odometer} min="0" required />
-					</label>
-					<label class="form-field">
-						<span>Entry Date:</span>
-						<input type="date" bind:value={editRecord.entry_date} required />
-					</label>
+					<div class="edit-group">
+						<label class="form-field">
+							<span>Entry Date:</span>
+							<input type="date" bind:value={editRecord.entry_date} required />
+						</label>
+						<label class="form-field">
+							<span>Loaded:</span>
+							<input type="number" bind:value={editRecord.loaded} min="0" required />
+						</label>
+						<label class="form-field">
+							<span>Collected:</span>
+							<input type="number" bind:value={editRecord.collected} min="0" required />
+						</label>
+						<label class="form-field">
+							<span>Cutters:</span>
+							<input type="number" bind:value={editRecord.cutters} min="0" required />
+						</label>
+					</div>
+					<div class="edit-group">
+						<label class="form-field">
+							<span>Returned:</span>
+							<input type="number" bind:value={editRecord.returned} min="0" required />
+						</label>
+						<label class="form-field">
+							<span>Missplaced:</span>
+							<input type="number" bind:value={editRecord.missplaced} min="0" />
+						</label>
+						<label class="form-field">
+							<span>Expense:</span>
+							<input type="number" bind:value={editRecord.expense} min="0" step="0.01" />
+						</label>
+						<label class="form-field">
+							<span>Odometer:</span>
+							<input type="number" bind:value={editRecord.odometer} min="0" required />
+						</label>
+					</div>
+					<div class="edit-group">
+						<label class="form-field">
+							<span>Note:</span>
+							<textarea bind:value={editRecord.note} rows="16" required></textarea>
+						</label>
+					</div>
 
 					<!-- Image Upload Section -->
 					<div class="form-field image-upload-section">
-						<span>Image:</span>
-						<div class="image-upload-wrapper">
-							{#if editRecord.image_path && !editImageFile}
-								<div class="current-image">
-									<!-- svelte-ignore a11y_img_redundant_alt -->
-									<img
-										src="/{editRecord.image_path}"
-										alt="Current image"
-										class="current-image-preview"
+						<div>
+							<span>Image:</span>
+							<div class="image-upload-wrapper">
+								{#if editRecord.image_path && !editImageFile}
+									<div class="current-image">
+										<!-- svelte-ignore a11y_img_redundant_alt -->
+										<img
+											src="/{editRecord.image_path}"
+											alt="Current image"
+											class="current-image-preview"
+										/>
+										<p class="current-image-text">Current image</p>
+										<button
+											type="button"
+											class="btn-remove-current"
+											onclick={() => (editRecord.image_path = '')}
+										>
+											Remove current image
+										</button>
+									</div>
+									{:else}
+									<ImageUpload
+									bind:selectedFile={editImageFile}
+									onFileSelected={handleEditImageSelected}
+									onFileRemoved={handleEditImageRemoved}
 									/>
-									<p class="current-image-text">Current image</p>
-									<button
-										type="button"
-										class="btn-remove-current"
-										onclick={() => (editRecord.image_path = '')}
-									>
-										Remove current image
-									</button>
-								</div>
-							{/if}
-							<ImageUpload
-								bind:selectedFile={editImageFile}
-								onFileSelected={handleEditImageSelected}
-								onFileRemoved={handleEditImageRemoved}
-							/>
+									{/if}
+							</div>
 							{#if editImageFile}
 								<p class="new-image-text">New image will replace current image</p>
 							{/if}
@@ -551,7 +565,7 @@
 	.modal-container {
 		background: white;
 		border-radius: 8px;
-		max-width: 90vw;
+		width: 90vw;
 		max-height: 90vh;
 		display: flex;
 		flex-direction: column;
@@ -559,6 +573,10 @@
 		animation: modalAppear 0.2s ease-out;
 	}
 
+	.modal-container form {
+		display: flex;
+		flex-direction: column;
+	}
 	@keyframes modalAppear {
 		from {
 			opacity: 0;
@@ -681,16 +699,27 @@
 	}
 
 	.edit-fields {
-		display: flex;
-		flex-direction: column;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		/* flex-direction: column; */
 		gap: 1rem;
 		margin-bottom: 1.5rem;
+		& .edit-group {
+			display: flex;
+			flex-direction: column;
+			gap: 0.75rem;
+			height: 100%;
+			& textarea {
+				resize: none;
+				min-height: 100px;
+			}
+		}
 	}
 
 	.form-field {
 		display: flex;
-		flex-direction: row;
-		align-items: center;
+		flex-direction: column;
+		/* align-items: center; */
 		gap: 0.75rem;
 		justify-content: space-between;
 	}
@@ -768,23 +797,22 @@
 	}
 
 	.blue {
-			background: var(--color-blue-500);
-			color: white;
-		}
-		.purple {
-			background: #c686ff;
-			color: white;
-		}
-		.green {
-			background: var(--color-emerald-500);
-			color: white;
-		}
+		background: var(--color-blue-500);
+		color: white;
+	}
+	.purple {
+		background: #c686ff;
+		color: white;
+	}
+	.green {
+		background: var(--color-emerald-500);
+		color: white;
+	}
 
-		.red {
-			background: var(--color-red-500);
-			color: white;
-		}
-
+	.red {
+		background: var(--color-red-500);
+		color: white;
+	}
 
 	.new-image-text {
 		margin: 0;
@@ -816,7 +844,7 @@
 			font-size: 0.7rem;
 			padding: 0.4rem 0.6rem;
 		}
-	
+
 		/* .edit-modal {
 			width: 90vw;
 			margin: 1rem;
