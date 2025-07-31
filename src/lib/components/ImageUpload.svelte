@@ -126,10 +126,8 @@
 	}
 
 	.drop-zone {
-		
 		border: 2px dashed #ddd;
 		border-radius: 8px;
-		
 		text-align: center;
 		cursor: pointer;
 		transition: all 0.3s ease;

@@ -754,6 +754,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
+		margin-top: 0.75rem;
 	}
 
 	.current-image {
