@@ -13,7 +13,7 @@
 	let expense = $state(0);
 	let odometer = $state(0);
 	let selectedFile: File | null = $state(null);
-
+	let note = $state('');
 	$inspect(odometer, 'Odometer reading'); // Inspect the odometer state
 	// Date picker functionality - simplified
 	let selectedDate = $state(getCurrentDate());
@@ -104,9 +104,9 @@
 
 		<div class="form-grid">
 			<div class="form-column">
-				<div class="form-group date-section">
-					<label for="date-input">Entry Date:</label>
-					<div class="date-input-group">
+				<div class="form-group">
+					<div class="input-group">
+						<label for="date-input">Entry Date:</label>
 						<input
 							type="date"
 							id="date-input"
@@ -115,8 +115,6 @@
 							class="date-input"
 						/>
 					</div>
-				</div>
-				<div class="form-group">
 					<div class="input-group">
 						<label for="loaded">Loaded:</label>
 						<input
@@ -129,7 +127,6 @@
 							disabled={loading}
 						/>
 					</div>
-
 					<div class="input-group">
 						<label for="collected">Collected:</label>
 						<input
@@ -142,7 +139,6 @@
 							disabled={loading}
 						/>
 					</div>
-
 					<div class="input-group">
 						<label for="cutters">Cutters:</label>
 						<input
@@ -170,7 +166,7 @@
 						/>
 					</div>
 					<div class="input-group">
-						<label for="missplaced">missplaced:</label>
+						<label for="missplaced">Missplaced:</label>
 						<input
 							type="number"
 							id="missplaced"
@@ -182,7 +178,7 @@
 						/>
 					</div>
 					<div class="input-group">
-						<label for="expense">expense:</label>
+						<label for="expense">Expense:</label>
 						<input
 							type="number"
 							id="expense"
@@ -196,6 +192,7 @@
 					<div class="input-group">
 						<label for="odometer">Odometer:</label>
 						<input
+							class="number-input"
 							type="number"
 							id="odometer"
 							name="odometer"
@@ -204,6 +201,19 @@
 							required
 							disabled={loading}
 						/>
+					</div>
+				</div>
+				<div class="form-group textarea-section">
+					<div class="input-group">
+						<label for="note">Note:</label>
+						<textarea
+							id="note"
+							name="note"
+							bind:value={note}
+							rows="6"
+							placeholder="Add any additional notes here..."
+							disabled={loading}
+						></textarea>
 					</div>
 				</div>
 			</div>
@@ -256,24 +266,24 @@
 		border-bottom: 1px solid #dee2e6;
 	}
 
-	.date-section {
+	/* .date-section {
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
-		/* background: #f8f9fa; */
+		background: #f8f9fa;
 		border-bottom: 1px solid #dee2e6;
 		padding-bottom: 2rem;
 		margin-bottom: 2rem;
-	}
+	} */
 
-	.date-input-group {
+	/* .date-input-group {
 		display: flex;
-		/* flex-direction: column; */
-		/* align-items: center;
-    justify-content: center; */
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
 		gap: 1rem;
 		margin-top: 0.5rem;
-	}
+	} */
 
 	.date-input {
 		padding: 0.75rem;
@@ -282,7 +292,7 @@
 		font-size: 1rem;
 		background: white;
 		cursor: pointer;
-		min-width: 150px;
+		min-width: 120px;
 	}
 
 	.date-input:focus {
@@ -322,19 +332,24 @@
 
 	.form-grid {
 		display: grid;
-		grid-template-columns: 2fr 1fr;
+		grid-template-columns: repeat(2, 1fr);
 		gap: 1rem;
 		margin-bottom: 2rem;
-	}
-	.form-column {
-		/* display: flex; */
-		/* flex-direction: column; */
-		/* align-items: flex-start; */
-		/* justify-content: space-evenly; */
-		/* gap: 1rem; */
+		& .form-column {
+			display: flex;
+			flex-direction: column;
+			grid-row: 1/4;
+
+			/* align-items: flex-start; */
+			/* justify-content: space-evenly; */
+			/* gap: 1rem; */
+		}
 	}
 	.form-group {
-		display: flex;
+		/* display: flex; */
+		/* flex-direction: column; */
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
 		/* flex-direction: column; */
 		gap: 0.5rem;
 
@@ -344,10 +359,30 @@
 			width: 100%;
 			gap: 0.5rem;
 			padding-top: 1rem;
+			/* grid-column: 1/-1; */
 			/* margin-bottom: 1rem; */
 		}
 	}
-
+	.form-group.textarea-section {
+		border-radius: 4px;
+		font-size: 1rem;
+		resize: vertical;
+		grid-column: 1 / -1; /* Make the whole group span all columns */
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+	}
+	.form-group.textarea-section .input-group {
+		grid-column: 1 / -1; /* Make input-group span all columns */
+	}
+	.form-group.textarea-section textarea {
+		grid-column: 1 / -1; /* Make textarea span all columns */
+		max-width: 100%;
+		font-size: 1.2rem;
+		padding: 0.75rem;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		resize: none;
+	}
 	.image-section {
 		/* height: 100%; */
 
@@ -363,10 +398,11 @@
 	}
 
 	input[type='number'] {
-		padding: 0.75rem;
+		padding: 0.85rem;
 		border: 1px solid #ddd;
 		border-radius: 4px;
 		font-size: 1rem;
+		/* max-width: 120px; */
 	}
 
 	input[type='number']:focus {
@@ -433,11 +469,11 @@
 			padding: 1rem;
 		}
 
-		.date-input-group {
+		/* .date-input-group {
 			flex-direction: column;
 			align-items: stretch;
 			gap: 0.75rem;
-		}
+		} */
 
 		/* .date-display {
 			justify-content: center;
