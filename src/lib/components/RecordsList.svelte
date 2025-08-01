@@ -3,6 +3,7 @@
 	import ImageUpload from './ImageUpload.svelte';
 
 	let { records } = $props();
+	console.log("🚀 ~ records:", records)
 
 	let showModal = $state(false);
 	let modalImage = $state('');
@@ -18,6 +19,7 @@
 		missplaced: 0,
 		expense: 0,
 		odometer: 0,
+		note: '',
 		entry_date: '',
 		image_path: ''
 	});
@@ -41,8 +43,9 @@
 		missplaced?: number;
 		expense?: number;
 		odometer?: number;
-		entry_date: string;
 		image_path?: string;
+		note?: string;
+		entry_date: string;
 		created_at?: string;
 	}) {
 		editRecord = {
@@ -54,8 +57,9 @@
 			missplaced: record.missplaced ?? 0,
 			expense: record.expense ?? 0,
 			odometer: record.odometer ?? 0,
+			image_path: record.image_path ?? '',
+			note: record.note ?? '',
 			entry_date: record.entry_date,
-			image_path: record.image_path ?? ''
 		};
 		editImageFile = null; // Reset image file
 		showEditModal = true;
@@ -78,6 +82,7 @@
 			formData.append('missplaced', editRecord.missplaced.toString());
 			formData.append('expense', editRecord.expense.toString());
 			formData.append('odometer', editRecord.odometer.toString());
+			formData.append('note', editRecord.note || '');
 			formData.append('entry_date', editRecord.entry_date);
 
 			// Add image file if a new one was selected
@@ -226,7 +231,7 @@
 							<td class="number-cell">{record.missplaced || 0}</td>
 							<td class="number-cell">{record.expense || 0}</td>
 							<td class="number-cell">{record.odometer || 0}</td>
-							<td>record note</td>
+							<td class="note-cell">{record.note || ' --- '}</td>
 							<td class="image-cell">
 								{#if record.image_path}
 									<button

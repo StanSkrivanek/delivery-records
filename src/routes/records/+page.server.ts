@@ -5,6 +5,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
 	const records = await RecordService.getAllRecords();
+	console.log("🚀 ~ load ~ records:", records)
 
 	// Extract unique years and months from the data
 	const yearsSet = new Set<number>();
@@ -62,6 +63,8 @@ export const actions: Actions = {
 			const selectedDate = formData.get('selectedDate') as string;
 			const imageFile = formData.get('image') as File | null;
 			const odometer = Number(formData.get('odometer')) || 0;
+			const noteRaw = formData.get('note');
+			const note = typeof noteRaw === 'string' ? noteRaw : undefined;
 
 			// Validate required fields
 			if (isNaN(loaded) || isNaN(collected) || isNaN(cutters) || isNaN(returned)) {
@@ -130,6 +133,7 @@ export const actions: Actions = {
 				expense,
 				odometer,
 				image_path: imagePath,
+				note,
 				entry_date: selectedDate
 			});
 
