@@ -8,7 +8,7 @@
 	let modalImage = $state('');
 	let modalAlt = $state('');
 
-	let showEditModal = $state(true);
+	let showEditModal = $state(false);
 	let editRecord = $state({
 		id: undefined as number | undefined,
 		loaded: 0,
