@@ -3,7 +3,6 @@
 	import ImageUpload from './ImageUpload.svelte';
 
 	let { records } = $props();
-	console.log('🚀 ~ records:', records);
 
 	let modalImage = $state('');
 	let modalAlt = $state('');
@@ -61,7 +60,7 @@
 			expense: record.expense ?? 0,
 			odometer: record.odometer ?? 0,
 			image_path: record.image_path ?? '',
-			note: record.note ?? '',
+			note: record.note || '',
 			entry_date: record.entry_date
 		};
 		editImageFile = null; // Reset image file
@@ -114,6 +113,7 @@
 				await invalidateAll();
 			} else {
 				const error = await res.text();
+				console.error('API Error:', error);
 				alert(`Failed to update record: ${error}`);
 			}
 		} catch (error) {
@@ -359,7 +359,8 @@
 					<div class="edit-group">
 						<label class="form-field">
 							<span>Note:</span>
-							<textarea bind:value={editRecord.note} rows="16" required></textarea>
+							<textarea bind:value={editRecord.note} rows="16" placeholder="Enter note (optional)"
+							></textarea>
 						</label>
 					</div>
 

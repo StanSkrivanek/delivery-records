@@ -14,7 +14,6 @@
 	let odometer = $state(0);
 	let selectedFile: File | null = $state(null);
 	let note = $state('');
-	$inspect(odometer, 'Odometer reading'); // Inspect the odometer state
 	// Date picker functionality - simplified
 	let selectedDate = $state(getCurrentDate());
 
@@ -84,8 +83,6 @@
 			// Add the selected date to form data
 			formData.append('selectedDate', selectedDate);
 			formData.set('odometer', odometer.toString());
-
-			// console.log('Form data odometer:', formData.get('odometer'));
 
 			loading = true;
 

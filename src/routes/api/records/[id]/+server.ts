@@ -2,10 +2,10 @@
 // This file handles the API requests for a single delivery record.
 // It includes PUT and DELETE methods to update and delete records respectively.
 
-import { json, error } from '@sveltejs/kit';
-import type { RequestHandler } from './$types';
 import { RecordService } from '$lib/db.server';
-import { createImagePath, saveImageFile, deleteImageFile } from '$lib/utils';
+import { createImagePath, deleteImageFile, saveImageFile } from '$lib/utils';
+import { error, json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
 
 export const PUT: RequestHandler = async ({ params, request }) => {
 	try {
@@ -21,7 +21,6 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		}
 
 		const formData = await request.formData();
-		console.log("formData:", formData);
 
 		// Extract form fields
 		const loaded = Number(formData.get('loaded'));
@@ -31,6 +30,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		const missplaced = Number(formData.get('missplaced')) || 0;
 		const expense = Number(formData.get('expense')) || 0;
 		const odometer = Number(formData.get('odometer')) || 0;
+		const note = (formData.get('note') as string) || '';
 		const entryDate = formData.get('entry_date') as string;
 		const imageFile = formData.get('image') as File | null;
 		const existingImagePath = formData.get('existing_image_path') as string | null;
@@ -102,11 +102,10 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 			missplaced,
 			expense,
 			odometer,
-			
+			note,
 			entry_date: entryDate,
 			image_path: finalImagePath
 		});
-		console.log("🚀 ~ PUT ~ updatedRecord:", updatedRecord)
 
 		return json(updatedRecord);
 	} catch (err) {
