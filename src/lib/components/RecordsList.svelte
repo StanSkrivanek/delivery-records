@@ -3,13 +3,11 @@
 	import ImageUpload from './ImageUpload.svelte';
 
 	let { records } = $props();
-	console.log("🚀 ~ records:", records)
+	console.log('🚀 ~ records:', records);
 
-	let showModal = $state(false);
 	let modalImage = $state('');
 	let modalAlt = $state('');
 
-	let showEditModal = $state(false);
 	let editRecord = $state({
 		id: undefined as number | undefined,
 		loaded: 0,
@@ -28,8 +26,13 @@
 	let editImageFile = $state<File | null>(null);
 
 	// Delete dialog state
-	let showDeleteModal = $state(false);
 	let recordIdToDelete = $state(null);
+
+	let showModal = $state(false);
+	let showEditModal = $state(false);
+	let showDeleteModal = $state(false);
+	let showNoteModal = $state(false);
+	let modalNote = $state('');
 
 	/**
 	 * @param {{ loaded: number; collected: number; cutters: number; returned: number; missplaced: number; expense: number; entry_date: string; image_path: string; }} record
@@ -59,7 +62,7 @@
 			odometer: record.odometer ?? 0,
 			image_path: record.image_path ?? '',
 			note: record.note ?? '',
-			entry_date: record.entry_date,
+			entry_date: record.entry_date
 		};
 		editImageFile = null; // Reset image file
 		showEditModal = true;
@@ -131,6 +134,10 @@
 		modalAlt = '';
 	}
 
+	function closeNoteModal() {
+		showNoteModal = false;
+		modalNote = '';
+	}
 	function handleKeydown(event: { key: string }) {
 		if (event.key === 'Escape' && showModal) {
 			closeModal();
@@ -150,7 +157,10 @@
 		recordIdToDelete = recordId;
 		showDeleteModal = true;
 	}
-
+	function openNoteModal(note: string) {
+		modalNote = note;
+		showNoteModal = true;
+	}
 	function closeDeleteModal() {
 		showDeleteModal = false;
 		recordIdToDelete = null;
@@ -231,7 +241,15 @@
 							<td class="number-cell">{record.missplaced || 0}</td>
 							<td class="number-cell">{record.expense || 0}</td>
 							<td class="number-cell">{record.odometer || 0}</td>
-							<td class="note-cell">{record.note || ' --- '}</td>
+							<td class="note-cell"
+								>{#if record.note}<button
+										type="button"
+										class="btn blue"
+										onclick={() => openNoteModal(record.note)}>View Note</button
+									>{:else}
+									No Note
+								{/if}</td
+							>
 							<td class="image-cell">
 								{#if record.image_path}
 									<button
@@ -367,13 +385,13 @@
 											Remove current image
 										</button>
 									</div>
-									{:else}
+								{:else}
 									<ImageUpload
-									bind:selectedFile={editImageFile}
-									onFileSelected={handleEditImageSelected}
-									onFileRemoved={handleEditImageRemoved}
+										bind:selectedFile={editImageFile}
+										onFileSelected={handleEditImageSelected}
+										onFileRemoved={handleEditImageRemoved}
 									/>
-									{/if}
+								{/if}
 							</div>
 							{#if editImageFile}
 								<p class="new-image-text">New image will replace current image</p>
@@ -417,6 +435,26 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn-secondary" onclick={closeModal}>Close</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Note modal -->
+{#if showNoteModal}
+	<div class="modal-overlay" role="dialog" aria-modal="true">
+		<div class="modal-container">
+			<div class="modal-header">
+				<h3>Note Preview</h3>
+				<button type="button" class="close-btn" onclick={closeNoteModal} title="Close (Esc)"
+					>✕</button
+				>
+			</div>
+			<div class="modal-body">
+				<p>{modalNote}</p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn-secondary" onclick={closeNoteModal}>Close</button>
 			</div>
 		</div>
 	</div>
