@@ -6,11 +6,8 @@
 		dlvPd,
 		formatCurrency,
 		formatDate,
-		formatNumber,
 		getMonthName,
-
 		NumberNoDecimals
-
 	} from '$lib/utils';
 
 	let { records, selectedYear, selectedMonth } = $props();
@@ -21,7 +18,8 @@
 	let showModal = $state(false);
 	let modalImage = $state('');
 	let modalAlt = $state('');
-
+	let showNoteModal = $state(false);
+	let modalNote = $state('');
 	/**
 	 * @param {string} imagePath
 	 * @param {number|string} recordId
@@ -31,8 +29,12 @@
 		modalAlt = `Record #${recordId} image`;
 		showModal = true;
 	}
-
+	function openNoteModal(note: string) {
+		modalNote = note;
+		showNoteModal = true;
+	}
 	function closeModal() {
+		showNoteModal = false;
 		showModal = false;
 		modalImage = '';
 		modalAlt = '';
@@ -82,6 +84,7 @@
 						<th>Collected</th>
 						<th>Total</th>
 						<th>Odometer</th>
+						<th>Note</th>
 						<th>Image</th>
 					</tr>
 				</thead>
@@ -110,12 +113,24 @@
 							<td class="currency-cell">{formatCurrency(deliveryValue)}</td>
 							<td class="currency-cell">{formatCurrency(collectedValue)}</td>
 							<td class="total-cell">{formatCurrency(dailyValue)}</td>
-							<td class="number-cell">{record.odometer ? NumberNoDecimals(record.odometer) : '—'}</td>
+							<td class="number-cell"
+								>{record.odometer ? NumberNoDecimals(record.odometer) : '—'}</td
+							>
+							<td class="info-cell">
+								{#if record.note}<button
+										type="button"
+										class="btn purple"
+										onclick={() => openNoteModal(record.note)}>View Note</button
+									>{:else}
+									No Note
+								{/if}</td
+							>
+
 							<td class="image-cell">
 								{#if record.image_path}
 									<button
 										type="button"
-										class="image-btn"
+										class="btn blue"
 										onclick={() => openImageModal(record.image_path, record.id)}
 										title="Preview image"
 									>
@@ -144,10 +159,15 @@
 						>
 						<td class="number-cell green"><strong>{totals.delivered || 0}</strong></td>
 						<td class="currency-cell red"><strong>{formatCurrency(totals.expense)}</strong></td>
-						<td class="currency-cell blue"><strong>{formatCurrency(totals.deliveryValue)}</strong></td>
-						<td class="currency-cell blue"><strong>{formatCurrency(totals.collectedValue)}</strong></td>
+						<td class="currency-cell blue"
+							><strong>{formatCurrency(totals.deliveryValue)}</strong></td
+						>
+						<td class="currency-cell blue"
+							><strong>{formatCurrency(totals.collectedValue)}</strong></td
+						>
 						<td class="total-cell"><strong>{formatCurrency(totals.totalValue)}</strong></td>
 						<td class="number-cell">{NumberNoDecimals(totals.odometer || 0)}</td>
+						<td class="info-cell">—</td>
 						<td class="image-cell">—</td>
 					</tr>
 				</tfoot>
@@ -175,7 +195,7 @@
 		<div class="modal-container" role="document" onclick={(event) => event.stopPropagation()}>
 			<div class="modal-header">
 				<h3>Image Preview</h3>
-				<button type="button" class="close-btn" onclick={closeModal} title="Close (Esc)">
+				<button type="button" class="btn-x" onclick={closeModal} title="Close (Esc)">
 					✕
 				</button>
 			</div>
@@ -183,7 +203,35 @@
 				<img src={modalImage} alt={modalAlt} class="modal-image" />
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn-secondary" onclick={closeModal}> Close </button>
+				<button type="button" class="btn" onclick={closeModal}> Close </button>
+			</div>
+		</div>
+	</div>
+{/if}
+<!-- Note modal -->
+{#if showNoteModal}
+	<div
+		class="modal-overlay"
+		role="dialog"
+		aria-modal="true"
+		tabindex="0"
+		onclick={closeModal}
+		onkeydown={(e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				closeModal();
+			}
+		}}
+	>
+		<div class="modal-container">
+			<div class="modal-header">
+				<h3>Note Preview</h3>
+				<button type="button" class="btn-x" onclick={closeModal} title="Close (Esc)">✕</button>
+			</div>
+			<div class="modal-body">
+				<p>{modalNote}</p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn" onclick={closeModal}>Close</button>
 			</div>
 		</div>
 	</div>
@@ -278,7 +326,6 @@
 	.overview-table tbody tr:hover:not(.totals-row) {
 		background-color: #f8f9fa;
 		/* border-block: 1px solid red; */
-	
 	}
 
 	/* .id-cell {
@@ -301,7 +348,13 @@
 		/* width: 80px; */
 		border-right: 1px solid #dee2e6;
 	}
-
+	.info-cell {
+		text-align: center;
+		font-weight: 500;
+		color: #2870a7;
+		/* width: 120px; */
+		border-right: 1px solid #dee2e6;
+	}
 	.currency-cell {
 		text-align: right;
 		font-weight: 500;
@@ -345,23 +398,21 @@
 	.total-cell {
 		text-align: right;
 		border-inline: 1px solid #dee2e6;
-		
 	}
 	.footer-row {
 		background: #e9ecef !important;
 		border-top: 2px solid #ff7f7f;
-		& td{
+		& td {
 			border-inline: 1px solid #bec1c5;
 			font-weight: 600;
 			color: #273340;
 			border-bottom: none;
 		}
-		
+
 		& .total-cell {
 			font-weight: 600;
 			color: #323235;
 			background: #ebbffa;
-			
 		}
 	}
 
@@ -373,7 +424,7 @@
 		/* width: 90px; */
 	}
 
-	.image-btn {
+	.btn {
 		background: #317fd3;
 		color: white;
 		border: none;
@@ -384,7 +435,7 @@
 		transition: all 0.2s ease;
 	}
 
-	.image-btn:hover {
+	.btn:hover {
 		background: #2869ae;
 		transform: translateY(-1px);
 	}
@@ -419,6 +470,20 @@
 		flex-direction: column;
 		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 		animation: modalAppear 0.2s ease-out;
+	}
+	.btn-x {
+		background: none;
+		border: none;
+		font-size: 1.5rem;
+		cursor: pointer;
+		/* color: #666; */
+		width: 32px;
+		height: 32px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 4px;
+		transition: all 0.2s ease;
 	}
 
 	@keyframes modalAppear {

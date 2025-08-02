@@ -26,23 +26,23 @@
 	};
 
 	let {
-		// Sample data - replace with your actual data
 		apiData = [
-			{ date: '2025-01-01', delivery: 120, collections: 45, fails: 8 },
-			{ date: '2025-01-02', delivery: 135, collections: 52, fails: 12 },
-			{ date: '2025-01-03', delivery: 98, collections: 38, fails: 5 },
-			{ date: '2025-01-05', delivery: 156, collections: 61, fails: 15 },
-			{ date: '2025-01-07', delivery: 89, collections: 29, fails: 3 },
-			{ date: '2025-01-08', delivery: 142, collections: 55, fails: 9 },
-			{ date: '2025-01-10', delivery: 167, collections: 68, fails: 18 },
-			{ date: '2025-01-12', delivery: 134, collections: 48, fails: 11 },
-			{ date: '2025-01-15', delivery: 178, collections: 72, fails: 22 },
-			{ date: '2025-01-18', delivery: 145, collections: 58, fails: 14 },
-			{ date: '2025-01-20', delivery: 159, collections: 63, fails: 16 },
-			{ date: '2025-01-22', delivery: 123, collections: 41, fails: 7 },
-			{ date: '2025-01-25', delivery: 188, collections: 78, fails: 25 },
-			{ date: '2025-01-28', delivery: 156, collections: 65, fails: 19 },
-			{ date: '2025-01-30', delivery: 142, collections: 54, fails: 13 }
+			// Sample data 
+			// { date: '2025-01-01', delivery: 120, collections: 45, fails: 8 },
+			// { date: '2025-01-02', delivery: 135, collections: 52, fails: 12 },
+			// { date: '2025-01-03', delivery: 98, collections: 38, fails: 5 },
+			// { date: '2025-01-05', delivery: 156, collections: 61, fails: 15 },
+			// { date: '2025-01-07', delivery: 89, collections: 29, fails: 3 },
+			// { date: '2025-01-08', delivery: 142, collections: 55, fails: 9 },
+			// { date: '2025-01-10', delivery: 167, collections: 68, fails: 18 },
+			// { date: '2025-01-12', delivery: 134, collections: 48, fails: 11 },
+			// { date: '2025-01-15', delivery: 178, collections: 72, fails: 22 },
+			// { date: '2025-01-18', delivery: 145, collections: 58, fails: 14 },
+			// { date: '2025-01-20', delivery: 159, collections: 63, fails: 16 },
+			// { date: '2025-01-22', delivery: 123, collections: 41, fails: 7 },
+			// { date: '2025-01-25', delivery: 188, collections: 78, fails: 25 },
+			// { date: '2025-01-28', delivery: 156, collections: 65, fails: 19 },
+			// { date: '2025-01-30', delivery: 142, collections: 54, fails: 13 }
 		] as DeliveryDataPoint[],
 		
 		// Target month (format: YYYY-MM) - defaults to current month

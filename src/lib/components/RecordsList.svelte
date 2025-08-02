@@ -214,18 +214,18 @@
 			<table class="records-table">
 				<thead>
 					<tr>
-						<th>Date</th>
-						<th>Loaded</th>
-						<th>Collected</th>
-						<th>Cutters</th>
-						<th>Returned</th>
-						<th>Missplaced</th>
-						<th>Expense</th>
-						<th>Odometer</th>
-						<th>Note</th>
-						<th>Image</th>
-						<th>Edit</th>
-						<th>Delete</th>
+						<th class="date-cell">Date</th>
+						<th class="number-cell">Loaded</th>
+						<th class="number-cell">Collected</th>
+						<th class="number-cell">Cutters</th>
+						<th class="number-cell">Returned</th>
+						<th class="number-cell">Missplaced</th>
+						<th class="number-cell">Expense</th>
+						<th class="number-cell">Odometer</th>
+						<th class="info-cell">Note</th>
+						<th class="info-cell">Image</th>
+						<th class="info-cell">Edit</th>
+						<th class="info-cell">Delete</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -241,16 +241,16 @@
 							<td class="number-cell">{record.missplaced || 0}</td>
 							<td class="number-cell">{record.expense || 0}</td>
 							<td class="number-cell">{record.odometer || 0}</td>
-							<td class="note-cell"
+							<td class="info-cell"
 								>{#if record.note}<button
 										type="button"
-										class="btn blue"
+										class="btn purple"
 										onclick={() => openNoteModal(record.note)}>View Note</button
 									>{:else}
 									No Note
 								{/if}</td
 							>
-							<td class="image-cell">
+							<td class="info-cell">
 								{#if record.image_path}
 									<button
 										type="button"
@@ -502,11 +502,13 @@
 
 	.records-table thead {
 		background: #f8f9fa;
+		text-align: center;
+		/* border-bottom: 2px solid #dee2e6; */
 	}
 
 	.records-table th {
 		padding: 1rem 0.75rem;
-		text-align: left;
+		/* text-align: left; */
 		font-weight: 600;
 		/* color: #333; */
 		border-bottom: 2px solid #dee2e6;
@@ -514,6 +516,7 @@
 		top: 0;
 		background: #f8f9fa;
 		z-index: 10;
+		/* text-align: center; */
 	}
 
 	.records-table td {
@@ -534,14 +537,15 @@
 		/* color: #666; */
 		font-size: 0.9rem;
 		font-weight: 500;
+		text-align: left;
 	}
 
 	.number-cell {
-		text-align: center;
+		text-align: right;
 		font-weight: 500;
 	}
 
-	.image-cell {
+	.info-cell {
 		text-align: center;
 	}
 
@@ -689,6 +693,14 @@
 		display: flex;
 		justify-content: flex-end;
 		gap: 0.75rem;
+	}
+	textarea {
+		max-width: 100%;
+		padding: 0.6rem;
+		border: 1px solid #dee2e6;
+		border-radius: 4px;
+		font-size:.9rem;
+		resize: vertical;
 	}
 
 	.btn-secondary {
