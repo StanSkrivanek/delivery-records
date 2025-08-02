@@ -25,16 +25,16 @@
 		if (e.target === dialog) dialog.close();
 	}}
 >
-	<div>
-		<div class="modal-header">
+	<div class="dialog">
+		<div class="dialog-header">
 			{@render header?.()}
 		</div>
-		<hr />
-		<div class="modal-content">
+
+		<div class="dialog-content">
 			{@render children?.()}
 		</div>
-		<hr />
-		<div class="modal-footer">
+
+		<div class="dialog-footer">
 			{#if footer}
 				{@render footer()}
 			{:else}
@@ -47,25 +47,36 @@
 
 <style>
 	dialog {
-		max-width: 48em;
-		border-radius: 0.2em;
+		width: 48em;
+		border-radius: 0.4em;
 		border: none;
 		padding: 0;
+        @media screen and (max-width: 400px) {
+            width: 90vw;
+            
+        }
 	}
 	dialog::backdrop {
 		background: rgba(0, 0, 0, 0.3);
 	}
+
 	dialog > div {
 		padding: 1em;
+		background: white;
+		border-radius: 0.4em;
+		display: flex;
+		flex-direction: column;
+		gap: 1em;
 	}
+
 	dialog[open] {
 		animation: zoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 	}
 
-	hr {
-		border: none;
-		border-top: 1px solid #ccc;
-		margin: 1em 0;
+	@media (prefers-reduced-motion: reduce) {
+		dialog[open] {
+			animation: none;
+		}
 	}
 	@keyframes zoom {
 		from {
@@ -97,17 +108,30 @@
 		font-size: 1em;
 		cursor: pointer;
 	}
-
-	.modal-footer {
+	.dialog-header {
+		font-size: 1.2em;
+		/* font-weight: bold; */
+		/* margin-bottom: 0.5em; */
+		border-bottom: 1px solid #ccc;
+	}
+	.dialog-content {
+		flex: 1;
+		overflow-y: auto;
+	}
+	.dialog-footer {
+        padding-top: 1em;
+		border-top: 1px solid #ccc;
+	}
+	/* .modal-footer {
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		gap: 1rem;
 		flex-wrap: wrap;
-	}
+	} */
 
-	.modal-content {
+	/* .modal-content {
 		flex: 1;
 		overflow-y: auto;
-	}
+	} */
 </style>

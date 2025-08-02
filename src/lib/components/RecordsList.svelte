@@ -238,7 +238,7 @@
 										class="btn purple"
 										onclick={() => openNoteModal(record.note)}>View Note</button
 									>{:else}
-									No Note
+									<span class="no-data">No note</span>
 								{/if}</td
 							>
 							<td class="info-cell">
@@ -252,7 +252,7 @@
 										show Image
 									</button>
 								{:else}
-									<span class="no-image">No image</span>
+									<span class="no-data">No image</span>
 								{/if}
 							</td>
 							<td>
@@ -527,7 +527,7 @@
 		transform: translateY(0);
 	}
 
-	.no-image {
+	.no-data {
 		color: var(--color-slate-400);
 		font-style: italic;
 		font-size: 0.8rem;
@@ -555,7 +555,7 @@
 			& textarea {
 				resize: none;
 				min-height: 100px;
-				max-width: 100%;
+				/* max-width: 100%; */
 				padding: 0.6rem;
 				border: 1px solid #dee2e6;
 				border-radius: 4px;
@@ -698,7 +698,7 @@
 	}
 
 	.note-modal-content {
-		padding: 1rem;
+		/* padding: 1rem; */
 		max-height: 300px;
 		overflow-y: auto;
 	}
