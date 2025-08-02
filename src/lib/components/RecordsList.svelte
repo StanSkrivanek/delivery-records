@@ -26,7 +26,7 @@
 	let editImageFile = $state<File | null>(null);
 
 	// Delete dialog state
-	let recordIdToDelete = $state(null);
+	let recordIdToDelete = $state<number | null>(null);
 
 	let showModal = $state(false);
 	let showEditModal = $state(false);
@@ -108,8 +108,7 @@
 				if (idx !== -1) {
 					records[idx] = updatedRecord;
 				}
-				showEditModal = false;
-				editImageFile = null;
+				closeEditModal(); // Explicitly close modal
 				await invalidateAll();
 			} else {
 				const error = await res.text();
@@ -145,7 +144,7 @@
 		});
 	}
 
-	function openDeleteModal(recordId: null) {
+	function openDeleteModal(recordId: number) {
 		recordIdToDelete = recordId;
 		showDeleteModal = true;
 	}
@@ -161,11 +160,13 @@
 	async function confirmDeleteRecord() {
 		if (recordIdToDelete !== null) {
 			// Optimistically remove from local array for instant feedback
-			records = records.filter((r: { id: null }) => r.id !== recordIdToDelete);
-			showDeleteModal = false;
+			records = records.filter((r: { id: number | undefined }) => r.id !== recordIdToDelete);
+
+			const recordToDelete = recordIdToDelete;
+			closeDeleteModal(); // Close modal immediately
 
 			try {
-				const res = await fetch(`/api/records/${recordIdToDelete}`, { method: 'DELETE' });
+				const res = await fetch(`/api/records/${recordToDelete}`, { method: 'DELETE' });
 				if (!res.ok) {
 					alert('Failed to delete record. The page may show outdated data.');
 				}
@@ -174,8 +175,6 @@
 				console.error('Error deleting record:', error);
 				alert('Failed to delete record.');
 			}
-
-			recordIdToDelete = null;
 		}
 	}
 
@@ -296,10 +295,12 @@
 	{#snippet children()}
 		<div class="delete-modal-content">
 			<p>Are you sure you want to delete this record?</p>
-			<div class="delete-modal-actions">
-				<button class="btn red" onclick={closeDeleteModal}>Cancel</button>
-				<button class="btn blue" onclick={confirmDeleteRecord}>Delete</button>
-			</div>
+		</div>
+	{/snippet}
+	{#snippet footer()}
+		<div class="delete-modal-actions">
+			<button type="button" class="btn red" onclick={() => closeDeleteModal()}>Cancel</button>
+			<button type="button" class="btn blue" onclick={() => confirmDeleteRecord()}>Delete</button>
 		</div>
 	{/snippet}
 </Modal>
@@ -310,13 +311,7 @@
 		<h2>Edit Record | {formatEntryDate(editRecord.entry_date)}</h2>
 	{/snippet}
 	{#snippet children()}
-		<form
-			class="edit-form"
-			onsubmit={(e) => {
-				e.preventDefault();
-				saveEdit();
-			}}
-		>
+		<form class="edit-form">
 			<div class="edit-fields">
 				<div class="edit-group">
 					<label class="form-field">
@@ -398,11 +393,13 @@
 					</div>
 				</div>
 			</div>
-			<div class="edit-modal-actions">
-				<button type="button" class="btn red" onclick={closeEditModal}>Cancel</button>
-				<button type="submit" class="btn blue">Save Changes</button>
-			</div>
 		</form>
+	{/snippet}
+	{#snippet footer()}
+		<div class="edit-modal-actions">
+			<button type="button" class="btn red" onclick={closeEditModal}>Cancel</button>
+			<button type="button" class="btn blue" onclick={() => saveEdit()}>Save Changes</button>
+		</div>
 	{/snippet}
 </Modal>
 <!-- Note Modal using universal Modal -->
@@ -698,7 +695,6 @@
 		display: flex;
 		justify-content: center;
 		gap: 1rem;
-		margin-top: 1rem;
 	}
 
 	.note-modal-content {
@@ -711,9 +707,6 @@
 		display: flex;
 		justify-content: flex-end;
 		gap: 0.75rem;
-		margin-top: 1.5rem;
-		padding-top: 1rem;
-		border-top: 1px solid #dee2e6;
 	}
 
 	/* Responsive Design */
