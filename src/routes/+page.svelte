@@ -19,7 +19,7 @@
 	const failsSum = monthly.reduce((acc, item) => acc + item.fails, 0);
 	const currentMonth = new Date().getMonth();
 	const latestOdometer = data.getLatestOdometer ? data.getLatestOdometer : 0;
-	console.log("🚀 ~ latestOdometer:", latestOdometer)
+	// console.log("🚀 ~ latestOdometer:", latestOdometer)
 </script>
 
 <svelte:head>

@@ -22,11 +22,18 @@
 		data = [] as DataPoint[],
 		xKey = 'date' as string,
 		yKeys = ['value1', 'value2', 'value3'] as string[],
-		// Optional metrics configuration
-		// metrics={[{key: "delivery", name: "Delivery", color: "#4f46e5"}, {key: "collections", name: "Collections", color: "#10b981"}, {key: "fails", name: "Fails", color: "#ef4444"}]} -->
-		// If provided, this will override yKeys
-		// If not provided, it will auto-generate based on yKeys
-		metrics = [] as MetricConfig[], // Metric configuration - can override yKeys if provided
+		metrics = [] as MetricConfig[], // Metric automatically generated from yKeys if not provided 
+
+		// Optionally we can provide `metrics` configuration that will override autogeneration
+		// This allows for custom names and colors for each metric
+		// EXAMPLE:
+		// metrics = [
+		// 	{key: "delivery", name: "Delivery", color: "#4f46e5"},
+		// 	{key: "collections", name: "Collections", color: "#10b981"},
+		// 	{key: "fails", name: "Fails", color: "#ef4444"}
+		// ] as MetricConfig[],
+
+		// If not provided, it will auto-generate `metrics` (colors & names) based on yKeys
 
 		// Chart appearance
 		width = '100%' as number | string,
@@ -137,7 +144,7 @@
 			if (typeof height === 'string' && (height.includes('%') || height === '100%')) {
 				return containerHeight;
 			}
-			console.log('HEIGHT', getNumericValue(height));
+			// console.log('HEIGHT', getNumericValue(height));
 			return getNumericValue(height);
 		})()
 	);
