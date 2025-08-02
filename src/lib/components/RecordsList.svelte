@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import ImageUpload from './ImageUpload.svelte';
+	import ImageUpload from '$lib/components/ImageUpload.svelte';
+	import Modal from '$lib/components/popups/Modal.svelte';
 
 	let { records } = $props();
 
@@ -71,7 +72,6 @@
 		showEditModal = false;
 		editImageFile = null;
 	}
-	// function to format number 123.456
 
 	async function saveEdit() {
 		try {
@@ -128,20 +128,12 @@
 		showModal = true;
 	}
 
-	function closeModal() {
-		showModal = false;
-		modalImage = '';
-		modalAlt = '';
-	}
-
 	function closeNoteModal() {
 		showNoteModal = false;
 		modalNote = '';
 	}
 	function handleKeydown(event: { key: string }) {
-		if (event.key === 'Escape' && showModal) {
-			closeModal();
-		}
+		// Keyboard navigation can be handled by the universal Modal component
 	}
 
 	function formatEntryDate(dateString: string | number | Date) {
@@ -284,182 +276,146 @@
 	{/if}
 </div>
 
-<!-- Delete Confirmation Modal -->
-{#if showDeleteModal}
-	<div class="modal-overlay" role="dialog" aria-modal="true" tabindex="0">
-		<dialog class="modal-container" open>
-			<div class="modal-header">
-				<h3>Confirm Delete</h3>
-			</div>
-			<div class="modal-body">
-				<p>Are you sure you want to delete this record?</p>
-			</div>
-			<div class="modal-footer">
+<!-- Image Modal using universal Modal -->
+<Modal bind:showModal>
+	{#snippet header()}
+		<h2>Image Preview</h2>
+	{/snippet}
+	{#snippet children()}
+		<div class="image-modal-content">
+			<img src={modalImage} alt={modalAlt} class="modal-image" />
+		</div>
+	{/snippet}
+</Modal>
+
+<!-- Delete Confirmation Modal using universal Modal -->
+<Modal bind:showModal={showDeleteModal}>
+	{#snippet header()}
+		<h2>Confirm Delete</h2>
+	{/snippet}
+	{#snippet children()}
+		<div class="delete-modal-content">
+			<p>Are you sure you want to delete this record?</p>
+			<div class="delete-modal-actions">
 				<button class="btn red" onclick={closeDeleteModal}>Cancel</button>
 				<button class="btn blue" onclick={confirmDeleteRecord}>Delete</button>
 			</div>
-		</dialog>
-	</div>
-{/if}
+		</div>
+	{/snippet}
+</Modal>
 
-<!-- Edit Modal -->
-{#if showEditModal}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<div class="modal-overlay" role="dialog" aria-modal="true" onclick={closeEditModal} tabindex="0">
-		<dialog class="modal-container" onclick={(e) => e.stopPropagation()}>
-			<div class="modal-header">
-				<h3>Edit Record | {formatEntryDate(editRecord.entry_date)}</h3>
-				<button type="button" class="btn red" onclick={closeEditModal} title="Close (Esc)">✕</button
-				>
-			</div>
-			<form
-				class="modal-body edit-form"
-				onsubmit={(e) => {
-					e.preventDefault();
-					saveEdit();
-				}}
-			>
-				<div class="edit-fields">
-					<div class="edit-group">
-						<label class="form-field">
-							<span>Entry Date:</span>
-							<input type="date" bind:value={editRecord.entry_date} required />
-						</label>
-						<label class="form-field">
-							<span>Loaded:</span>
-							<input type="number" bind:value={editRecord.loaded} min="0" required />
-						</label>
-						<label class="form-field">
-							<span>Collected:</span>
-							<input type="number" bind:value={editRecord.collected} min="0" required />
-						</label>
-						<label class="form-field">
-							<span>Cutters:</span>
-							<input type="number" bind:value={editRecord.cutters} min="0" required />
-						</label>
-					</div>
-					<div class="edit-group">
-						<label class="form-field">
-							<span>Returned:</span>
-							<input type="number" bind:value={editRecord.returned} min="0" required />
-						</label>
-						<label class="form-field">
-							<span>Missplaced:</span>
-							<input type="number" bind:value={editRecord.missplaced} min="0" />
-						</label>
-						<label class="form-field">
-							<span>Expense:</span>
-							<input type="number" bind:value={editRecord.expense} min="0" step="0.01" />
-						</label>
-						<label class="form-field">
-							<span>Odometer:</span>
-							<input type="number" bind:value={editRecord.odometer} min="0" required />
-						</label>
-					</div>
-					<div class="edit-group">
-						<label class="form-field">
-							<span>Note:</span>
-							<textarea bind:value={editRecord.note} rows="16" placeholder="Enter note (optional)"
-							></textarea>
-						</label>
-					</div>
+<!-- Edit Modal using universal Modal -->
+<Modal bind:showModal={showEditModal}>
+	{#snippet header()}
+		<h2>Edit Record | {formatEntryDate(editRecord.entry_date)}</h2>
+	{/snippet}
+	{#snippet children()}
+		<form
+			class="edit-form"
+			onsubmit={(e) => {
+				e.preventDefault();
+				saveEdit();
+			}}
+		>
+			<div class="edit-fields">
+				<div class="edit-group">
+					<label class="form-field">
+						<span>Entry Date:</span>
+						<input type="date" bind:value={editRecord.entry_date} required />
+					</label>
+					<label class="form-field">
+						<span>Loaded:</span>
+						<input type="number" bind:value={editRecord.loaded} min="0" required />
+					</label>
+					<label class="form-field">
+						<span>Collected:</span>
+						<input type="number" bind:value={editRecord.collected} min="0" required />
+					</label>
+					<label class="form-field">
+						<span>Cutters:</span>
+						<input type="number" bind:value={editRecord.cutters} min="0" required />
+					</label>
+				</div>
+				<div class="edit-group">
+					<label class="form-field">
+						<span>Returned:</span>
+						<input type="number" bind:value={editRecord.returned} min="0" required />
+					</label>
+					<label class="form-field">
+						<span>Missplaced:</span>
+						<input type="number" bind:value={editRecord.missplaced} min="0" />
+					</label>
+					<label class="form-field">
+						<span>Expense:</span>
+						<input type="number" bind:value={editRecord.expense} min="0" step="0.01" />
+					</label>
+					<label class="form-field">
+						<span>Odometer:</span>
+						<input type="number" bind:value={editRecord.odometer} min="0" required />
+					</label>
+				</div>
+				<div class="edit-group">
+					<label class="form-field">
+						<span>Note:</span>
+						<textarea bind:value={editRecord.note} rows="16" placeholder="Enter note (optional)"
+						></textarea>
+					</label>
+				</div>
 
-					<!-- Image Upload Section -->
-					<div class="form-field image-upload-section">
-						<div>
-							<span>Image:</span>
-							<div class="image-upload-wrapper">
-								{#if editRecord.image_path && !editImageFile}
-									<div class="current-image">
-										<!-- svelte-ignore a11y_img_redundant_alt -->
-										<img
-											src="/{editRecord.image_path}"
-											alt="Current image"
-											class="current-image-preview"
-										/>
-										<p class="current-image-text">Current image</p>
-										<button
-											type="button"
-											class="btn-remove-current"
-											onclick={() => (editRecord.image_path = '')}
-										>
-											Remove current image
-										</button>
-									</div>
-								{:else}
-									<ImageUpload
-										bind:selectedFile={editImageFile}
-										onFileSelected={handleEditImageSelected}
-										onFileRemoved={handleEditImageRemoved}
+				<!-- Image Upload Section -->
+				<div class="form-field image-upload-section">
+					<div>
+						<span>Image:</span>
+						<div class="image-upload-wrapper">
+							{#if editRecord.image_path && !editImageFile}
+								<div class="current-image">
+									<!-- svelte-ignore a11y_img_redundant_alt -->
+									<img
+										src="/{editRecord.image_path}"
+										alt="Current image"
+										class="current-image-preview"
 									/>
-								{/if}
-							</div>
-							{#if editImageFile}
-								<p class="new-image-text">New image will replace current image</p>
+									<p class="current-image-text">Current image</p>
+									<button
+										type="button"
+										class="btn-remove-current"
+										onclick={() => (editRecord.image_path = '')}
+									>
+										Remove current image
+									</button>
+								</div>
+							{:else}
+								<ImageUpload
+									bind:selectedFile={editImageFile}
+									onFileSelected={handleEditImageSelected}
+									onFileRemoved={handleEditImageRemoved}
+								/>
 							{/if}
 						</div>
+						{#if editImageFile}
+							<p class="new-image-text">New image will replace current image</p>
+						{/if}
 					</div>
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn red" onclick={closeEditModal}>Cancel</button>
-					<button type="submit" class="btn blue">Save Changes</button>
-				</div>
-			</form>
-		</dialog>
-	</div>
-{/if}
-
-<!-- Image Modal -->
-{#if showModal}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_interactive_supports_focus -->
-	<div
-		class="modal-overlay"
-		role="button"
-		tabindex="0"
-		aria-label="Close modal"
-		onclick={closeModal}
-	>
-		>
-		<div
-			class="modal-container"
-			role="dialog"
-			aria-modal="true"
-			onclick={(e) => e.stopPropagation()}
-		>
-			<div class="modal-header">
-				<h3>Image Preview</h3>
-				<button type="button" class="close-btn" onclick={closeModal} title="Close (Esc)">✕</button>
 			</div>
-			<div class="modal-body">
-				<img src={modalImage} alt={modalAlt} class="modal-image" />
+			<div class="edit-modal-actions">
+				<button type="button" class="btn red" onclick={closeEditModal}>Cancel</button>
+				<button type="submit" class="btn blue">Save Changes</button>
 			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn-secondary" onclick={closeModal}>Close</button>
-			</div>
+		</form>
+	{/snippet}
+</Modal>
+<!-- Note Modal using universal Modal -->
+<Modal bind:showModal={showNoteModal}>
+	{#snippet header()}
+		<h2>Note Preview</h2>
+	{/snippet}
+	{#snippet children()}
+		<div class="note-modal-content">
+			<p>{modalNote}</p>
 		</div>
-	</div>
-{/if}
-
-<!-- Note modal -->
-{#if showNoteModal}
-	<div class="modal-overlay" role="dialog" aria-modal="true">
-		<div class="modal-container">
-			<div class="modal-header">
-				<h3>Note Preview</h3>
-				<button type="button" class="close-btn" onclick={closeNoteModal} title="Close (Esc)"
-					>✕</button
-				>
-			</div>
-			<div class="modal-body">
-				<p>{modalNote}</p>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn-secondary" onclick={closeNoteModal}>Close</button>
-			</div>
-		</div>
-	</div>
-{/if}
+	{/snippet}
+</Modal>
 
 <style>
 	.main-container {
@@ -580,175 +536,10 @@
 		font-size: 0.8rem;
 	}
 
-	.btn-danger {
-		background: #dc3545;
-		color: white;
-		border: none;
-		border-radius: 4px;
-		padding: 0.5rem 0.75rem;
-		font-size: 0.8rem;
-		cursor: pointer;
-		transition: all 0.2s ease;
-	}
-
-	.btn-danger:hover {
-		background: #c82333;
-	}
-
-	/* Modal Styles */
-	.modal-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.8);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 1000;
-		padding: 1rem;
-	}
-
-	.modal-container {
-		background: white;
-		border-radius: 8px;
-		width: 90vw;
-		max-height: 90vh;
-		display: flex;
-		flex-direction: column;
-		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-		animation: modalAppear 0.2s ease-out;
-	}
-
-	.modal-container form {
-		display: flex;
-		flex-direction: column;
-	}
-	@keyframes modalAppear {
-		from {
-			opacity: 0;
-			transform: scale(0.9) translateY(-20px);
-		}
-		to {
-			opacity: 1;
-			transform: scale(1) translateY(0);
-		}
-	}
-
-	.modal-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 1rem 1.5rem;
-		border-bottom: 1px solid #dee2e6;
-	}
-
-	.modal-header h3 {
-		margin: 0;
-		/* color: #333; */
-		font-size: 1.25rem;
-	}
-
-	.close-btn {
-		background: none;
-		border: none;
-		font-size: 1.5rem;
-		cursor: pointer;
-		/* color: #666; */
-		width: 32px;
-		height: 32px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: 4px;
-		transition: all 0.2s ease;
-	}
-
-	.close-btn:hover {
-		background: #f8f9fa;
-		/* color: #333; */
-	}
-
-	.modal-body {
-		padding: 1rem;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		flex: 1;
-		/* overflow: hidden; */
-	}
-
-	.modal-image {
-		max-width: 100%;
-		max-height: 70vh;
-		object-fit: contain;
-		border-radius: 4px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	}
-
-	.modal-footer {
-		padding: 1rem 1.5rem;
-		border-top: 1px solid #dee2e6;
-		display: flex;
-		justify-content: flex-end;
-		gap: 0.75rem;
-	}
-	textarea {
-		max-width: 100%;
-		padding: 0.6rem;
-		border: 1px solid #dee2e6;
-		border-radius: 4px;
-		font-size:.9rem;
-		resize: vertical;
-	}
-
-	.btn-secondary {
-		background: #6c757d;
-		color: white;
-		border: none;
-		border-radius: 4px;
-		padding: 0.5rem 1rem;
-		cursor: pointer;
-		transition: background-color 0.2s ease;
-	}
-
-	.btn-secondary:hover {
-		background: #5a6268;
-	}
-
-	.btn-primary {
-		/* background: #007bff; */
-		color: white;
-		border: none;
-		border-radius: 4px;
-		padding: 0.5rem 1rem;
-		cursor: pointer;
-		transition:
-			background-color 0.2s ease,
-			transform 0.1s ease;
-		font-weight: 500;
-	}
-
-	.btn-primary:hover {
-		/* background: #0069d9; */
-		transform: translateY(-1px);
-	}
-
-	.btn-primary:active {
-		transform: translateY(0);
-	}
-
 	/* Edit Form Styles */
-	/* .edit-modal {
-		width: 500px;
-		max-width: 90vw;
-		max-height: 90vh;
-		overflow-y: auto;
-	} */
-
 	.edit-form {
-		padding: 1.5rem;
+		padding: 0;
+		display: flex;
 		flex-direction: column;
 		align-items: stretch;
 		justify-content: flex-start;
@@ -757,7 +548,6 @@
 	.edit-fields {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-		/* flex-direction: column; */
 		gap: 1rem;
 		margin-bottom: 1.5rem;
 		& .edit-group {
@@ -768,6 +558,11 @@
 			& textarea {
 				resize: none;
 				min-height: 100px;
+				max-width: 100%;
+				padding: 0.6rem;
+				border: 1px solid #dee2e6;
+				border-radius: 4px;
+				font-size: 0.9rem;
 			}
 		}
 	}
@@ -876,6 +671,49 @@
 		font-size: 0.85rem;
 		color: #28a745;
 		font-weight: 500;
+	}
+
+	/* Modal content styles */
+	.image-modal-content {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 1rem;
+	}
+
+	.modal-image {
+		max-width: 100%;
+		max-height: 70vh;
+		object-fit: contain;
+		border-radius: 4px;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	}
+
+	.delete-modal-content {
+		text-align: center;
+		padding: 1rem;
+	}
+
+	.delete-modal-actions {
+		display: flex;
+		justify-content: center;
+		gap: 1rem;
+		margin-top: 1rem;
+	}
+
+	.note-modal-content {
+		padding: 1rem;
+		max-height: 300px;
+		overflow-y: auto;
+	}
+
+	.edit-modal-actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.75rem;
+		margin-top: 1.5rem;
+		padding-top: 1rem;
+		border-top: 1px solid #dee2e6;
 	}
 
 	/* Responsive Design */

@@ -415,23 +415,23 @@
 	--color-error-light: oklch(0.95 0.05 25);
 
 	/* Text Colors */
-	--text-primary: var(--slate-900);
-	--text-secondary: var(--slate-600);
-	--text-muted: var(--slate-500);
-	--text-light: var(--slate-400);
+	--text-primary: var(--color-slate-900);
+	--text-secondary: var(--color-slate-600);
+	--text-muted: var(--color-slate-500);
+	--text-light: var(--color-slate-400);
 	--text-inverse: oklch(1 0 0); /* Pure white */
 
 	/* Background Colors */
 	--bg-primary: oklch(1 0 0); /* Pure white */
-	--bg-secondary: var(--slate-50);
-	--bg-tertiary: var(--slate-100);
-	--bg-dark: var(--slate-900);
+	--bg-secondary: var(--color-slate-50);
+	--bg-tertiary: var(--color-slate-100);
+	--bg-dark: var(--color-slate-900);
 	--bg-overlay: oklch(0 0 0 / 0.5); /* Black with 50% alpha */
 
 	/* Border Colors */
-	--border-light: var(--slate-200);
-	--border-medium: var(--slate-300);
-	--border-dark: var(--slate-400);
+	--border-light: var(--color-slate-200);
+	--border-medium: var(--color-slate-300);
+	--border-dark: var(--color-slate-400);
 
 	/* Spacing Scale (Tailwind 4 based) */
 	--space-0: 0;
@@ -585,12 +585,13 @@
 		color: var(--text-primary);
 		line-height: 1.6;
 	}
-
+	
 	main,
 	.main {
 		max-width: var(--max-w);
 		margin: 0 auto;
 		padding: var(--space-4);
+		/* background: var(--bg-dark); */
 	}
 }
 @layer utilities {
