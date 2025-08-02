@@ -40,8 +40,8 @@
 		showValues = false,
 
 		// Spacing
-		groupSpacing = 4,
-		barSpacing = 2,
+		groupSpacing = 5,
+		barSpacing = 1,
 		legendGap = 10,
 
 		// Customization
@@ -307,20 +307,44 @@
 	onMount(() => {
 		mounted = true;
 
-		// Set up ResizeObserver
+		// Set up ResizeObserver with debouncing to prevent loop errors
 		if (containerElement) {
+			let resizeTimeout: ReturnType<typeof setTimeout>;
+
 			const updateContainerSize = () => {
-				const rect = containerElement.getBoundingClientRect();
-				containerWidth = rect.width;
-				containerHeight = rect.height;
+				// Clear any pending timeout
+				if (resizeTimeout) {
+					clearTimeout(resizeTimeout);
+				}
+
+				// Debounce the update to prevent ResizeObserver loop errors
+				resizeTimeout = setTimeout(() => {
+					requestAnimationFrame(() => {
+						if (containerElement) {
+							const rect = containerElement.getBoundingClientRect();
+							containerWidth = rect.width;
+							containerHeight = rect.height;
+						}
+					});
+				}, 10);
 			};
 
+			// Initial size update
 			updateContainerSize();
 
-			const resizeObserver = new ResizeObserver(updateContainerSize);
+			const resizeObserver = new ResizeObserver((entries) => {
+				// Use requestAnimationFrame to avoid ResizeObserver loop
+				requestAnimationFrame(() => {
+					updateContainerSize();
+				});
+			});
+
 			resizeObserver.observe(containerElement);
 
 			return () => {
+				if (resizeTimeout) {
+					clearTimeout(resizeTimeout);
+				}
 				resizeObserver.disconnect();
 			};
 		}

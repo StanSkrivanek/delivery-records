@@ -35,7 +35,7 @@
 	xKey="date"
 	yKeys={['delivery', 'collections', 'fails']}
 	height="480"
-	fillMissingDates={false}
+	fillMissingDates={true}
 />
 <div class="cards-grid">
 	<!-- Total Delivered -->
