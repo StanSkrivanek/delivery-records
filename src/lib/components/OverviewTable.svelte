@@ -48,6 +48,55 @@
 			closeModal();
 		}
 	}
+// function calculateDailyDistances(records: DeliveryRecord[]): { date: string; distance: number }[] {
+// 	// Sort records by date if not already sorted
+// 	const sortedRecords = [...records].sort((a, b) => {
+// 		if (!a.entry_date || !b.entry_date) return 0;
+// 		return new Date(a.entry_date).getTime() - new Date(b.entry_date).getTime();
+// 	});
+// 	console.log("🚀 ~ calculateDailyDistances ~ sortedRecords:", sortedRecords)
+
+// 	const dailyDistances = [];
+// 	let lastValidOdometer: number | null = null;
+
+// 	for (const record of sortedRecords) {
+// 		// Skip records without odometer readings
+// 		if (record.odometer === undefined || record.odometer === null) {
+// 			continue;
+// 		}
+
+// 		if (lastValidOdometer !== null) {
+// 			// Calculate distance as current odometer minus previous odometer
+// 			const distance = record.odometer - lastValidOdometer;
+
+// 			// Only add positive distances to avoid errors in data
+// 			if (distance >= 0) {
+// 				dailyDistances.push({
+// 					date: record.entry_date || new Date().toISOString().split('T')[0],
+// 					distance: distance
+// 				});
+// 			}
+// 		}
+
+// 		// Update last valid odometer for next calculation
+// 		lastValidOdometer = record.odometer;
+// 	}
+
+// 	return dailyDistances;
+// }
+
+// function calculateTotalDistance(records: DeliveryRecord[]): number {
+// 	const dailyDistances = calculateDailyDistances(records);
+// 	return dailyDistances.reduce((total, record) => total + record.distance, 0);
+// }
+// function calculateAverageDailyDistance(records: DeliveryRecord[]): number {
+// 	const dailyDistances = calculateDailyDistances(records);
+// 	if (dailyDistances.length === 0) return 0;
+// 	const totalDistance = calculateTotalDistance(records);
+// 	return totalDistance / dailyDistances.length;
+// }
+
+// console.log(`Total distance: ${calculateDailyDistances(records)} km`);
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -151,8 +200,8 @@
 						<td class="number-cell"><strong>{totals.loaded}</strong></td>
 						<td class="number-cell"><strong>{totals.collected}</strong></td>
 						<td class="number-cell"><strong>{totals.cutters}</strong></td>
-						<td class="number-cell" class:expense={totals.returned > 0}
-							><strong>{totals.returned}</strong></td
+						<td class="number-cell" class:expense={(totals.returned ?? 0) > 0}
+							><strong>{totals.returned ?? 0}</strong></td
 						>
 						<td class="number-cell" class:expense={totals.missplaced > 0}
 							><strong>{totals.missplaced || 0}</strong></td
@@ -166,9 +215,9 @@
 							><strong>{formatCurrency(totals.collectedValue)}</strong></td
 						>
 						<td class="total-cell"><strong>{formatCurrency(totals.totalValue)}</strong></td>
-						<td class="number-cell">{NumberNoDecimals(totals.odometer || 0)}</td>
 						<td class="info-cell">—</td>
-						<td class="image-cell">—</td>
+						<td class="info-cell">—</td>
+						<td class="info-cell">—</td>
 					</tr>
 				</tfoot>
 			</table>
@@ -511,7 +560,7 @@
 		font-size: 1.25rem;
 	}
 
-	.close-btn {
+	/* .close-btn {
 		background: none;
 		border: none;
 		font-size: 1.5rem;
@@ -524,12 +573,12 @@
 		justify-content: center;
 		border-radius: 4px;
 		transition: all 0.2s ease;
-	}
+	} */
 
-	.close-btn:hover {
+	/* .close-btn:hover {
 		background: #f8f9fa;
 		color: #333;
-	}
+	} */
 
 	.modal-body {
 		padding: 1rem;
@@ -555,9 +604,9 @@
 		justify-content: flex-end;
 	}
 
-	.btn-secondary:hover {
+	/* .btn-secondary:hover {
 		background: #5a6268;
-	}
+	} */
 
 	@media (max-width: 768px) {
 		.table-header {

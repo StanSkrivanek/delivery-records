@@ -92,6 +92,7 @@
 		}
 	});
 
+
 	// Manual refresh function
 	async function refreshData() {
 		await invalidateAll();

@@ -1,14 +1,43 @@
 import fs from 'fs';
 import path from 'path';
 
+const PPU_DELIVERY = 4; // Price per delivery without tax
+const PPU_COLLECTION = 1; // Price per collection without tax
+const TAX_RATE = 0.23; // Tax rate (23%)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ODOMETER_INIT = 267317;  //INITIAL ODOMETER VALUE, NOT USED IN CALCULATIONS
+/**
+ * Type definition for a delivery record
+ */
 interface DeliveryRecord {
 	loaded: number;
-	returned: number;
-	missplaced?: number;
+	returned?: number;
 	collected?: number;
 	cutters?: number;
+	missplaced?: number;
 	expense?: number;
+	entry_date: string;
+	created_at?: string;
+	image_path?: string;
+	note?: string;
 	odometer?: number;
+}
+
+/**
+ * Type definition for record totals
+ */
+interface RecordTotals {
+	loaded: number;
+	returned?: number;
+	collected: number;
+	cutters: number;
+	missplaced: number;
+	delivered: number;
+	expense: number;
+	odometer: number;
+	deliveryValue: number;
+	collectedValue: number;
+	totalValue: number;
 }
 // IMAGE HELPER-fn-
 
@@ -96,7 +125,7 @@ export function dlvPd(record: DeliveryRecord): number {
 	return (
 		record.loaded -
 			((record.collected ?? 0) + (record.cutters ?? 0)) -
-			(record.returned + (record.missplaced ?? 0)) || 0
+			((record.returned ?? 0) + (record.missplaced ?? 0)) || 0
 	);
 }
 
@@ -111,7 +140,7 @@ export function dpm(records: DeliveryRecord[]): number {
 			sum +
 			(record.loaded -
 				((record.collected || 0) + (record.cutters || 0)) -
-				(record.returned + (record.missplaced || 0)) || 0),
+				((record.returned ?? 0) + (record.missplaced || 0)) || 0),
 		0
 	);
 	return records.length > 0 ? totalDelivered / records.length : 0;
@@ -122,9 +151,6 @@ export function dpm(records: DeliveryRecord[]): number {
 // @returns Object containing calculated analytics
 //
 
-const PPU_DELIVERY = 4; // Price per delivery without tax
-const PPU_COLLECTION = 1; // Price per collection without tax
-const TAX_RATE = 0.23; // Tax rate (23%)
 
 export function calculateAnalytics(records: DeliveryRecord[]) {
 	// Basic metrics
@@ -183,6 +209,7 @@ export function NumberNoDecimals(value: string | number | bigint) {
 		maximumFractionDigits: 0
 	}).format(typeof value === 'string' ? Number(value) : value);
 }
+
 export function formatNumberWithCommas(value: string | number | bigint) {
 	return new Intl.NumberFormat('en-US', {
 		minimumFractionDigits: 0,
@@ -297,22 +324,7 @@ export function calculateTotalExpense(records: DeliveryRecord[]): number {
 	return records.reduce((sum, record) => sum + (record.expense ?? 0), 0);
 }
 
-/**
- * Type definition for record totals
- */
-interface RecordTotals {
-	loaded: number;
-	collected: number;
-	cutters: number;
-	returned: number;
-	missplaced: number;
-	delivered: number;
-	expense: number;
-	odometer: number;
-	deliveryValue: number;
-	collectedValue: number;
-	totalValue: number;
-}
+
 
 /**
  * Calculates all record totals needed for tables and analytics
@@ -344,17 +356,153 @@ export function calculateRecordTotals(records: DeliveryRecord[]): RecordTotals {
 		const collectedValue = calculateCollectedValue((record.collected ?? 0) + (record.cutters ?? 0));
 
 		return {
-			loaded: acc.loaded + (record.loaded ?? 0),
-			collected: acc.collected + (record.collected ?? 0),
-			cutters: acc.cutters + (record.cutters ?? 0),
-			returned: acc.returned + (record.returned ?? 0),
-			missplaced: acc.missplaced + (record.missplaced ?? 0),
-			delivered: acc.delivered + delivered,
-			expense: acc.expense + (record.expense ?? 0),
-			odometer: acc.odometer + (record.odometer ?? 0),
-			deliveryValue: acc.deliveryValue + deliveryValue,
-			collectedValue: acc.collectedValue + collectedValue,
-			totalValue: acc.totalValue + deliveryValue + collectedValue
+			loaded: (acc.loaded ?? 0) + (record.loaded ?? 0),
+			collected: (acc.collected ?? 0) + (record.collected ?? 0),
+			cutters: (acc.cutters ?? 0) + (record.cutters ?? 0),
+			returned: (acc.returned ?? 0) + (record.returned ?? 0),
+			missplaced: (acc.missplaced ?? 0) + (record.missplaced ?? 0),
+			delivered: (acc.delivered ?? 0) + delivered,
+			expense: (acc.expense ?? 0) + (record.expense ?? 0),
+			odometer: (acc.odometer ?? 0) + (record.odometer ?? 0),
+			deliveryValue: (acc.deliveryValue ?? 0) + deliveryValue,
+			collectedValue: (acc.collectedValue ?? 0) + collectedValue,
+			totalValue: (acc.totalValue ?? 0) + deliveryValue + collectedValue
 		};
 	}, totals);
+}
+
+
+// ODOMETER HELPER FUNCTIONS
+
+/**
+ * Calculate daily distance traveled based on odometer readings
+ * @param records Array of delivery records sorted by date (oldest to newest)
+ * @returns Array of daily distances with corresponding dates
+ */
+export function calculateDailyDistances(records: DeliveryRecord[]): { date: string; distance: number }[] {
+	// Sort records by date if not already sorted
+	const sortedRecords = [...records].sort((a, b) => {
+		if (!a.entry_date || !b.entry_date) return 0;
+		return new Date(a.entry_date).getTime() - new Date(b.entry_date).getTime();
+	});
+
+	const dailyDistances = [];
+	let lastValidOdometer: number | null = null;
+
+	for (const record of sortedRecords) {
+		// Skip records without odometer readings
+		if (record.odometer === undefined || record.odometer === null) {
+			continue;
+		}
+
+		if (lastValidOdometer !== null) {
+			// Calculate distance as current odometer minus previous odometer
+			const distance = record.odometer - lastValidOdometer;
+
+			// Only add positive distances to avoid errors in data
+			if (distance >= 0) {
+				dailyDistances.push({
+					date: record.entry_date || new Date().toISOString().split('T')[0],
+					distance: distance
+				});
+			}
+		}
+
+		// Update last valid odometer for next calculation
+		lastValidOdometer = record.odometer;
+	}
+
+	return dailyDistances;
+}
+
+/**
+ * Calculate total distance traveled from a series of records
+ * @param records Array of delivery records
+ * @returns Total distance in kilometers
+ */
+export function calculateTotalDistance(records: DeliveryRecord[]): number {
+	const dailyDistances = calculateDailyDistances(records);
+	return dailyDistances.reduce((total, day) => total + day.distance, 0);
+}
+
+/**
+ * Calculate average daily distance
+ * @param records Array of delivery records
+ * @returns Average daily distance in kilometers
+ */
+export function calculateAverageDailyDistance(records: DeliveryRecord[]): number {
+	const dailyDistances = calculateDailyDistances(records);
+	return dailyDistances.length > 0
+		? dailyDistances.reduce((total, day) => total + day.distance, 0) / dailyDistances.length
+		: 0;
+}
+
+
+/**
+ * Filter records for the current month
+ * @param records Array of delivery records
+ * @returns Array of records from the current month only
+ */
+export function filterCurrentMonthRecords(records: DeliveryRecord[]): DeliveryRecord[] {
+	const now = new Date();
+	const currentYear = now.getFullYear();
+	const currentMonth = now.getMonth(); // 0-based index (0 = January)
+
+	return records.filter(record => {
+		if (!record.entry_date) return false;
+		const recordDate = new Date(record.entry_date);
+		return recordDate.getFullYear() === currentYear && recordDate.getMonth() === currentMonth;
+	});
+}
+
+/**
+ * Calculate daily distances for the current month
+ * @param records Array of delivery records
+ * @returns Array of daily distances for the current month
+ */
+export function calculateCurrentMonthDailyDistances(records: DeliveryRecord[]): { date: string; distance: number }[] {
+	const currentMonthRecords = filterCurrentMonthRecords(records);
+	return calculateDailyDistances(currentMonthRecords);
+}
+
+/**
+ * Calculate total distance for the current month
+ * @param records Array of delivery records
+ * @returns Total distance in kilometers for the current month
+ */
+export function calculateCurrentMonthTotalDistance(records: DeliveryRecord[]): number {
+	const currentMonthRecords = filterCurrentMonthRecords(records);
+	return calculateTotalDistance(currentMonthRecords);
+}
+
+/**
+ * Calculate average daily distance for the current month
+ * @param records Array of delivery records
+ * @returns Average daily distance in kilometers for the current month
+ */
+export function calculateCurrentMonthAverageDailyDistance(records: DeliveryRecord[]): number {
+	const currentMonthRecords = filterCurrentMonthRecords(records);
+	return calculateAverageDailyDistance(currentMonthRecords);
+}
+
+/**
+ * Get a summary of distance metrics for the current month
+ * @param records Array of delivery records
+ * @returns Object containing distance metrics for the current month
+ */
+export function getCurrentMonthDistanceSummary(records: DeliveryRecord[]): {
+	totalDistance: number;
+	averageDaily: number;
+	dailyDistances: { date: string; distance: number }[];
+	daysWithData: number;
+} {
+	const dailyDistances = calculateCurrentMonthDailyDistances(records);
+	const totalDistance = dailyDistances.reduce((sum, day) => sum + day.distance, 0);
+
+	return {
+		totalDistance,
+		averageDaily: dailyDistances.length > 0 ? totalDistance / dailyDistances.length : 0,
+		dailyDistances,
+		daysWithData: dailyDistances.length
+	};
 }
