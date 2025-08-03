@@ -171,7 +171,7 @@
 										class="btn purple"
 										onclick={() => openNoteModal(record.note)}>View Note</button
 									>{:else}
-									No Note
+									<span class="no-data">No note</span>
 								{/if}</td
 							>
 
@@ -186,7 +186,7 @@
 										Preview image
 									</button>
 								{:else}
-									<span class="no-image">No image</span>
+									<span class="no-data">No image</span>
 								{/if}
 							</td>
 						</tr>
@@ -489,7 +489,7 @@
 		transform: translateY(-1px);
 	}
 
-	.no-image {
+	.no-data {
 		color: #999;
 		font-style: italic;
 		font-size: 0.75rem;

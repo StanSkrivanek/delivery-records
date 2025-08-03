@@ -63,7 +63,7 @@
 		<p class="card-value">{failsSum} pcs</p>
 		<p class="card-subtitle">Failed deliveries</p>
 	</div>
-	<div class="card red">
+	<div class="card">
 		<div class="card-header">
 			<h3>Odometer</h3>
 		</div>
