@@ -172,7 +172,34 @@ export class RecordService {
 		const endDate = `${year}-${String(month).padStart(2, '0')}-31`;
 		return this.getRecordsByDateRange(startDate, endDate);
 	}
+	//----------------------------------------------------------------------------------- VEHICLE USAGE LOG
+	static async createVehicleUsageLog(log: {
+		entry_date: string;
+		usage_mode: 'standard' | 'no_used' | 'other';
+		vehicle_id?: number;
+		odometer_end?: number;
+		distance_manual?: number;
+		purpose?: string;
+		comment?: string;
+	}): Promise<number> {
+		const stmt = db.prepare(`
+		INSERT INTO vehicle_usage_log (
+			entry_date, usage_mode, vehicle_id, odometer_end, distance_manual, purpose, comment
+		) VALUES (?, ?, ?, ?, ?, ?, ?)
+	`);
 
+		const result = stmt.run(
+			log.entry_date,
+			log.usage_mode,
+			log.vehicle_id || 1,
+			log.odometer_end ?? null,
+			log.distance_manual ?? 0,
+			log.purpose || null,
+			log.comment || null
+		);
+
+		return result.lastInsertRowid as number;
+	}
 	//----------------------------------------------------------------------------------- ODOMETER METHODS
 
 	/**
@@ -485,6 +512,31 @@ export class RecordService {
 			if (!hasNote) {
 				db.exec('ALTER TABLE records ADD COLUMN note TEXT');
 				console.log('Added note column');
+			}
+			// Ensure vehicle_usage_log table exists
+			const vehicleLogTable = db
+				.prepare(
+					`
+  SELECT name FROM sqlite_master WHERE type='table' AND name='vehicle_usage_log'
+`
+				)
+				.get();
+
+			if (!vehicleLogTable) {
+				db.exec(`
+    CREATE TABLE vehicle_usage_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      entry_date DATE NOT NULL,
+      usage_mode TEXT NOT NULL CHECK (usage_mode IN ('standard', 'no_used', 'other')),
+      vehicle_id INTEGER DEFAULT 1,
+      odometer_end INTEGER,
+      distance_manual INTEGER DEFAULT 0,
+      purpose TEXT,
+      comment TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+				console.log('Created vehicle_usage_log table');
 			}
 		} catch (error) {
 			console.error('Migration error:', error);

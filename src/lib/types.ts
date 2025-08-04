@@ -52,3 +52,12 @@ export interface Record {
 	entry_date: string;
 	created_at?: string;
 }
+export interface VehicleUsageEntry {
+	entry_date: string;
+	usage_mode: 'standard' | 'no_used' | 'other';
+	vehicle_id?: number;
+	odometer_end?: number;
+	distance_manual?: number;
+	purpose?: string;
+	comment?: string;
+}

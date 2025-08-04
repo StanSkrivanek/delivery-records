@@ -5,7 +5,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
 	const records = await RecordService.getAllRecords();
-	console.log("🚀 ~ load ~ records:", records)
+	console.log('🚀 ~ load ~ records:', records);
 
 	// Extract unique years and months from the data
 	const yearsSet = new Set<number>();
@@ -65,6 +65,11 @@ export const actions: Actions = {
 			const odometer = Number(formData.get('odometer')) || 0;
 			const noteRaw = formData.get('note');
 			const note = typeof noteRaw === 'string' ? noteRaw : undefined;
+
+			// Vehicle usage data
+			const usage_mode = (formData.get('usage_mode') as string) || 'standard';
+			const distance_manual = Number(formData.get('distance_manual')) || 0;
+			const purpose = (formData.get('purpose') as string) || '';
 
 			// Validate required fields
 			if (isNaN(loaded) || isNaN(collected) || isNaN(cutters) || isNaN(returned)) {
@@ -135,6 +140,17 @@ export const actions: Actions = {
 				image_path: imagePath,
 				note,
 				entry_date: selectedDate
+			});
+
+			// Save vehicle usage log
+			await RecordService.createVehicleUsageLog({
+				entry_date: selectedDate,
+				usage_mode: usage_mode as 'standard' | 'no_used' | 'other',
+				vehicle_id: 1, // Default vehicle ID
+				odometer_end: usage_mode === 'standard' ? odometer : undefined,
+				distance_manual: usage_mode !== 'standard' ? distance_manual : 0,
+				purpose: usage_mode === 'other' ? purpose : undefined,
+				comment: note
 			});
 
 			return { success: true };
