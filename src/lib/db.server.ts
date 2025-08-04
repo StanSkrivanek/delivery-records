@@ -35,8 +35,14 @@ db.exec(`
     distance_manual INTEGER DEFAULT 0,
     purpose TEXT,
     comment TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    record_id INTEGER REFERENCES records(id)
   )
+`);
+
+// Create index if it doesn't exist
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_vehicle_usage_log_record_id ON vehicle_usage_log(record_id);
 `);
 
 export interface Record {
@@ -104,6 +110,33 @@ export class RecordService {
 	static async getRecordById(id: number): Promise<Record | null> {
 		const stmt = db.prepare('SELECT * FROM records WHERE id = ?');
 		return stmt.get(id) as Record | null;
+	}
+
+	static async getRecordWithVehicleUsageById(id: number): Promise<
+		| (Record & {
+				usage_mode?: 'standard' | 'no_used' | 'other';
+				distance_manual?: number;
+				purpose?: string;
+		  })
+		| null
+	> {
+		const stmt = db.prepare(`
+			SELECT 
+				r.*,
+				v.usage_mode,
+				v.distance_manual,
+				v.purpose
+			FROM records r 
+			LEFT JOIN vehicle_usage_log v ON r.id = v.record_id OR (v.record_id IS NULL AND r.entry_date = v.entry_date)
+			WHERE r.id = ?
+		`);
+		return stmt.get(id) as
+			| (Record & {
+					usage_mode?: 'standard' | 'no_used' | 'other';
+					distance_manual?: number;
+					purpose?: string;
+			  })
+			| null;
 	}
 
 	static async updateRecord(
@@ -181,11 +214,12 @@ export class RecordService {
 		distance_manual?: number;
 		purpose?: string;
 		comment?: string;
+		record_id?: number;
 	}): Promise<number> {
 		const stmt = db.prepare(`
 		INSERT INTO vehicle_usage_log (
-			entry_date, usage_mode, vehicle_id, odometer_end, distance_manual, purpose, comment
-		) VALUES (?, ?, ?, ?, ?, ?, ?)
+			entry_date, usage_mode, vehicle_id, odometer_end, distance_manual, purpose, comment, record_id
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	`);
 
 		const result = stmt.run(
@@ -195,10 +229,81 @@ export class RecordService {
 			log.odometer_end ?? null,
 			log.distance_manual ?? 0,
 			log.purpose || null,
-			log.comment || null
+			log.comment || null,
+			log.record_id || null
 		);
 
 		return result.lastInsertRowid as number;
+	}
+
+	static async deleteVehicleUsageLogByDate(entry_date: string): Promise<boolean> {
+		const stmt = db.prepare('DELETE FROM vehicle_usage_log WHERE entry_date = ?');
+		const result = stmt.run(entry_date);
+		return result.changes > 0;
+	}
+
+	static async deleteVehicleUsageLogByRecordId(record_id: number): Promise<boolean> {
+		const stmt = db.prepare('DELETE FROM vehicle_usage_log WHERE record_id = ?');
+		const result = stmt.run(record_id);
+		return result.changes > 0;
+	}
+
+	static async updateVehicleUsageLog(
+		entry_date: string,
+		log: {
+			usage_mode: 'standard' | 'no_used' | 'other';
+			vehicle_id?: number;
+			odometer_end?: number;
+			distance_manual?: number;
+			purpose?: string;
+			comment?: string;
+		}
+	): Promise<boolean> {
+		const stmt = db.prepare(`
+		UPDATE vehicle_usage_log 
+		SET usage_mode = ?, vehicle_id = ?, odometer_end = ?, distance_manual = ?, purpose = ?, comment = ?
+		WHERE entry_date = ?
+	`);
+
+		const result = stmt.run(
+			log.usage_mode,
+			log.vehicle_id || 1,
+			log.odometer_end ?? null,
+			log.distance_manual ?? 0,
+			log.purpose || null,
+			log.comment || null,
+			entry_date
+		);
+
+		return result.changes > 0;
+	}
+
+	static async getVehicleUsageLogByDate(entry_date: string): Promise<{
+		id: number;
+		entry_date: string;
+		usage_mode: 'standard' | 'no_used' | 'other';
+		vehicle_id: number;
+		odometer_end: number | null;
+		distance_manual: number;
+		purpose: string | null;
+		comment: string | null;
+		created_at: string;
+	} | null> {
+		const stmt = db.prepare('SELECT * FROM vehicle_usage_log WHERE entry_date = ? LIMIT 1');
+		const result = stmt.get(entry_date);
+		return result
+			? (result as {
+					id: number;
+					entry_date: string;
+					usage_mode: 'standard' | 'no_used' | 'other';
+					vehicle_id: number;
+					odometer_end: number | null;
+					distance_manual: number;
+					purpose: string | null;
+					comment: string | null;
+					created_at: string;
+				})
+			: null;
 	}
 	//----------------------------------------------------------------------------------- ODOMETER METHODS
 

@@ -19,7 +19,10 @@
 		odometer: 0,
 		note: '',
 		entry_date: '',
-		image_path: ''
+		image_path: '',
+		usage_mode: 'standard' as 'standard' | 'no_used' | 'other',
+		distance_manual: 0,
+		purpose: ''
 	});
 
 	// Separate state for the image file in edit modal
@@ -37,7 +40,7 @@
 	/**
 	 * @param {{ loaded: number; collected: number; cutters: number; returned: number; missplaced: number; expense: number; entry_date: string; image_path: string; }} record
 	 */
-	function openEditModal(record: {
+	async function openEditModal(record: {
 		id?: number;
 		loaded: number;
 		collected: number;
@@ -51,19 +54,126 @@
 		entry_date: string;
 		created_at?: string;
 	}) {
-		editRecord = {
-			id: record.id ?? undefined,
-			loaded: record.loaded,
-			collected: record.collected,
-			cutters: record.cutters,
-			returned: record.returned,
-			missplaced: record.missplaced ?? 0,
-			expense: record.expense ?? 0,
-			odometer: record.odometer ?? 0,
-			image_path: record.image_path ?? '',
-			note: record.note || '',
-			entry_date: record.entry_date
-		};
+		// Set default values
+		let usage_mode: 'standard' | 'no_used' | 'other' = 'standard';
+		let distance_manual = 0;
+		let purpose = '';
+
+		try {
+			// Fetch complete record data including vehicle usage from both tables
+			const response = await fetch(`/api/records/${record.id}/full`);
+			if (response.ok) {
+				const fullRecord = await response.json();
+				if (fullRecord) {
+					// Use data from both tables
+					record = fullRecord; // Update record with fresh data from database
+
+					// Set vehicle usage data if it exists
+					if (fullRecord.usage_mode) {
+						usage_mode = fullRecord.usage_mode;
+						distance_manual = fullRecord.distance_manual || 0;
+						purpose = fullRecord.purpose || '';
+					} else {
+						// Fallback: determine usage mode based on record data if no vehicle usage log exists
+						if (fullRecord.odometer && fullRecord.odometer > 0) {
+							usage_mode = 'standard';
+						} else {
+							usage_mode = 'no_used';
+						}
+					}
+					console.log('Loaded complete record data:', fullRecord);
+
+					// Set the editRecord with fresh data from database (both tables)
+					editRecord = {
+						id: fullRecord.id ?? undefined,
+						loaded: fullRecord.loaded,
+						collected: fullRecord.collected,
+						cutters: fullRecord.cutters,
+						returned: fullRecord.returned,
+						missplaced: fullRecord.missplaced ?? 0,
+						expense: fullRecord.expense ?? 0,
+						odometer: fullRecord.odometer ?? 0,
+						image_path: fullRecord.image_path ?? '',
+						note: fullRecord.note || '',
+						entry_date: fullRecord.entry_date,
+						usage_mode,
+						distance_manual,
+						purpose
+					};
+				} else {
+					console.log('No record data found');
+					// Use original record data as fallback
+					editRecord = {
+						id: record.id ?? undefined,
+						loaded: record.loaded,
+						collected: record.collected,
+						cutters: record.cutters,
+						returned: record.returned,
+						missplaced: record.missplaced ?? 0,
+						expense: record.expense ?? 0,
+						odometer: record.odometer ?? 0,
+						image_path: record.image_path ?? '',
+						note: record.note || '',
+						entry_date: record.entry_date,
+						usage_mode,
+						distance_manual,
+						purpose
+					};
+				}
+			} else {
+				console.log('API error when fetching record');
+				// Fallback: determine usage mode based on record data
+				if (record.odometer && record.odometer > 0) {
+					usage_mode = 'standard';
+				} else {
+					usage_mode = 'no_used';
+				}
+				// Use original record data as fallback
+				editRecord = {
+					id: record.id ?? undefined,
+					loaded: record.loaded,
+					collected: record.collected,
+					cutters: record.cutters,
+					returned: record.returned,
+					missplaced: record.missplaced ?? 0,
+					expense: record.expense ?? 0,
+					odometer: record.odometer ?? 0,
+					image_path: record.image_path ?? '',
+					note: record.note || '',
+					entry_date: record.entry_date,
+					usage_mode,
+					distance_manual,
+					purpose
+				};
+			}
+		} catch (error) {
+			console.error('Failed to fetch complete record data:', error);
+			// Fallback: determine usage mode based on record data
+			if (record.odometer && record.odometer > 0) {
+				usage_mode = 'standard';
+			} else {
+				usage_mode = 'no_used';
+			}
+			// Use original record data as fallback
+			editRecord = {
+				id: record.id ?? undefined,
+				loaded: record.loaded,
+				collected: record.collected,
+				cutters: record.cutters,
+				returned: record.returned,
+				missplaced: record.missplaced ?? 0,
+				expense: record.expense ?? 0,
+				odometer: record.odometer ?? 0,
+				image_path: record.image_path ?? '',
+				note: record.note || '',
+				entry_date: record.entry_date,
+				usage_mode,
+				distance_manual,
+				purpose
+			};
+		}
+
+		console.log('Final editRecord:', editRecord);
 		editImageFile = null; // Reset image file
 		showEditModal = true;
 	}
@@ -86,6 +196,15 @@
 			formData.append('odometer', editRecord.odometer.toString());
 			formData.append('note', editRecord.note || '');
 			formData.append('entry_date', editRecord.entry_date);
+
+			// Add vehicle usage data
+			formData.append('usage_mode', editRecord.usage_mode);
+			if (editRecord.usage_mode !== 'standard') {
+				formData.append('distance_manual', editRecord.distance_manual.toString());
+			}
+			if (editRecord.usage_mode === 'other') {
+				formData.append('purpose', editRecord.purpose);
+			}
 
 			// Add image file if a new one was selected
 			if (editImageFile) {
@@ -312,6 +431,22 @@
 	{/snippet}
 	{#snippet children()}
 		<form class="edit-form">
+			<!-- Vehicle Usage Mode Selection -->
+			<div class="usage-mode-section">
+				<label>
+					<input type="radio" bind:group={editRecord.usage_mode} value="standard" />
+					Car delivery use
+				</label>
+				<label>
+					<input type="radio" bind:group={editRecord.usage_mode} value="no_used" />
+					Car Not Used <span>( other vehicle if Van in e.g. car in service )</span>
+				</label>
+				<label>
+					<input type="radio" bind:group={editRecord.usage_mode} value="other" />
+					Other use (e.g. personal)
+				</label>
+			</div>
+
 			<div class="edit-fields">
 				<div class="edit-group">
 					<label class="form-field">
@@ -344,10 +479,34 @@
 						<span>Expense:</span>
 						<input type="number" bind:value={editRecord.expense} min="0" step="0.01" />
 					</label>
-					<label class="form-field">
-						<span>Odometer:</span>
-						<input type="number" bind:value={editRecord.odometer} min="0" required />
-					</label>
+
+					<!-- Dynamic field based on usage mode -->
+					{#if editRecord.usage_mode === 'standard'}
+						<label class="form-field">
+							<span>Odometer:</span>
+							<input type="number" bind:value={editRecord.odometer} min="0" required />
+						</label>
+					{:else if editRecord.usage_mode === 'no_used'}
+						<label class="form-field">
+							<span>Manual Distance (km):</span>
+							<input type="number" bind:value={editRecord.distance_manual} min="0" required />
+						</label>
+					{:else if editRecord.usage_mode === 'other'}
+						<label class="form-field">
+							<span>Purpose:</span>
+							<select bind:value={editRecord.purpose}>
+								<option value="">-- Select purpose --</option>
+								<option value="service">Service</option>
+								<option value="personal">Personal Use</option>
+								<option value="testing">Testing</option>
+								<option value="other">Other</option>
+							</select>
+						</label>
+						<label class="form-field">
+							<span>Manual Distance (km):</span>
+							<input type="number" bind:value={editRecord.distance_manual} min="0" required />
+						</label>
+					{/if}
 				</div>
 				<div class="edit-group">
 					<label class="form-field">
@@ -542,6 +701,31 @@
 		justify-content: flex-start;
 	}
 
+	.usage-mode-section {
+		margin-bottom: 1rem;
+		padding: 1rem;
+		border: 1px solid #dee2e6;
+		border-radius: 4px;
+		background: #f8f9fa;
+	}
+
+	.usage-mode-section label {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 0.5rem;
+		font-weight: 500;
+	}
+
+	.usage-mode-section label:last-child {
+		margin-bottom: 0;
+	}
+
+	.usage-mode-section span {
+		font-size: 0.8rem;
+		color: #6c757d;
+	}
+
 	.edit-fields {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -583,6 +767,15 @@
 		border: 1px solid #dee2e6;
 		border-radius: 4px;
 		font-size: 0.9rem;
+	}
+
+	.form-field select {
+		flex: 1;
+		padding: 0.5rem;
+		border: 1px solid #dee2e6;
+		border-radius: 4px;
+		font-size: 0.9rem;
+		background: white;
 	}
 
 	.form-field input:focus {

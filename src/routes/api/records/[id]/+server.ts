@@ -35,6 +35,11 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		const imageFile = formData.get('image') as File | null;
 		const existingImagePath = formData.get('existing_image_path') as string | null;
 
+		// Vehicle usage data
+		const usage_mode = (formData.get('usage_mode') as string) || 'standard';
+		const distance_manual = Number(formData.get('distance_manual')) || 0;
+		const purpose = (formData.get('purpose') as string) || '';
+
 		// Validate required fields
 		if (isNaN(loaded) || isNaN(collected) || isNaN(cutters) || isNaN(returned)) {
 			throw error(400, 'All numeric fields are required');
@@ -107,6 +112,21 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 			image_path: finalImagePath
 		});
 
+		// Delete existing vehicle usage log entry for this record
+		await RecordService.deleteVehicleUsageLogByRecordId(recordId);
+
+		// Create new vehicle usage log entry
+		await RecordService.createVehicleUsageLog({
+			entry_date: entryDate,
+			usage_mode: usage_mode as 'standard' | 'no_used' | 'other',
+			vehicle_id: 1,
+			odometer_end: usage_mode === 'standard' ? odometer : undefined,
+			distance_manual: usage_mode !== 'standard' ? distance_manual : 0,
+			purpose: usage_mode === 'other' ? purpose : undefined,
+			comment: note,
+			record_id: recordId
+		});
+
 		return json(updatedRecord);
 	} catch (err) {
 		console.error('Update record error:', err);
@@ -138,6 +158,14 @@ export const DELETE: RequestHandler = async ({ params }) => {
 				console.error('Failed to delete image file:', imageError);
 				// Continue with record deletion even if image deletion fails
 			}
+		}
+
+		// Delete associated vehicle usage log entries
+		try {
+			await RecordService.deleteVehicleUsageLogByRecordId(recordId);
+		} catch (logError) {
+			console.error('Failed to delete vehicle usage log:', logError);
+			// Continue with record deletion even if log deletion fails
 		}
 
 		// Delete the record

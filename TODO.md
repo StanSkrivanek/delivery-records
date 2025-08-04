@@ -104,3 +104,9 @@ OPTIONS:
 - Consider deploying the app to a cloud platform for better accessibility.
 
 
+FIXES:
+
+- [x] Vehicle has now ID, so we can add more than one record per day for the same vehicle.
+- [ ] fix success message after record creation, it should disappear after 3-4s.
+- [ ] Fix note and message input fields are identical and need to be stored only in main table as note.
+- [ ] fix `/full/server.ts` in `records/[id]` table, it should be only `records/[id]/+server.ts`

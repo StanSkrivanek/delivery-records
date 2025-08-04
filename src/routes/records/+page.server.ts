@@ -129,7 +129,7 @@ export const actions: Actions = {
 			}
 
 			// Save to database with custom date
-			await RecordService.createRecord({
+			const recordId = await RecordService.createRecord({
 				loaded,
 				collected,
 				cutters,
@@ -142,7 +142,7 @@ export const actions: Actions = {
 				entry_date: selectedDate
 			});
 
-			// Save vehicle usage log
+			// Save vehicle usage log with record_id
 			await RecordService.createVehicleUsageLog({
 				entry_date: selectedDate,
 				usage_mode: usage_mode as 'standard' | 'no_used' | 'other',
@@ -150,7 +150,8 @@ export const actions: Actions = {
 				odometer_end: usage_mode === 'standard' ? odometer : undefined,
 				distance_manual: usage_mode !== 'standard' ? distance_manual : 0,
 				purpose: usage_mode === 'other' ? purpose : undefined,
-				comment: note
+				comment: note,
+				record_id: recordId
 			});
 
 			return { success: true };
