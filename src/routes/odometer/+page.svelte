@@ -1,65 +1,116 @@
 <!-- src/routes/odometer/+page.svelte -->
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
 	import type { PageData } from './$types';
-	import type { OdometerReading } from '$lib/types';
-	import { formatOdometer, formatDistance, formatDate, getDistanceColorClass } from '$lib/utils';
-
+	// import type { OdometerReading } from '$lib/types';
+	import OdometerDisplay from '$lib/components/OdometerDisplay.svelte';
 	// Get data from server load function
 	let { data }: { data: PageData } = $props();
+	console.log('🚀 ~ODOMETER PAGE data:', data);
 
 	// Reactive state for UI
 	let loading = $state(false);
 
 	// Current values from server data
-	let selectedYear = $state(data.selectedYear);
-	let selectedMonth = $state(data.selectedMonth);
+	let selectedYear = $state(data.defaultYear);
+	let selectedMonth = $state(data.defaultMonth);
+	// Month options with names
+	const monthOptions = [
+		{ value: 1, label: 'January' },
+		{ value: 2, label: 'February' },
+		{ value: 3, label: 'March' },
+		{ value: 4, label: 'April' },
+		{ value: 5, label: 'May' },
+		{ value: 6, label: 'June' },
+		{ value: 7, label: 'July' },
+		{ value: 8, label: 'August' },
+		{ value: 9, label: 'September' },
+		{ value: 10, label: 'October' },
+		{ value: 11, label: 'November' },
+		{ value: 12, label: 'December' }
+	];
+
+	// let availableMonthsForYear: number[] = $derived.by(() => {
+	// 	const monthsInYear = new Set<number>();
+	// 	data.odometerReadings.forEach((reading) => {
+	// 		const dateString = reading.entry_date || reading.created_at;
+	// 		if (dateString) {
+	// 			const recordDate = new Date(dateString);
+	// 			if (recordDate.getFullYear() === selectedYear) {
+	// 				monthsInYear.add(recordDate.getMonth() + 1);
+	// 			}
+	// 		}
+	// 	});
+	// 	return Array.from(monthsInYear).sort((a, b) => a - b);
+	// });
+	// $inspect('🚀 ~ availableMonthsForYear:', availableMonthsForYear);
+
+	// const filtereddata = $derived.by(() => {
+	// 	return data.odometerReadings.filter((reading) => {
+	// 		const dateString = reading.entry_date || reading.created_at;
+	// 		if (!dateString) return false;
+	// 		const recordDate = new Date(dateString);
+	// 		return (
+	// 			recordDate.getFullYear() === selectedYear && recordDate.getMonth() + 1 === selectedMonth
+	// 		);
+	// 	});
+	// });
+	// console.log("🚀 ~ filtereddata:", filtereddata)
 
 	// Function to update URL and reload data
-	async function updateSelection() {
-		loading = true;
-		const url = new URL(page.url);
-		url.searchParams.set('year', selectedYear.toString());
-		url.searchParams.set('month', selectedMonth.toString());
-		
-		// Navigate to new URL, which will trigger server load
-		await goto(url.toString(), { replaceState: true });
-		loading = false;
-	}
+	// async function updateSelection() {
+	// 	loading = true;
+	// 	const url = new URL(page.url);
+	// 	url.searchParams.set('year', selectedYear.toString());
+	// 	url.searchParams.set('month', selectedMonth.toString());
+
+	// 	// Navigate to new URL, which will trigger server load
+	// 	await goto(url.toString(), { replaceState: true });
+	// 	loading = false;
+	// }
 
 	// Derived values for month names
-	const monthNames = $derived([
-		'January', 'February', 'March', 'April', 'May', 'June',
-		'July', 'August', 'September', 'October', 'November', 'December'
-	]);
+	// const monthNames = $derived([
+	// 	'January',
+	// 	'February',
+	// 	'March',
+	// 	'April',
+	// 	'May',
+	// 	'June',
+	// 	'July',
+	// 	'August',
+	// 	'September',
+	// 	'October',
+	// 	'November',
+	// 	'December'
+	// ]);
 
-	const currentMonthName = $derived(monthNames[selectedMonth - 1]);
+	// const currentMonthName = $derived(monthNames[selectedMonth - 1]);
 
 	// Generate year options (current year and 4 previous years)
-	const yearOptions = $derived(Array.from(
-		{ length: 5 }, 
-		(_, i) => new Date().getFullYear() - i
-	));
+	// const yearOptions = $derived(Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i));
 
 	// Update selection when dropdowns change
 	$effect(() => {
-		if (selectedYear !== data.selectedYear || selectedMonth !== data.selectedMonth) {
-			updateSelection();
-		}
+		// const availableMonths = availableMonthsForYear;
+        // if (!availableMonths.includes(selectedMonth) && availableMonths.length > 0) {
+        //     selectedMonth = availableMonths[0];
+        // }
+		// if (selectedYear !== data.selectedYear || selectedMonth !== data.selectedMonth) {
+		// 	updateSelection();
+		// }
 	});
 </script>
 
 <svelte:head>
-	<title>Odometer Readings - {currentMonthName} {selectedYear}</title>
+	<!-- <title>Odometer Readings - {currentMonthName} {selectedYear}</title> -->
 </svelte:head>
+<!-- <OdometerDisplay {selectedMonth} {selectedYear} {data} /> -->
 
 <div class="odometer-display">
 	<div class="header">
-		<h1>Odometer Readings - {currentMonthName} {selectedYear}</h1>
-		
-		<!-- Month/Year Selector -->
-		<div class="date-selector">
+		<h1>Odometer Readings - {selectedMonth} {selectedYear}</h1>
+		<pre>{JSON.stringify(data.odoByMonth, null, 2)}</pre>
+		<!-- <div class="date-selector">
 			<select bind:value={selectedMonth} disabled={loading}>
 				{#each monthNames as monthName, index}
 					<option value={index + 1}>{monthName}</option>
@@ -70,19 +121,19 @@
 					<option value={year}>{year}</option>
 				{/each}
 			</select>
-		</div>
+		</div> -->
 	</div>
 
-	{#if data.error}
+	<!-- {#if data.error}
 		<div class="error">
 			<p>Error loading data: {data.error}</p>
 			<button onclick={() => updateSelection()}>Retry</button>
 		</div>
 	{:else if loading}
 		<div class="loading">Loading odometer data...</div>
-	{:else}
-		<!-- Statistics Summary -->
-		<div class="stats-grid">
+	{:else} -->
+		
+		<!-- <div class="stats-grid">
 			<div class="stat-card">
 				<h3>Total Distance</h3>
 				<p class="stat-value">{formatDistance(data.stats.totalDistance)}</p>
@@ -99,16 +150,16 @@
 				<h3>Days with Readings</h3>
 				<p class="stat-value">{data.stats.daysWithReadings}</p>
 			</div>
-		</div>
+		</div> -->
 
-		<!-- Detailed Readings Table -->
-		<div class="readings-table">
+	
+		<!-- <div class="readings-table">
 			<table>
 				<thead>
 					<tr>
 						<th>Date</th>
-						<th>Odometer</th>
-						<th>Previous</th>
+						<th>Start</th>
+						<th>End</th>
 						<th>Daily Distance</th>
 						<th>Days Between</th>
 					</tr>
@@ -117,10 +168,10 @@
 					{#each data.odometerReadings as reading}
 						<tr>
 							<td>{formatDate(reading.entry_date)}</td>
-							<td class="odometer-value">{formatOdometer(reading.odometer)}</td>
 							<td class="odometer-value">
 								{reading.previous_odometer ? formatOdometer(reading.previous_odometer) : '-'}
 							</td>
+							<td class="odometer-value">{formatOdometer(reading.odometer)}</td>
 							<td class="distance-value {getDistanceColorClass(reading.daily_difference || 0)}">
 								{reading.daily_difference ? formatDistance(reading.daily_difference) : '-'}
 							</td>
@@ -131,126 +182,119 @@
 					{/each}
 				</tbody>
 			</table>
-		</div>
+		</div> -->
 
-		{#if data.odometerReadings.length === 0}
+		<!-- {#if data.odometerReadings.length === 0}
 			<div class="no-data">
 				No odometer readings found for {currentMonthName} {selectedYear}
 			</div>
-		{/if}
-	{/if}
-</div>
+		{/if} -->
+	<!-- {/if} -->
+</div> 
 
 <style>
-	.odometer-display {
+	/* .odometer-display {
 		padding: 1rem;
 		max-width: 1200px;
 		margin: 0 auto;
-	}
+	} */
 
-	.header {
+	/* .header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		margin-bottom: 2rem;
 		flex-wrap: wrap;
 		gap: 1rem;
-	}
+	} */
 
-	.header h1 {
+	/* .header h1 {
 		margin: 0;
 		font-size: 1.5rem;
 		color: #333;
-	}
+	} */
 
-	.date-selector select {
+	/* .date-selector select {
 		margin-left: 0.5rem;
 		padding: 0.5rem;
 		border: 1px solid #ccc;
 		border-radius: 4px;
 		background: white;
-	}
+	} */
 
-	.date-selector select:disabled {
+	/* .date-selector select:disabled {
 		opacity: 0.6;
 		cursor: not-allowed;
-	}
+	} */
 
-	.stats-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-		gap: 1rem;
-		margin-bottom: 2rem;
-	}
-
-	.stat-card {
+	/* .stat-card {
 		background: #f8f9fa;
 		padding: 1rem;
 		border-radius: 8px;
 		text-align: center;
 		border: 1px solid #e9ecef;
-	}
+	} */
 
-	.stat-card h3 {
+	/* .stat-card h3 {
 		margin: 0 0 0.5rem 0;
 		font-size: 0.9rem;
 		color: #6c757d;
 		font-weight: 500;
-	}
+	} */
 
-	.stat-value {
+	/* .stat-value {
 		margin: 0;
 		font-size: 1.5rem;
 		font-weight: bold;
 		color: #495057;
-	}
+	} */
 
-	.readings-table {
+	/* .readings-table {
 		overflow-x: auto;
-	}
+	} */
 
-	table {
+	/* table {
 		width: 100%;
 		border-collapse: collapse;
 		background: white;
 		border-radius: 8px;
 		overflow: hidden;
 		box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-	}
+	} */
 
-	th, td {
+	/* th, td {
 		padding: 0.75rem;
-		text-align: left;
-		border-bottom: 1px solid #e9ecef;
-	}
+		text-align: center;
+		border: 1px solid #e9ecef;
+	} */
 
-	th {
+	/* th {
 		background: #f8f9fa;
 		font-weight: 600;
 		color: #495057;
-	}
+	} */
 
-	.odometer-value {
+	/* .odometer-value {
 		font-family: 'Courier New', monospace;
 		text-align: right;
-	}
+	} */
 
-	.distance-value {
+	/* .distance-value {
 		font-weight: 600;
 		text-align: right;
-	}
+	} */
 
-	.days-between {
+	/* .days-between {
 		text-align: center;
-	}
+	} */
 
-	.loading, .no-data {
+	/* .loading, .no-data {
 		text-align: center;
 		padding: 2rem;
 		color: #6c757d;
-	}
+	} */
 
-	.error {
+	/* .error {
 		text-align: center;
 		padding: 2rem;
 		color: #dc3545;
@@ -258,8 +302,8 @@
 		border: 1px solid #f5c6cb;
 		border-radius: 8px;
 		margin: 1rem 0;
-	}
-
+	} */
+	/* 
 	.error button {
 		margin-top: 1rem;
 		padding: 0.5rem 1rem;
@@ -268,32 +312,32 @@
 		border: none;
 		border-radius: 4px;
 		cursor: pointer;
-	}
+	} */
 
-	.error button:hover {
+	/* .error button:hover {
 		background: #c82333;
-	}
+	} */
 
 	/* Color classes for distance values */
-	:global(.text-gray-400) { color: #9ca3af; }
+	/* :global(.text-gray-400) { color: #9ca3af; }
 	:global(.text-green-600) { color: #16a34a; }
 	:global(.text-blue-600) { color: #2563eb; }
 	:global(.text-yellow-600) { color: #ca8a04; }
-	:global(.text-red-600) { color: #dc2626; }
+	:global(.text-red-600) { color: #dc2626; } */
 
 	/* Responsive design */
-	@media (max-width: 768px) {
-		.header {
+	/* @media (max-width: 768px) { */
+	/* .header {
 			flex-direction: column;
 			align-items: flex-start;
-		}
-		
-		.stats-grid {
+		} */
+
+	/* .stats-grid {
 			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-		}
-		
-		.readings-table {
+		} */
+
+	/* .readings-table {
 			font-size: 0.9rem;
 		}
-	}
+	} */
 </style>

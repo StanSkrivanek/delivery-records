@@ -7,26 +7,27 @@
 	import { formatOdometer, formatDistance, formatDate, getDistanceColorClass } from '$lib/utils';
 
 	// Get data from server load function
-	let { data }= $props();
+	let { data, selectedYear, selectedMonth } = $props();
+	console.log("🚀 ~ ODOMETER COMPONENT data:", data)
 
 	// Reactive state for UI
 	let loading = $state(false);
 
 	// Current values from server data
-	let selectedYear = $state(data.selectedYear);
-	let selectedMonth = $state(data.selectedMonth);
+	// let selectedYear = $state(data.selectedYear);
+	// let selectedMonth = $state(data.selectedMonth);
 
 	// Function to update URL and reload data
-	async function updateSelection() {
-		loading = true;
-		const url = new URL(page.url);
-		url.searchParams.set('year', selectedYear.toString());
-		url.searchParams.set('month', selectedMonth.toString());
+	// async function updateSelection() {
+	// 	loading = true;
+	// 	const url = new URL(page.url);
+	// 	url.searchParams.set('year', selectedYear.toString());
+	// 	url.searchParams.set('month', selectedMonth.toString());
 		
-		// Navigate to new URL, which will trigger server load
-		await goto(url.toString(), { replaceState: true });
-		loading = false;
-	}
+	// 	// Navigate to new URL, which will trigger server load
+	// 	await goto(url.toString(), { replaceState: true });
+	// 	loading = false;
+	// }
 
 	// Derived values for month names
 	const monthNames = $derived([
@@ -34,13 +35,27 @@
 		'July', 'August', 'September', 'October', 'November', 'December'
 	]);
 
-	const currentMonthName = $derived(monthNames[selectedMonth - 1]);
+	// const currentMonthName = $derived(monthNames[selectedMonth - 1]);
 
-	// Generate year options (current year and 4 previous years)
-	const yearOptions = $derived(Array.from(
-		{ length: 5 }, 
-		(_, i) => new Date().getFullYear() - i
-	));
+	// Generate year options based on available data in database
+	const yearOptions = $derived.by(() => {
+		// Get unique years from data.availableYears if provided, or fallback to current year
+		if (data.availableYears && data.availableYears.length > 0) {
+			return data.availableYears.sort((a: number, b: number) => b - a); // Most recent first
+		}
+		// Fallback: if no availableYears provided, show current year only
+		return [new Date().getFullYear()];
+	});
+
+	// Generate month options based on available data for selected year
+	// const monthOptions = $derived.by(() => {
+	// 	// Get available months for selected year if provided
+	// 	if (data.availableMonths && data.availableMonths[selectedYear]) {
+	// 		return data.availableMonths[selectedYear].sort((a: number, b: number) => a - b);
+	// 	}
+	// 	// Fallback: show all months
+	// 	return Array.from({ length: 12 }, (_, i) => i + 1);
+	// });
 
 	// Check if first reading has cross-month calculation
 	const hasMonthBoundary = $derived(
@@ -49,27 +64,35 @@
 		data.odometerReadings[0].daily_difference !== null
 	);
 
-	// Update selection when dropdowns change
+	// Track if we've already tried to load this combination to prevent loops
+	let lastLoadedYear = $state(data.selectedYear);
+	let lastLoadedMonth = $state(data.selectedMonth);
+
+	// Update selection when dropdowns change (with loop prevention)
 	$effect(() => {
-		if (selectedYear !== data.selectedYear || selectedMonth !== data.selectedMonth) {
-			updateSelection();
-		}
+		// Only update if values actually changed AND we haven't already loaded this combination
+		// if ((selectedYear !== lastLoadedYear || selectedMonth !== lastLoadedMonth) &&
+		// 	(selectedYear !== data.selectedYear || selectedMonth !== data.selectedMonth)) {
+		// 	lastLoadedYear = selectedYear;
+		// 	lastLoadedMonth = selectedMonth;
+		// 	updateSelection();
+		// }
 	});
 </script>
 
 <svelte:head>
-	<title>Odometer Readings - {currentMonthName} {selectedYear}</title>
+	<title>Odometer Readings - {selectedMonth} {selectedYear}</title>
 </svelte:head>
 
 <div class="odometer-display">
 	<div class="header">
-		<h1>Odometer Readings - {currentMonthName} {selectedYear}</h1>
+		<h1>Odometer Readings - {selectedMonth} {selectedYear}</h1>
 		
 		<!-- Month/Year Selector -->
-		<div class="date-selector">
+		<!-- <div class="date-selector">
 			<select bind:value={selectedMonth} disabled={loading}>
-				{#each monthNames as monthName, index}
-					<option value={index + 1}>{monthName}</option>
+				{#each monthOptions as monthNum}
+					<option value={monthNum}>{monthNames[monthNum - 1]}</option>
 				{/each}
 			</select>
 			<select bind:value={selectedYear} disabled={loading}>
@@ -77,16 +100,22 @@
 					<option value={year}>{year}</option>
 				{/each}
 			</select>
-		</div>
+		</div> -->
 	</div>
 
 	{#if data.error}
 		<div class="error">
 			<p>Error loading data: {data.error}</p>
-			<button onclick={() => updateSelection()}>Retry</button>
+			<!-- <button onclick={() => updateSelection()}>Retry</button> -->
 		</div>
 	{:else if loading}
 		<div class="loading">Loading odometer data...</div>
+	{:else if data.odometerReadings.length === 0}
+		<div class="no-data">
+			<h3>No Odometer Data Found</h3>
+			<p>No odometer readings found for {selectedMonth} {selectedYear}</p>
+			<p class="suggestion">Try selecting a different month or year that contains odometer data.</p>
+		</div>
 	{:else}
 		<!-- Month Boundary Information -->
 		{#if hasMonthBoundary}
@@ -165,12 +194,6 @@
 				</tbody>
 			</table>
 		</div>
-
-		{#if data.odometerReadings.length === 0}
-			<div class="no-data">
-				No odometer readings found for {currentMonthName} {selectedYear}
-			</div>
-		{/if}
 	{/if}
 </div>
 
@@ -196,18 +219,18 @@
 		color: #333;
 	}
 
-	.date-selector select {
+	/* .date-selector select {
 		margin-left: 0.5rem;
 		padding: 0.5rem;
 		border: 1px solid #ccc;
 		border-radius: 4px;
 		background: white;
-	}
-
+	} */
+/* 
 	.date-selector select:disabled {
 		opacity: 0.6;
 		cursor: not-allowed;
-	}
+	} */
 
 	.boundary-info {
 		background: #e8f4f8;
@@ -329,7 +352,33 @@
 		font-size: 0.7rem;
 	}
 
-	.loading, .no-data {
+	.no-data {
+		text-align: center;
+		padding: 3rem 2rem;
+		color: #6c757d;
+		background: #f8f9fa;
+		border: 1px solid #e9ecef;
+		border-radius: 8px;
+		margin: 2rem 0;
+	}
+
+	.no-data h3 {
+		margin: 0 0 1rem 0;
+		color: #495057;
+		font-size: 1.2rem;
+	}
+
+	.no-data p {
+		margin: 0.5rem 0;
+		font-size: 1rem;
+	}
+
+	.suggestion {
+		font-style: italic;
+		color: #868e96 !important;
+	}
+
+	.loading {
 		text-align: center;
 		padding: 2rem;
 		color: #6c757d;
@@ -345,7 +394,7 @@
 		margin: 1rem 0;
 	}
 
-	.error button {
+	/* .error button {
 		margin-top: 1rem;
 		padding: 0.5rem 1rem;
 		background: #dc3545;
@@ -353,11 +402,11 @@
 		border: none;
 		border-radius: 4px;
 		cursor: pointer;
-	}
+	} */
 
-	.error button:hover {
+	/* .error button:hover {
 		background: #c82333;
-	}
+	} */
 
 	/* Color classes for distance values */
 	:global(.text-gray-400) { color: #9ca3af; }

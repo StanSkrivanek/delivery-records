@@ -45,8 +45,12 @@ export interface OdometerReading {
 	previous_odometer: number | null;
 	daily_difference: number | null;
 	days_between: number | null;
+	created_at?: string;
 }
 export class RecordService {
+	static getAvailableYearsAndMonths() {
+		throw new Error('Method not implemented.');
+	}
 	static async createRecord(record: Omit<Record, 'id' | 'created_at'>): Promise<number> {
 		const stmt = db.prepare(`
       INSERT INTO records (loaded, collected, cutters, returned, missplaced, expense, odometer, image_path, note, entry_date)
