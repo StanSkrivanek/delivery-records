@@ -16,10 +16,25 @@ db.exec(`
     returned INTEGER NOT NULL,
     missplaced INTEGER DEFAULT 0,
     expense REAL DEFAULT 0,
-	odometer INTEGER DEFAULT 0,
+    odometer INTEGER DEFAULT 0,
     image_path TEXT,
-	note TEXT,
+    note TEXT,
     entry_date DATE NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+// Table for tracking vehicle usage
+db.exec(`
+  CREATE TABLE IF NOT EXISTS vehicle_usage_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    entry_date DATE NOT NULL,
+    usage_mode TEXT NOT NULL CHECK (usage_mode IN ('standard', 'no_used', 'other')),
+    vehicle_id INTEGER DEFAULT 1,
+    odometer_end INTEGER,
+    distance_manual INTEGER DEFAULT 0,
+    purpose TEXT,
+    comment TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )
 `);
