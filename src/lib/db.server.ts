@@ -38,7 +38,14 @@ export interface Record {
 	entry_date: string;
 	created_at?: string;
 }
-
+export interface OdometerReading {
+	id: number;
+	entry_date: string;
+	odometer: number;
+	previous_odometer: number | null;
+	daily_difference: number | null;
+	days_between: number | null;
+}
 export class RecordService {
 	static async createRecord(record: Omit<Record, 'id' | 'created_at'>): Promise<number> {
 		const stmt = db.prepare(`
@@ -61,14 +68,16 @@ export class RecordService {
 
 		return result.lastInsertRowid as number;
 	}
-
+	//----------------------------------------------------------------------------------- RECORD METHODS
 	static async getAllRecords(): Promise<Record[]> {
 		const stmt = db.prepare('SELECT * FROM records ORDER BY entry_date DESC, created_at DESC');
 		return stmt.all() as Record[];
 	}
 
 	static async getLatestOdometer(): Promise<number | null> {
-		const stmt = db.prepare('SELECT odometer FROM records ORDER BY entry_date DESC, created_at DESC LIMIT 1');
+		const stmt = db.prepare(
+			'SELECT odometer FROM records ORDER BY entry_date DESC, created_at DESC LIMIT 1'
+		);
 		const record = stmt.get() as Record | undefined;
 		return record && typeof record.odometer === 'number' ? record.odometer : null;
 	}
@@ -145,7 +154,285 @@ export class RecordService {
 		return this.getRecordsByDateRange(startDate, endDate);
 	}
 
-	// Migration functions
+	//----------------------------------------------------------------------------------- ODOMETER METHODS
+
+	/**
+	 * Get odometer readings with daily differences for a specific month
+	 * This version correctly handles cross-month boundaries for the first record
+	 * @param year - Year (e.g., 2025)
+	 * @param month - Month (1-12)
+	 * @returns Array of odometer readings with calculated differences
+	 */
+	static async getOdometerDifferencesByMonth(
+		year: number,
+		month: number
+	): Promise<OdometerReading[]> {
+		const stmt = db.prepare(`
+			WITH all_readings AS (
+				-- Get all readings with their previous reading (across all months)
+				SELECT 
+					id,
+					entry_date,
+					odometer,
+					LAG(odometer) OVER (ORDER BY entry_date, created_at) AS previous_odometer,
+					LAG(entry_date) OVER (ORDER BY entry_date, created_at) AS previous_date
+				FROM records 
+				WHERE odometer > 0
+				ORDER BY entry_date, created_at
+			),
+			filtered_readings AS (
+				-- Filter to get only the target month readings
+				SELECT *
+				FROM all_readings
+				WHERE strftime('%Y', entry_date) = ? 
+					AND strftime('%m', entry_date) = ?
+			)
+			SELECT 
+				id,
+				entry_date,
+				odometer,
+				previous_odometer,
+				CASE 
+					WHEN previous_odometer IS NOT NULL 
+					THEN odometer - previous_odometer 
+					ELSE NULL 
+				END AS daily_difference,
+				CASE 
+					WHEN previous_date IS NOT NULL 
+					THEN julianday(entry_date) - julianday(previous_date)
+					ELSE NULL 
+				END AS days_between
+			FROM filtered_readings
+			ORDER BY entry_date, id
+		`);
+
+		const yearStr = year.toString();
+		const monthStr = String(month).padStart(2, '0');
+
+		return stmt.all(yearStr, monthStr) as OdometerReading[];
+	}
+
+	/**
+	 * Get odometer readings with daily differences for current month
+	 * @returns Array of odometer readings with calculated differences
+	 */
+	static async getOdometerDifferencesCurrentMonth(): Promise<OdometerReading[]> {
+		const now = new Date();
+		return this.getOdometerDifferencesByMonth(now.getFullYear(), now.getMonth() + 1);
+	}
+
+	/**
+	 * Alternative method: Get odometer readings for a month with explicit previous month context
+	 * This version shows the previous reading even if it's from a different month
+	 * @param year - Year (e.g., 2025)
+	 * @param month - Month (1-12)
+	 * @returns Array of odometer readings with calculated differences
+	 */
+	static async getOdometerDifferencesWithContext(
+		year: number,
+		month: number
+	): Promise<OdometerReading[]> {
+		const stmt = db.prepare(`
+			WITH target_month_readings AS (
+				-- Get readings for the target month
+				SELECT 
+					id,
+					entry_date,
+					odometer
+				FROM records 
+				WHERE strftime('%Y', entry_date) = ? 
+					AND strftime('%m', entry_date) = ?
+					AND odometer > 0
+				ORDER BY entry_date, created_at
+			),
+			previous_reading AS (
+				-- Get the last reading from before the target month
+				SELECT 
+					odometer as previous_odometer,
+					entry_date as previous_date
+				FROM records 
+				WHERE entry_date < (
+					SELECT MIN(entry_date) 
+					FROM target_month_readings
+				)
+				AND odometer > 0
+				ORDER BY entry_date DESC, created_at DESC
+				LIMIT 1
+			),
+			readings_with_previous AS (
+				SELECT 
+					tmr.id,
+					tmr.entry_date,
+					tmr.odometer,
+					CASE 
+						WHEN ROW_NUMBER() OVER (ORDER BY tmr.entry_date, tmr.id) = 1 
+						THEN pr.previous_odometer
+						ELSE LAG(tmr.odometer) OVER (ORDER BY tmr.entry_date, tmr.id)
+					END AS previous_odometer,
+					CASE 
+						WHEN ROW_NUMBER() OVER (ORDER BY tmr.entry_date, tmr.id) = 1 
+						THEN pr.previous_date
+						ELSE LAG(tmr.entry_date) OVER (ORDER BY tmr.entry_date, tmr.id)
+					END AS previous_date
+				FROM target_month_readings tmr
+				CROSS JOIN previous_reading pr
+			)
+			SELECT 
+				id,
+				entry_date,
+				odometer,
+				previous_odometer,
+				CASE 
+					WHEN previous_odometer IS NOT NULL 
+					THEN odometer - previous_odometer 
+					ELSE NULL 
+				END AS daily_difference,
+				CASE 
+					WHEN previous_date IS NOT NULL 
+					THEN julianday(entry_date) - julianday(previous_date)
+					ELSE NULL 
+				END AS days_between
+			FROM readings_with_previous
+			ORDER BY entry_date, id
+		`);
+
+		const yearStr = year.toString();
+		const monthStr = String(month).padStart(2, '0');
+
+		return stmt.all(yearStr, monthStr) as OdometerReading[];
+	}
+
+	/**
+	 * Get total distance traveled in a specific month (accounting for cross-month boundaries)
+	 * @param year - Year (e.g., 2025)
+	 * @param month - Month (1-12)
+	 * @returns Total distance traveled in the month
+	 */
+	static async getTotalDistanceByMonth(year: number, month: number): Promise<number> {
+		const readings = await this.getOdometerDifferencesByMonth(year, month);
+		return readings
+			.filter((reading) => reading.daily_difference !== null && reading.daily_difference > 0)
+			.reduce((total, reading) => total + (reading.daily_difference || 0), 0);
+	}
+
+	/**
+	 * Get odometer statistics for a specific month (with proper cross-month calculation)
+	 * @param year - Year (e.g., 2025)
+	 * @param month - Month (1-12)
+	 * @returns Object with odometer statistics
+	 */
+	static async getOdometerStatsByMonth(year: number, month: number) {
+		const readings = await this.getOdometerDifferencesByMonth(year, month);
+		const validDifferences = readings
+			.map((r) => r.daily_difference)
+			.filter((diff): diff is number => diff !== null && diff > 0);
+
+		const totalDistance = validDifferences.reduce((sum, diff) => sum + diff, 0);
+		const averageDaily = validDifferences.length > 0 ? totalDistance / validDifferences.length : 0;
+		const maxDaily = validDifferences.length > 0 ? Math.max(...validDifferences) : 0;
+		const minDaily = validDifferences.length > 0 ? Math.min(...validDifferences) : 0;
+
+		const firstReading = readings.find((r) => r.odometer > 0);
+		const lastReading = readings
+			.slice()
+			.reverse()
+			.find((r) => r.odometer > 0);
+
+		// Calculate the starting odometer for the month (could be from previous month)
+		const startOdometer = firstReading?.previous_odometer || firstReading?.odometer || 0;
+		const endOdometer = lastReading?.odometer || 0;
+
+		return {
+			totalDistance,
+			averageDaily,
+			maxDaily,
+			minDaily,
+			daysWithReadings: validDifferences.length,
+			startOdometer,
+			endOdometer,
+			totalReadings: readings.length
+		};
+	}
+
+	/**
+	 * Get a summary view that shows month boundaries clearly
+	 * @param year - Year (e.g., 2025)
+	 * @param month - Month (1-12)
+	 * @returns Object with month summary and boundary information
+	 */
+	static async getMonthSummaryWithBoundaries(year: number, month: number) {
+		const readings = await this.getOdometerDifferencesByMonth(year, month);
+
+		if (readings.length === 0) {
+			return {
+				monthReadings: readings,
+				summary: {
+					totalDistance: 0,
+					firstReading: null,
+					lastReading: null,
+					previousMonthLastReading: null,
+					crossMonthDistance: 0
+				}
+			};
+		}
+
+		const firstReading = readings[0];
+		const lastReading = readings[readings.length - 1];
+
+		// Get the last reading from the previous month
+		const prevMonthStmt = db.prepare(`
+			SELECT odometer, entry_date 
+			FROM records 
+			WHERE entry_date < ? 
+				AND odometer > 0 
+			ORDER BY entry_date DESC, created_at DESC 
+			LIMIT 1
+		`);
+
+		const startOfMonth = `${year}-${String(month).padStart(2, '0')}-01`;
+		const previousMonthLastReading = prevMonthStmt.get(startOfMonth) as
+			| { odometer: number; entry_date: string }
+			| undefined;
+
+		// Calculate cross-month distance (distance from last reading of previous month to first reading of this month)
+		const crossMonthDistance =
+			previousMonthLastReading && firstReading
+				? firstReading.odometer - previousMonthLastReading.odometer
+				: 0;
+
+		const totalDistance = readings
+			.filter((r) => r.daily_difference !== null && r.daily_difference > 0)
+			.reduce((sum, r) => sum + (r.daily_difference || 0), 0);
+
+		return {
+			monthReadings: readings,
+			summary: {
+				totalDistance,
+				firstReading: firstReading
+					? {
+							date: firstReading.entry_date,
+							odometer: firstReading.odometer,
+							previousOdometer: firstReading.previous_odometer
+						}
+					: null,
+				lastReading: lastReading
+					? {
+							date: lastReading.entry_date,
+							odometer: lastReading.odometer
+						}
+					: null,
+				previousMonthLastReading: previousMonthLastReading
+					? {
+							date: previousMonthLastReading.entry_date,
+							odometer: previousMonthLastReading.odometer
+						}
+					: null,
+				crossMonthDistance
+			}
+		};
+	}
+
+	//----------------------------------------------------------------------------------- MIGRATION METHODS
 	static async migrateExistingRecords(): Promise<void> {
 		try {
 			const columns = db.prepare('PRAGMA table_info(records)').all() as { name: string }[];

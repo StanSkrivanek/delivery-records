@@ -506,3 +506,82 @@ export function getCurrentMonthDistanceSummary(records: DeliveryRecord[]): {
 		daysWithData: dailyDistances.length
 	};
 }
+
+/**
+ * Format odometer reading with thousands separator
+ * @param value Odometer value
+ * @returns Formatted odometer string
+ */
+export function formatOdometer(value: number): string {
+	return new Intl.NumberFormat('en-US', {
+		minimumFractionDigits: 0,
+		maximumFractionDigits: 0
+	}).format(value);
+}
+
+/**
+ * Format distance with unit (km)
+ * @param distance Distance value
+ * @returns Formatted distance string with unit
+ */
+export function formatDistance(distance: number): string {
+	return `${formatNumberWithCommas(distance)} km`;
+}
+
+/**
+ * Calculate fuel efficiency if you have fuel data
+ * @param distance Distance traveled
+ * @param fuelUsed Fuel consumed
+ * @returns Fuel efficiency in km/L
+ */
+export function calculateFuelEfficiency(distance: number, fuelUsed: number): number {
+	return fuelUsed > 0 ? distance / fuelUsed : 0;
+}
+
+/**
+ * Get color coding for daily distance (for UI styling)
+ * @param distance Daily distance
+ * @returns CSS class name or color
+ */
+export function getDistanceColorClass(distance: number): string {
+	if (distance === 0) return 'text-gray-400';
+	if (distance < 50) return 'text-green-600';
+	if (distance < 100) return 'text-blue-600';
+	if (distance < 200) return 'text-yellow-600';
+	return 'text-red-600';
+}
+
+/**
+ * Validate odometer reading
+ * @param currentReading Current odometer value
+ * @param previousReading Previous odometer value
+ * @returns Validation result
+ */
+export function validateOdometerReading(
+	currentReading: number, 
+	previousReading: number | null
+): { isValid: boolean; message?: string } {
+	if (currentReading < 0) {
+		return { isValid: false, message: 'Odometer reading cannot be negative' };
+	}
+	
+	if (previousReading !== null && currentReading < previousReading) {
+		return { isValid: false, message: 'Odometer reading cannot be less than previous reading' };
+	}
+	
+	if (previousReading !== null && (currentReading - previousReading) > 1000) {
+		return { isValid: false, message: 'Daily distance seems unusually high (>1000km)' };
+	}
+	
+	return { isValid: true };
+}
+
+/**
+ * Calculate average distance per delivery
+ * @param totalDistance Total distance traveled
+ * @param totalDeliveries Total number of deliveries
+ * @returns Average distance per delivery
+ */
+export function calculateDistancePerDelivery(totalDistance: number, totalDeliveries: number): number {
+	return totalDeliveries > 0 ? totalDistance / totalDeliveries : 0;
+}

@@ -3,6 +3,7 @@
 	<a href="/records">AED Record</a>
 	<a href="/analytics">Analytics</a>
 	<a href="https://squoosh.app/" target="_blank" rel="noopener noreferrer">Squoosh</a>
+    <a href="/odometer">Odometer</a>
     <a href="/demos">Demos</a>
 
 </nav>
