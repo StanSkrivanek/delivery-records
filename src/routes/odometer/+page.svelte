@@ -7,7 +7,7 @@
 	let { data }: { data: PageData } = $props();
 	console.log('🚀 ~ODOMETER PAGE data:', data);
 
-	// Reactive state for UI
+	// Reactive state for UI§
 	let loading = $state(false);
 
 	// Current values from server data
