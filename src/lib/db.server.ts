@@ -68,6 +68,7 @@ export interface OdometerReading {
 	days_between: number | null;
 	created_at?: string;
 }
+
 export class RecordService {
 	static getAvailableYearsAndMonths() {
 		throw new Error('Method not implemented.');
@@ -93,6 +94,7 @@ export class RecordService {
 
 		return result.lastInsertRowid as number;
 	}
+
 	//----------------------------------------------------------------------------------- RECORD METHODS
 	static async getAllRecords(): Promise<Record[]> {
 		const stmt = db.prepare('SELECT * FROM records ORDER BY entry_date DESC, created_at DESC');
@@ -583,6 +585,43 @@ export class RecordService {
 		};
 	}
 
+	//----------------------------------------------------------------------------------- INVOICE METHODS
+	// get monthly sum of delibered ond collected parcels for invoice
+
+	// static async getMonthlyInvoiceData(year: number, month: number): Promise<{
+	// 	delivered: number;
+	// 	collected: number;
+	// }> {
+	// 	const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+		
+	// 	const deliveredRow = db
+	// 	.prepare(
+	// 		`
+	// 		SELECT SUM(amount) as total
+	// 		FROM invoices
+	// 		WHERE status = 'delivered'
+	// 		AND strftime('%Y-%m', created_at) = ?
+	// 		`
+	// 	)
+	// 	.get(monthKey);
+		
+	// 	const collectedRow = db
+	// 	.prepare(
+	// 		`
+	// 		SELECT SUM(amount) as total
+	// 		FROM invoices
+	// 		WHERE status = 'collected'
+	// 		AND strftime('%Y-%m', created_at) = ?
+	// 		`
+	// 	)
+	// 	.get(monthKey);
+		
+	// 	return {
+	// 		delivered: (deliveredRow as { total: number | null } | undefined)?.total || 0,
+	// 		collected: (collectedRow as { total: number | null } | undefined)?.total || 0
+	// 	};
+	// }
+	
 	//----------------------------------------------------------------------------------- MIGRATION METHODS
 	static async migrateExistingRecords(): Promise<void> {
 		try {

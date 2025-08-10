@@ -5,7 +5,7 @@
 	import OdometerDisplay from '$lib/components/OdometerDisplay.svelte';
 	// Get data from server load function
 	let { data }: { data: PageData } = $props();
-	console.log('🚀 ~ODOMETER PAGE data:', data);
+	// console.log('🚀 ~ODOMETER PAGE data:', data);
 
 	// Reactive state for UI§
 	let loading = $state(false);

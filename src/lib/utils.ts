@@ -162,6 +162,7 @@ export function calculateAnalytics(records: DeliveryRecord[]) {
 	const deliverySum = calculateTotalDeliveryValue(records);
 	const collectedSum = calculateTotalCollectionValue(records);
 	const expenseSum = calculateTotalExpense(records);
+	const returnedSum = records.reduce((sum, record) => sum + (record.returned ?? 0), 0);
 
 	const toInvoice = deliverySum + collectedSum;
 	const balance = toInvoice - expenseSum;
@@ -172,6 +173,7 @@ export function calculateAnalytics(records: DeliveryRecord[]) {
 		averagePerDay,
 		deliverySum,
 		collectedSum,
+		returnedSum,
 		expenseSum,
 		toInvoice,
 		balance

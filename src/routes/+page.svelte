@@ -1,6 +1,6 @@
 <script>
 	import BarGroups from '$lib/components/charts/BarGoups.svelte';
-	import { dlvPd, getMonthName } from '$lib/utils.js';
+	import { dlvPd, getMonthName, calculateAnalytics } from '$lib/utils.js';
 	let { data } = $props();
 	// console.log('🚀 ~ data:', data.monthly);
 	// Map through each record in the array and process it, or process the entire array
@@ -13,11 +13,17 @@
 			fails: (item.returned ?? 0) + (item.missplaced ?? 0)
 		};
 	});
+	// console.log("🚀 ~ calculateAnalytics:", calculateAnalytics(data.monthly))
+
+	const sum = calculateAnalytics(data.monthly)
+
+	console.log("🚀 ~ sum:", sum)
 	// console.log('🚀 ~ monthly:', monthly);
-	const deliverySum = monthly.reduce((acc, item) => acc + item.delivery, 0);
-	const collectionSum = monthly.reduce((acc, item) => acc + item.collections, 0);
-	const failsSum = monthly.reduce((acc, item) => acc + item.fails, 0);
+	// const deliverySum = monthly.reduce((acc, item) => acc + item.delivery, 0);
+	// const collectionSum = monthly.reduce((acc, item) => acc + item.collections, 0);
+	// const failsSum = monthly.reduce((acc, item) => acc + item.fails, 0);
 	const currentMonth = new Date().getMonth();
+	const successRate = Number(((sum.totalDelivered / (sum.totalDelivered + sum.returnedSum)) * 100).toFixed(2)) || 0;
 	const latestOdometer = data.getLatestOdometer ? data.getLatestOdometer : 0;
 	// console.log("🚀 ~ latestOdometer:", latestOdometer)
 </script>
@@ -43,7 +49,7 @@
 		<div class="card-header">
 			<h3>Delivered</h3>
 		</div>
-		<p class="card-value">{deliverySum} pcs</p>
+		<p class="card-value">{sum.totalDelivered} pcs</p>
 		<!-- <p class="label">Total delivered ({getMonthName(selectedMonth)} {selectedYear})</p> -->
 		<p class="card-subtitle">Delivered parcels</p>
 	</div>
@@ -52,7 +58,7 @@
 		<div class="card-header">
 			<h3>Collected</h3>
 		</div>
-		<p class="card-value">{collectionSum} pcs</p>
+		<p class="card-value">{sum.totalCollected} pcs</p>
 		<p class="card-subtitle">Collected</p>
 	</div>
 	<!-- Fails Sum  -->
@@ -60,8 +66,22 @@
 		<div class="card-header">
 			<h3>Fails</h3>
 		</div>
-		<p class="card-value">{failsSum} pcs</p>
+		<p class="card-value">{sum.returnedSum} pcs</p>
 		<p class="card-subtitle">Failed deliveries</p>
+	</div>
+	<div class="card purple">
+		<div class="card-header">
+			<h3>Rate</h3>
+		</div>
+		<p class="card-value">{successRate} %</p>
+		<p class="card-subtitle">Success Rate</p>
+	</div>
+	<div class="card">
+		<div class="card-header">
+			<h3>Average</h3>
+		</div>
+		<p class="card-value">{sum.averagePerDay} pcs</p>
+		<p class="card-subtitle">Average pcs / day</p>
 	</div>
 	<div class="card">
 		<div class="card-header">
@@ -178,10 +198,10 @@
 		border-left-color: #ffc107;
 	} */
 
-	/* .card.purple {
+	 .card.purple {
 		border-left-color: #c686ff;
-		background: linear-gradient(135deg, #dcedff  0%, #fff 100%);
-	} */
+		/* background: linear-gradient(90deg, #c686ff  0%, #fff 100%); */
+	} 
 
 	@media (max-width: 768px) {
 		.cards-grid {
