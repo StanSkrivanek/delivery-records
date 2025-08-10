@@ -2,7 +2,7 @@
 	import BarGroups from '$lib/components/charts/BarGoups.svelte';
 	import { dlvPd, getMonthName, calculateAnalytics } from '$lib/utils.js';
 	let { data } = $props();
-	// console.log('🚀 ~ data:', data.monthly);
+
 	// Map through each record in the array and process it, or process the entire array
 	// const delivery = data.monthly.map((record) => dlvPd(record));
 	const monthly = data.monthly.map((item) => {
@@ -13,19 +13,18 @@
 			fails: (item.returned ?? 0) + (item.missplaced ?? 0)
 		};
 	});
-	// console.log("🚀 ~ calculateAnalytics:", calculateAnalytics(data.monthly))
 
 	const sum = calculateAnalytics(data.monthly)
 
-	console.log("🚀 ~ sum:", sum)
-	// console.log('🚀 ~ monthly:', monthly);
-	// const deliverySum = monthly.reduce((acc, item) => acc + item.delivery, 0);
-	// const collectionSum = monthly.reduce((acc, item) => acc + item.collections, 0);
-	// const failsSum = monthly.reduce((acc, item) => acc + item.fails, 0);
+
 	const currentMonth = new Date().getMonth();
 	const successRate = Number(((sum.totalDelivered / (sum.totalDelivered + sum.returnedSum)) * 100).toFixed(2)) || 0;
 	const latestOdometer = data.getLatestOdometer ? data.getLatestOdometer : 0;
-	// console.log("🚀 ~ latestOdometer:", latestOdometer)
+	
+	// const deliverySum = monthly.reduce((acc, item) => acc + item.delivery, 0);
+	// const collectionSum = monthly.reduce((acc, item) => acc + item.collections, 0);
+	// const failsSum = monthly.reduce((acc, item) => acc + item.fails, 0);
+	
 </script>
 
 <svelte:head>
@@ -33,10 +32,10 @@
 </svelte:head>
 
 <header>
-	<h1>Monthly Overview</h1>
+	<h1>{getMonthName(currentMonth)} {new Date().getFullYear()}</h1>
 </header>
 <BarGroups
-	title="Delivery Records - {getMonthName(currentMonth)} "
+	title="Delivery"
 	data={monthly}
 	xKey="date"
 	yKeys={['delivery', 'collections', 'fails']}
@@ -132,7 +131,7 @@
 
 	.card {
 		background: white;
-		/* border-radius: 12px; */
+		border-radius: 0.25rem;
 		width: auto;
 		text-align: right;
 		padding: 1rem;

@@ -11,7 +11,7 @@
 	} from '$lib/utils';
 
 	let { records, selectedYear, selectedMonth } = $props();
-	// console.log('🚀OVERVIEW TABLE ~ records:', records);
+	
 	// Use utility function to calculate totals
 	let totals = $derived.by(() => calculateRecordTotals(records));
 
@@ -54,7 +54,6 @@
 // 		if (!a.entry_date || !b.entry_date) return 0;
 // 		return new Date(a.entry_date).getTime() - new Date(b.entry_date).getTime();
 // 	});
-// 	console.log("🚀 ~ calculateDailyDistances ~ sortedRecords:", sortedRecords)
 
 // 	const dailyDistances = [];
 // 	let lastValidOdometer: number | null = null;
@@ -96,7 +95,7 @@
 // 	return totalDistance / dailyDistances.length;
 // }
 
-// console.log(`Total distance: ${calculateDailyDistances(records)} km`);
+
 </script>
 
 <svelte:window onkeydown={handleKeydown} />

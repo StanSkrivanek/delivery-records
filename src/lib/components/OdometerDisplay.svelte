@@ -8,7 +8,6 @@
 
 	// Get data from server load function
 	let { data, selectedYear, selectedMonth } = $props();
-	console.log("🚀 ~ ODOMETER COMPONENT data:", data)
 
 	// Reactive state for UI
 	let loading = $state(false);

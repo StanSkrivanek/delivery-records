@@ -7,7 +7,7 @@
     import { calculateAnalytics } from '$lib/utils';
 
     let { data } = $props();
-    console.log("🚀 PAGE OVERVIEW~ data:", data)
+  
 
     let selectedYear = $state(data.defaultYear);
     let selectedMonth = $state(data.defaultMonth);

@@ -22,7 +22,7 @@
 		data = [] as DataPoint[],
 		xKey = 'date' as string,
 		yKeys = ['value1', 'value2', 'value3'] as string[],
-		metrics = [] as MetricConfig[], // Metric automatically generated from yKeys if not provided 
+		metrics = [] as MetricConfig[], // Metric automatically generated from yKeys if not provided
 
 		// Optionally we can provide `metrics` configuration that will override autogeneration
 		// This allows for custom names and colors for each metric
@@ -42,6 +42,7 @@
 
 		// Interactivity
 		showTooltip = true,
+		tooltipOffset = 4, // vertical gap (px) between cursor and tooltip
 		animate = true,
 		showLegend = true,
 		showValues = false,
@@ -144,7 +145,7 @@
 			if (typeof height === 'string' && (height.includes('%') || height === '100%')) {
 				return containerHeight;
 			}
-			// console.log('HEIGHT', getNumericValue(height));
+
 			return getNumericValue(height);
 		})()
 	);
@@ -390,15 +391,16 @@
 
 		hoveredBar = { groupIndex, metricIndex };
 		const rect = (event.target as HTMLElement).getBoundingClientRect();
-
 		const item = processedData[groupIndex];
 		const metric = processedMetrics[metricIndex];
 		const value = item.yValues[metric.key];
+		const color = metric.color;
 
 		tooltip.visible = true;
 		tooltip.x = rect.left + rect.width / 2;
-		tooltip.y = rect.top - 10;
-		tooltip.content = `${metric.name}: ${valueFormatter(value)} (${item.xLabel})`;
+		// Use cursor Y for consistency & apply configurable offset
+		tooltip.y = event.clientY - tooltipOffset;
+		tooltip.content = `${valueFormatter(value)} [ ${metric.name} ]`;
 	}
 
 	function handleMouseLeave() {
@@ -410,7 +412,7 @@
 	function handleMouseMove(event: MouseEvent) {
 		if (!showTooltip || !tooltip.visible) return;
 		tooltip.x = event.clientX;
-		tooltip.y = event.clientY - 10;
+		tooltip.y = event.clientY - tooltipOffset;
 	}
 </script>
 
@@ -592,6 +594,12 @@
 <!-- Tooltip -->
 {#if showTooltip && tooltip.visible}
 	<div class="tooltip" style="left: {tooltip.x}px; top: {tooltip.y}px;" role="tooltip">
+		<!-- color -->
+		{#each processedMetrics as metric, index (metric.key)}
+			{#if index === hoveredBar.metricIndex}
+				<span class="tooltip-color" style="background-color: {metric.color};"></span>
+			{/if}
+		{/each}
 		{tooltip.content}
 	</div>
 {/if}
@@ -705,6 +713,13 @@
 		font-family: inherit;
 		max-width: 250px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		& .tooltip-color {
+			display: inline-block;
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+			margin-right: 4px;
+		}
 	}
 
 	.tooltip::after {
@@ -712,7 +727,8 @@
 		position: absolute;
 		top: 100%;
 		left: 50%;
-		transform: translateX(-50%);
+		transform: translateX(-50%); /* Tooltip arrow position */
+
 		width: 0;
 		height: 0;
 		border: 5px solid transparent;

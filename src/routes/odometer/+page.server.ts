@@ -11,7 +11,7 @@ export const load: PageServerLoad = async () => {
 
 
 	const odoByMonth = await rs.getOdometerDifferencesByMonth(currentYear, currentMonth);
-	console.log("🚀 ~ load ~ odoByMonth:", odoByMonth)
+	
 
 	
 	const yearsSet = new Set<number>();

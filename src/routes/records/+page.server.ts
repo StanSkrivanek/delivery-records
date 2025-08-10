@@ -5,7 +5,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
 	const records = await RecordService.getAllRecords();
-	console.log('🚀 ~ load ~ records:', records);
+
 
 	// Extract unique years and months from the data
 	const yearsSet = new Set<number>();

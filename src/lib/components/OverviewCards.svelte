@@ -2,7 +2,7 @@
     import { formatCurrency, formatNumber, getMonthName } from '$lib/utils';
 
     let { analytics, selectedYear, selectedMonth } = $props();
-    // console.log('🚀 ~ analytics:', analytics);
+    
 </script>
 
 <div class="cards-section">
