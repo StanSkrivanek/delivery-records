@@ -2,10 +2,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	// import type { OdometerReading } from '$lib/types';
-	import OdometerDisplay from '$lib/components/OdometerDisplay.svelte';
+	import { formatDate, formatDistance, formatOdometer, getDistanceColorClass } from '$lib/utils';
 	// Get data from server load function
 	let { data }: { data: PageData } = $props();
-
 
 	// Reactive state for UI§
 	let loading = $state(false);
@@ -54,7 +53,6 @@
 	// 		);
 	// 	});
 	// });
-	
 
 	// Function to update URL and reload data
 	// async function updateSelection() {
@@ -92,9 +90,9 @@
 	// Update selection when dropdowns change
 	$effect(() => {
 		// const availableMonths = availableMonthsForYear;
-        // if (!availableMonths.includes(selectedMonth) && availableMonths.length > 0) {
-        //     selectedMonth = availableMonths[0];
-        // }
+		// if (!availableMonths.includes(selectedMonth) && availableMonths.length > 0) {
+		//     selectedMonth = availableMonths[0];
+		// }
 		// if (selectedYear !== data.selectedYear || selectedMonth !== data.selectedMonth) {
 		// 	updateSelection();
 		// }
@@ -109,7 +107,7 @@
 <div class="odometer-display">
 	<div class="header">
 		<h1>Odometer Readings - {selectedMonth} {selectedYear}</h1>
-		<pre>{JSON.stringify(data.odoByMonth, null, 2)}</pre>
+		<!-- <pre>{JSON.stringify(data.odoByMonth, null, 2)}</pre> -->
 		<!-- <div class="date-selector">
 			<select bind:value={selectedMonth} disabled={loading}>
 				{#each monthNames as monthName, index}
@@ -122,7 +120,43 @@
 				{/each}
 			</select>
 		</div> -->
+
+		<!-- "entry_date": "2025-08-01",
+    "odometer": 267575,
+    "previous_odometer": 267317,
+    "daily_difference": 258,
+    "days_between": 1 -->
 	</div>
+	<!-- <h2>Odometer Details</h2> -->
+	<table class="odometer-details">
+		<!-- table -->
+		<thead>
+			<tr>
+				<th>Date</th>
+				<th>Start</th>
+				<th>End</th>
+				<th>Distance</th>
+				<!-- <th>Days Between Readings</th> -->
+			</tr>
+		</thead>
+		<tbody>
+			{#each data.odoByMonth as reading}
+				<tr>
+					<td>{formatDate(reading.entry_date)}</td>
+					<td class="odometer-value">
+						{reading.previous_odometer ? formatOdometer(reading.previous_odometer) : '-'}
+					</td>
+					<td class="odometer-value">{formatOdometer(reading.odometer)}</td>
+					<td class="distance-value {getDistanceColorClass(reading.daily_difference || 0)}">
+						{reading.daily_difference ? formatDistance(reading.daily_difference) : '-'}
+					</td>
+					<!-- <td class="days-between">
+						{reading.days_between ? reading.days_between.toFixed(0) : '-'}
+					</td> -->
+				</tr>
+			{/each}
+		</tbody>
+	</table>
 
 	<!-- {#if data.error}
 		<div class="error">
@@ -132,8 +166,8 @@
 	{:else if loading}
 		<div class="loading">Loading odometer data...</div>
 	{:else} -->
-		
-		<!-- <div class="stats-grid">
+
+	<!-- <div class="stats-grid">
 			<div class="stat-card">
 				<h3>Total Distance</h3>
 				<p class="stat-value">{formatDistance(data.stats.totalDistance)}</p>
@@ -152,8 +186,7 @@
 			</div>
 		</div> -->
 
-	
-		<!-- <div class="readings-table">
+	<!-- <div class="readings-table">
 			<table>
 				<thead>
 					<tr>
@@ -184,15 +217,40 @@
 			</table>
 		</div> -->
 
-		<!-- {#if data.odometerReadings.length === 0}
+	<!-- {#if data.odometerReadings.length === 0}
 			<div class="no-data">
 				No odometer readings found for {currentMonthName} {selectedYear}
 			</div>
 		{/if} -->
 	<!-- {/if} -->
-</div> 
+</div>
 
 <style>
+	.odometer-details {
+		border-collapse: collapse;
+		width: 100%;
+		& thead {
+			background: #3a3a3a;
+			font-weight: 600;
+			color: #f4f4f4;
+			th {
+				border: 1px solid #c0c0c0;
+				padding: 0.75rem;
+			}
+		}
+		& tbody {
+			td {
+				border: 1px solid #c0c0c0;
+				&:first-child {
+					font-weight: 600;
+					color: #495057;
+				}
+				padding: 0.75rem;
+				text-align: center;
+				letter-spacing: 0.1rem;
+			}
+		}
+	}
 	/* .odometer-display {
 		padding: 1rem;
 		max-width: 1200px;
