@@ -156,7 +156,9 @@ export function calculateAnalytics(records: DeliveryRecord[]) {
 	// Basic metrics
 	const totalDelivered = calculateTotalDelivered(records);
 	const totalCollected = calculateTotalCollected(records);
-	const averagePerDay = records.length > 0 ? totalDelivered / records.length : 0;
+	// two decimals averagePerDay
+
+	const averagePerDay = records.length > 0 ? (totalDelivered / records.length).toFixed(2) : '0.00';
 
 	// Financial calculations
 	const deliverySum = calculateTotalDeliveryValue(records);

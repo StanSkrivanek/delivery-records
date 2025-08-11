@@ -5,6 +5,7 @@
 	import { formatDate, formatDistance, formatOdometer, getDistanceColorClass } from '$lib/utils';
 	// Get data from server load function
 	let { data }: { data: PageData } = $props();
+	console.log('🚀 ~ data:', data);
 
 	// Reactive state for UI§
 	let loading = $state(false);
@@ -27,6 +28,10 @@
 		{ value: 11, label: 'November' },
 		{ value: 12, label: 'December' }
 	];
+
+	function monthlyDistance() {
+		return data.odoByMonth.reduce((acc, reading) => acc + (reading.daily_difference ?? 0), 0);
+	}
 
 	// let availableMonthsForYear: number[] = $derived.by(() => {
 	// 	const monthsInYear = new Set<number>();
@@ -88,15 +93,15 @@
 	// const yearOptions = $derived(Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i));
 
 	// Update selection when dropdowns change
-	$effect(() => {
-		// const availableMonths = availableMonthsForYear;
-		// if (!availableMonths.includes(selectedMonth) && availableMonths.length > 0) {
-		//     selectedMonth = availableMonths[0];
-		// }
-		// if (selectedYear !== data.selectedYear || selectedMonth !== data.selectedMonth) {
-		// 	updateSelection();
-		// }
-	});
+	// $effect(() => {
+	// const availableMonths = availableMonthsForYear;
+	// if (!availableMonths.includes(selectedMonth) && availableMonths.length > 0) {
+	//     selectedMonth = availableMonths[0];
+	// }
+	// if (selectedYear !== data.selectedYear || selectedMonth !== data.selectedMonth) {
+	// 	updateSelection();
+	// }
+	// });
 </script>
 
 <svelte:head>
@@ -106,7 +111,48 @@
 
 <div class="odometer-display">
 	<div class="header">
-		<h1>Odometer Readings - {selectedMonth} {selectedYear}</h1>
+		<h1>Odometer Readings - {selectedMonth} / {selectedYear}</h1>
+		{#if data.odoByMonth.length > 0}
+			<div class="stats">
+				<div class="stat-card">
+					<p>Total Distance</p>
+					<p class="stat-value">{formatDistance(monthlyDistance())}</p>
+				</div>
+			</div>
+			<!-- <div class="date-selector"> -->
+			<!-- <select bind:value={selectedMonth} disabled={loading}>
+					{#each monthOptions as { value, label }}
+						<option value={value}>{label}</option>
+					{/each}
+				</select> -->
+			<!-- <select bind:value={selectedYear} disabled={loading}>
+					{#each data.yearOptions as year}
+						<option value={year}>{year}</option>
+					{/each}
+				</select> -->
+
+			<!-- </div> -->
+		{/if}
+
+		<!-- <div class="stats"> -->
+		<!-- <div class="stat-card"> -->
+		<!-- <h3>Total Distance</h3> -->
+		<!-- <p class="stat-value">{data.odoByMonth}</p> -->
+
+		<!-- <p class="stat-value">{formatDistance(data.stats.totalDistance)}</p>
+			<!-- </div> -->
+		<!-- <div class="stat-card">
+				<h3>Average Daily</h3>
+				<p class="stat-value">{formatDistance(data.stats.averageDaily)}</p>
+			</div>
+			<div class="stat-card">
+				<h3>Max Daily</h3>
+				<p class="stat-value">{formatDistance(data.stats.maxDaily)}</p>
+			</div>
+			<div class="stat-card">
+				<h3>Days with Readings</h3>
+				<p class="stat-value">{data.stats.daysWithReadings}</p>
+			</div> -->
 		<!-- <pre>{JSON.stringify(data.odoByMonth, null, 2)}</pre> -->
 		<!-- <div class="date-selector">
 			<select bind:value={selectedMonth} disabled={loading}>
@@ -226,6 +272,35 @@
 </div>
 
 <style>
+	.header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 2rem;
+		flex-wrap: wrap;
+		gap: 1rem;
+	}
+	.stat-card{
+		background: #4782cf;
+		padding: 1rem;
+		border-radius: 0.25em;
+		text-align: center;
+		/* border: 1px solid #cccdcd; */
+		p {
+			margin: 0;
+			font-size: 1.5rem;
+			/* font-weight: bold; */
+			color: #f0f1f1;
+		}
+	}
+	.stat-value{
+		margin: 0;
+		font-size: 1.5rem;
+		letter-spacing: 0.1em;
+		/* font-weight: bold; */
+		/* color: #495057; */
+		margin-bottom: 1rem;
+	}
 	.odometer-details {
 		border-collapse: collapse;
 		width: 100%;
