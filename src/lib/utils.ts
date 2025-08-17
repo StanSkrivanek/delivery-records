@@ -153,6 +153,12 @@ export function dpm(records: DeliveryRecord[]): number {
 
 
 export function calculateAnalytics(records: DeliveryRecord[]) {
+	// console.log("🚀 ~ calculateAnalytics ~ records:", records)
+
+// these metrics use EVERY record but is should only use records with "loaded" > 0. Also neetd to think about odometer calculation when "loaded"= 0
+ 
+
+
 	// Basic metrics
 	const totalDelivered = calculateTotalDelivered(records);
 	const totalCollected = calculateTotalCollected(records);
