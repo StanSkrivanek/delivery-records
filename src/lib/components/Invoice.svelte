@@ -1,7 +1,7 @@
 <!-- src/lib/components/Invoice.svelte -->
 <script lang="ts">
-	import { formatCurrency, getMonthName } from '$lib/utils';
 	import type { InvoiceData } from '$lib/invoice.server';
+	import { formatCurrency, getMonthName } from '$lib/utils';
 
 	let {
 		availableYears = [],
@@ -19,11 +19,11 @@
 
 	// Company information
 	let companyInfo = $state({
-		name: 'Your Company Name',
-		address: 'Your Company Address\nCity, Country',
-		email: 'contact@yourcompany.com',
-		phone: '+353 XX XXX XXXX',
-		vatNumber: 'IE1234567X'
+		name: 'Stan Skrivanek',
+		address: '11 Ryecourt Manor, Cloughduv',
+		email: 's.skrivanek@gmail.com',
+		phone: '+353 868965111',
+		vatNumber: 'IE---'
 	});
 
 	// Month options with names
@@ -50,11 +50,11 @@
 			const response = await fetch(
 				`/api/invoice?year=${selectedYear}&month=${selectedMonth}&format=json`
 			);
-			
+
 			if (!response.ok) {
 				throw new Error('Failed to generate invoice');
 			}
-			
+
 			invoiceData = await response.json();
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to generate invoice';
@@ -86,13 +86,13 @@
 			}
 
 			const html = await response.text();
-			
+
 			// Create a new window for printing
 			const printWindow = window.open('', '_blank');
 			if (printWindow) {
 				printWindow.document.write(html);
 				printWindow.document.close();
-				
+
 				// Wait for content to load then print
 				printWindow.onload = () => {
 					setTimeout(() => {
@@ -115,13 +115,13 @@
 			const response = await fetch(
 				`/api/invoice?year=${selectedYear}&month=${selectedMonth}&format=html`
 			);
-			
+
 			if (!response.ok) {
 				throw new Error('Failed to generate HTML');
 			}
-			
+
 			const html = await response.text();
-			
+
 			// Create download link
 			const blob = new Blob([html], { type: 'text/html' });
 			const url = URL.createObjectURL(blob);
@@ -141,7 +141,7 @@
 
 <div class="invoice-generator">
 	<div class="header">
-		<h2>📄 Invoice Generator</h2>
+		<h2>Invoice Generator</h2>
 		<p>Generate monthly invoices for your delivery services</p>
 	</div>
 
@@ -165,23 +165,14 @@
 				</select>
 			</div>
 
-			<button
-				type="button"
-				class="btn primary"
-				onclick={generateInvoice}
-				disabled={loading}
-			>
+			<button type="button" class="btn primary" onclick={generateInvoice} disabled={loading}>
 				{loading ? 'Generating...' : 'Generate Invoice'}
 			</button>
 		</div>
 
 		{#if invoiceData}
 			<div class="action-controls">
-				<button
-					type="button"
-					class="btn secondary"
-					onclick={() => (showPreview = !showPreview)}
-				>
+				<button type="button" class="btn secondary" onclick={() => (showPreview = !showPreview)}>
 					{showPreview ? 'Hide Preview' : 'Show Preview'}
 				</button>
 
@@ -192,7 +183,7 @@
 					disabled={loading}
 					title="Print or save as PDF"
 				>
-					📄 Print/PDF
+				Print/PDF
 				</button>
 
 				<button
@@ -202,7 +193,7 @@
 					disabled={loading}
 					title="Download HTML file"
 				>
-					💾 Download HTML
+					Download HTML
 				</button>
 			</div>
 		{/if}
@@ -210,14 +201,15 @@
 
 	{#if error}
 		<div class="error-message">
-			<strong>Error:</strong> {error}
+			<strong>Error:</strong>
+			{error}
 		</div>
 	{/if}
 
 	{#if invoiceData}
 		<div class="invoice-summary">
 			<h3>Invoice Summary - {getMonthName(selectedMonth)} {selectedYear}</h3>
-			
+
 			<div class="summary-grid">
 				<div class="summary-card">
 					<h4>Deliveries</h4>
@@ -261,7 +253,7 @@
 						<tr>
 							<td>Deliveries</td>
 							<td>{invoiceData.totalDeliveries.toLocaleString()}</td>
-							<td>{formatCurrency(4.00)}</td>
+							<td>{formatCurrency(4.0)}</td>
 							<td>{formatCurrency(invoiceData.deliverySubtotal)}</td>
 							<td>{formatCurrency(invoiceData.deliveryVAT)}</td>
 							<td class="font-medium">{formatCurrency(invoiceData.deliveryTotal)}</td>
@@ -269,7 +261,7 @@
 						<tr>
 							<td>Collections</td>
 							<td>{invoiceData.totalCollections.toLocaleString()}</td>
-							<td>{formatCurrency(1.00)}</td>
+							<td>{formatCurrency(1.0)}</td>
 							<td>{formatCurrency(invoiceData.collectionSubtotal)}</td>
 							<td>{formatCurrency(invoiceData.collectionVAT)}</td>
 							<td class="font-medium">{formatCurrency(invoiceData.collectionTotal)}</td>
@@ -288,8 +280,10 @@
 		{#if showPreview}
 			<div class="preview-section">
 				<h3>Company Information Preview</h3>
-				<p class="preview-note">This information will appear on your invoice. You can modify it below:</p>
-				
+				<p class="preview-note">
+					This information will appear on your invoice. You can modify it below:
+				</p>
+
 				<div class="company-form">
 					<div class="form-group">
 						<label for="company-name">Company Name:</label>
@@ -556,18 +550,23 @@
 	.breakdown-table td:nth-child(2),
 	.breakdown-table td:nth-child(3),
 	.breakdown-table td:nth-child(4),
-	.breakdown-table td:nth-child(5),
+	.breakdown-table td:nth-child(5) {
+		text-align: left;
+	}
 	.breakdown-table td:nth-child(6) {
 		text-align: right;
 	}
-
 	.breakdown-table tfoot td {
 		background: #f3f4f6;
 		font-weight: 600;
 		border-bottom: none;
 		border-top: 2px solid #d1d5db;
-	}
+       
 
+	}
+	.breakdown-table tfoot td:nth-child(2) {
+		text-align: right;
+	}
 	.font-medium {
 		font-weight: 500;
 	}
@@ -576,6 +575,7 @@
 		font-weight: 700;
 		color: #1f2937;
 		font-size: 1.1rem;
+		/* text-align: right; */
 	}
 
 	.preview-section {
@@ -676,6 +676,7 @@
 		.breakdown-table th,
 		.breakdown-table td {
 			padding: 0.5rem 0.25rem;
+          
 		}
 	}
 

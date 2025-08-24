@@ -76,7 +76,7 @@ export function generateInvoiceHTML(
 		}
 		
 		.company-info h1 {
-			color: #2563eb;
+			color: #000000;
 			font-size: 28px;
 			margin-bottom: 10px;
 			font-weight: 700;
@@ -121,7 +121,7 @@ export function generateInvoiceHTML(
 		}
 		
 		.meta-value {
-			color: #6b7280;
+			color: #2c2e33;
 		}
 		
 		.services-table {
@@ -134,8 +134,8 @@ export function generateInvoiceHTML(
 		}
 		
 		.services-table th {
-			background: #1f2937;
-			color: white;
+			background: #eee;
+			color: black;
 			padding: 15px 12px;
 			text-align: left;
 			font-weight: 600;
@@ -178,7 +178,7 @@ export function generateInvoiceHTML(
 		
 		.totals-table td {
 			padding: 8px 12px;
-			border-bottom: 1px solid #e5e7eb;
+			border-bottom: 1px solid #a1a1a1;
 		}
 		
 		.totals-table tr:last-child td {
@@ -189,11 +189,11 @@ export function generateInvoiceHTML(
 		}
 		
 		.subtotal-row td {
-			color: #6b7280;
+			color: #1b1d21;
 		}
 		
 		.vat-row td {
-			color: #7c3aed;
+			color: #2b2b2b;
 			font-style: italic;
 		}
 		
@@ -207,22 +207,22 @@ export function generateInvoiceHTML(
 			font-size: 11px;
 		}
 		
-		.payment-terms {
+			.payment-terms {
 			margin-top: 30px;
 			padding: 20px;
-			background: #fef3c7;
-			border-left: 4px solid #f59e0b;
+			background: #f1f1f1;
+			border-left: 4px solid #383736;
 			border-radius: 0 4px 4px 0;
 		}
 		
 		.payment-terms h3 {
-			color: #92400e;
+			color: #323232;
 			margin-bottom: 8px;
 			font-size: 14px;
 		}
 		
 		.payment-terms p {
-			color: #a16207;
+			color: #3a3a3a;
 			font-size: 11px;
 		}
 		
@@ -329,7 +329,7 @@ export function generateInvoiceHTML(
 		
 		<div class="payment-terms">
 			<h3>Payment Terms</h3>
-			<p>Payment is due within 30 days of invoice date. Late payments may be subject to interest charges. Thank you for your business!</p>
+			<p>Payment is due within 7 days of invoice date. Late payments may be subject to interest charges. Thank you for your business!</p>
 		</div>
 		
 		<div class="footer">
