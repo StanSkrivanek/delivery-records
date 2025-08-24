@@ -1,15 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 
-const PPU_DELIVERY = 4; // Price per delivery without tax
-const PPU_COLLECTION = 1; // Price per collection without tax
-const TAX_RATE = 0.23; // Tax rate (23%)
+export const PPU_DELIVERY = 4; // Price per delivery without tax
+export const PPU_COLLECTION = 1; // Price per collection without tax
+export const TAX_RATE = 0.23; // Tax rate (23%)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ODOMETER_INIT = 267317;  //INITIAL ODOMETER VALUE, NOT USED IN CALCULATIONS
+export const ODOMETER_INIT = 267317;  //INITIAL ODOMETER VALUE, NOT USED IN CALCULATIONS
 /**
  * Type definition for a delivery record
  */
-interface DeliveryRecord {
+export interface DeliveryRecord {
 	loaded: number;
 	returned?: number;
 	collected?: number;
@@ -26,7 +26,7 @@ interface DeliveryRecord {
 /**
  * Type definition for record totals
  */
-interface RecordTotals {
+export interface RecordTotals {
 	loaded: number;
 	returned?: number;
 	collected: number;
