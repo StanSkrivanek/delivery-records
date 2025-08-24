@@ -137,18 +137,21 @@ export function generateInvoiceHTML(
 			background: #eee;
 			color: black;
 			padding: 15px 12px;
-			text-align: left;
+			text-align: right;
 			font-weight: 600;
-			font-size: 11px;
+			font-size: 8px;
 			text-transform: uppercase;
 			letter-spacing: 0.5px;
+            &:first-child {
+                text-align: left;
+            }
 		}
 		
 		.services-table td {
 			padding: 12px;
 			border-bottom: 1px solid #e5e7eb;
-		}
-		
+            }
+    
 		.services-table tr:last-child td {
 			border-bottom: none;
 		}
@@ -166,8 +169,8 @@ export function generateInvoiceHTML(
 		}
 		
 		.totals-section {
-			float: right;
-			width: 300px;
+			// float: right;
+			// width: 300px;
 			margin-top: 20px;
 		}
 		
@@ -237,6 +240,16 @@ export function generateInvoiceHTML(
 			
 			.payment-terms {
 				break-inside: avoid;
+			}
+            .footer {
+				color: ##9ca3af !important;
+				-webkit-print-color-adjust: exact;
+				print-color-adjust: exact;
+			}
+			
+			.footer p {
+				color: ##9ca3af !important;
+                font-size: 8px !important;
 			}
 		}
 	</style>
@@ -312,14 +325,6 @@ export function generateInvoiceHTML(
 		
 		<div class="totals-section">
 			<table class="totals-table">
-				<tr class="subtotal-row">
-					<td>Subtotal:</td>
-					<td class="text-right">${formatCurrency(deliverySubtotal + collectionSubtotal)}</td>
-				</tr>
-				<tr class="vat-row">
-					<td>VAT (23%):</td>
-					<td class="text-right">${formatCurrency(deliveryVAT + collectionVAT)}</td>
-				</tr>
 				<tr>
 					<td><strong>Total Amount:</strong></td>
 					<td class="text-right"><strong>${formatCurrency(grandTotal)}</strong></td>
