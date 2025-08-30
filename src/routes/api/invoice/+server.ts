@@ -32,10 +32,10 @@ export const GET: RequestHandler = async ({ url }) => {
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		const { year, month, companyInfo } = await request.json();
+		const { year, month, companyInfo, invoiceReceiver } = await request.json();
 
 		const invoiceData = await InvoiceService.generateInvoiceData(year, month);
-		const html = generateInvoiceHTML(invoiceData, companyInfo);
+		const html = generateInvoiceHTML(invoiceData, companyInfo, invoiceReceiver);
 
 		return new Response(html, {
 			headers: {

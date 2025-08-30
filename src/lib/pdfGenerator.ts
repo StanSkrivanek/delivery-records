@@ -10,6 +10,18 @@ export function generateInvoiceHTML(
 		email?: string;
 		phone?: string;
 		vatNumber?: string;
+		bank?: {
+			name?: string;
+			iban?: string;
+			bic?: string;
+		};
+	},
+	invoiceReceiver?: {
+		name?: string;
+		address?: string;
+		email?: string;
+		phone?: string;
+		vatNumber?: string;
 	}
 ): string {
 	const {
@@ -34,7 +46,21 @@ export function generateInvoiceHTML(
 		address: companyInfo?.address || 'Your Company Address\nCity, Country',
 		email: companyInfo?.email || 'contact@yourcompany.com',
 		phone: companyInfo?.phone || '+353 XX XXX XXXX',
-		vatNumber: companyInfo?.vatNumber || 'IE1234567X'
+		vatNumber: companyInfo?.vatNumber || '-',
+		bank: {
+			name: companyInfo?.bank?.name || 'Your Bank',
+			iban: companyInfo?.bank?.iban || 'IEXXXXXXXXXXXXXXXXXX',
+			bic: companyInfo?.bank?.bic || 'XXXXXXXX'
+		}
+	};
+
+	// Default receiver info
+	const receiver = {
+		name: invoiceReceiver?.name || 'Client Name',
+		address: invoiceReceiver?.address || 'Client Address\nCity, Country',
+		email: invoiceReceiver?.email || '',
+		phone: invoiceReceiver?.phone || '',
+		vatNumber: invoiceReceiver?.vatNumber || ''
 	};
 
 	return `
@@ -229,6 +255,44 @@ export function generateInvoiceHTML(
 			font-size: 11px;
 		}
 		
+		.invoice-parties {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 30px;
+		}
+		
+		.from-section, .to-section {
+			width: 48%;
+		}
+		
+		.to-section {
+			background: #f8fafc;
+			padding: 15px;
+			border-radius: 6px;
+			border-left: 4px solid #3b82f6;
+		}
+		
+		.section-title {
+			font-weight: 600;
+			color: #6b7280;
+			text-transform: uppercase;
+			font-size: 12px;
+			margin-bottom: 10px;
+			letter-spacing: 0.5px;
+		}
+		
+		.bank-info {
+			margin-top: 20px;
+			padding: 15px;
+			background: #f8fafc;
+			border-radius: 6px;
+			border-left: 4px solid #10b981;
+		}
+		
+		.bank-info p {
+			margin: 4px 0;
+		}
+		
 		@media print {
 			body {
 				font-size: 11px;
@@ -268,6 +332,31 @@ export function generateInvoiceHTML(
 				<h2>INVOICE</h2>
 				<p><strong>Invoice #:</strong> ${invoiceNumber}</p>
 				<p><strong>Date:</strong> ${formatDate(invoiceDate)}</p>
+			</div>
+		</div>
+		
+		<div class="invoice-parties">
+			<div class="from-section">
+				<div class="section-title">From:</div>
+				<p><strong>${company.name}</strong></p>
+				<p>${company.address.replace(/\n/g, '<br>')}</p>
+				${company.vatNumber ? `<p>VAT: ${company.vatNumber}</p>` : ''}
+				
+				<div class="bank-info">
+					<div class="section-title">Bank Details:</div>
+					<p><strong>Bank:</strong> ${company.bank.name}</p>
+					<p><strong>IBAN:</strong> ${company.bank.iban}</p>
+					<p><strong>BIC:</strong> ${company.bank.bic}</p>
+				</div>
+			</div>
+			
+			<div class="to-section">
+				<div class="section-title">Bill To:</div>
+				<p><strong>${receiver.name}</strong></p>
+				<p>${receiver.address.replace(/\n/g, '<br>')}</p>
+				${receiver.email ? `<p>Email: ${receiver.email}</p>` : ''}
+				${receiver.phone ? `<p>Phone: ${receiver.phone}</p>` : ''}
+				${receiver.vatNumber ? `<p>VAT: ${receiver.vatNumber}</p>` : ''}
 			</div>
 		</div>
 		

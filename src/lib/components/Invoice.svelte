@@ -23,7 +23,20 @@
 		address: '11 Ryecourt Manor, Cloughduv',
 		email: 's.skrivanek@gmail.com',
 		phone: '+353 868965111',
-		vatNumber: 'IE---'
+		vatNumber: '',
+		bank: {
+			name: 'TSB',
+			iban: 'IE31IPBS99070310051401',
+			bic: 'IPBSIE2D'
+		}
+	});
+
+	let invoiceReceiver = $state({
+		name: 'Krzysztof Karpinsky',
+		address: 'Unit 2, Blarney Business Park, Blarney, Co. Cork',
+		email: '',
+		phone: '',
+		vatNumber: ''
 	});
 
 	// Month options with names
@@ -77,7 +90,8 @@
 				body: JSON.stringify({
 					year: selectedYear,
 					month: selectedMonth,
-					companyInfo
+					companyInfo,
+					invoiceReceiver
 				})
 			});
 
@@ -112,9 +126,19 @@
 		if (!invoiceData) return;
 
 		try {
-			const response = await fetch(
-				`/api/invoice?year=${selectedYear}&month=${selectedMonth}&format=html`
-			);
+			const response = await fetch('/api/invoice', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					year: selectedYear,
+					month: selectedMonth,
+					companyInfo,
+					invoiceReceiver,
+					format: 'html'
+				})
+			});
 
 			if (!response.ok) {
 				throw new Error('Failed to generate HTML');
@@ -310,6 +334,60 @@
 					<div class="form-group">
 						<label for="company-vat">VAT Number:</label>
 						<input type="text" id="company-vat" bind:value={companyInfo.vatNumber} />
+					</div>
+					
+					<h4>Bank Details</h4>
+					<div class="form-row">
+						<div class="form-group">
+							<label for="bank-name">Bank Name:</label>
+							<input type="text" id="bank-name" bind:value={companyInfo.bank.name} />
+						</div>
+						
+						<div class="form-group">
+							<label for="bank-iban">IBAN:</label>
+							<input type="text" id="bank-iban" bind:value={companyInfo.bank.iban} />
+						</div>
+					</div>
+					
+					<div class="form-group">
+						<label for="bank-bic">BIC/SWIFT:</label>
+						<input type="text" id="bank-bic" bind:value={companyInfo.bank.bic} />
+					</div>
+				</div>
+			</div>
+			
+			<div class="preview-section">
+				<h3>Receiver Information Preview</h3>
+				<p class="preview-note">
+					This information will appear in the "Bill To:" section of your invoice.
+				</p>
+
+				<div class="company-form">
+					<div class="form-group">
+						<label for="company-name">Company Name:</label>
+						<input type="text" id="company-name" bind:value={invoiceReceiver.name} />
+					</div>
+
+					<div class="form-group">
+						<label for="company-address">Address:</label>
+						<textarea id="company-address" bind:value={invoiceReceiver.address} rows="3"></textarea>
+					</div>
+
+					<div class="form-row">
+						<div class="form-group">
+							<label for="company-email">Email:</label>
+							<input type="email" id="company-email" bind:value={invoiceReceiver.email} />
+						</div>
+
+						<div class="form-group">
+							<label for="company-phone">Phone:</label>
+							<input type="tel" id="company-phone" bind:value={invoiceReceiver.phone} />
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label for="company-vat">VAT Number:</label>
+						<input type="text" id="company-vat" bind:value={invoiceReceiver.vatNumber} />
 					</div>
 				</div>
 			</div>
