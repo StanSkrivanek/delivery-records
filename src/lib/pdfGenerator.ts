@@ -22,6 +22,9 @@ export function generateInvoiceHTML(
 		email?: string;
 		phone?: string;
 		vatNumber?: string;
+	},
+	options?: {
+		dueDays?: number;
 	}
 ): string {
 	const {
@@ -39,6 +42,12 @@ export function generateInvoiceHTML(
 		collectionTotal,
 		grandTotal
 	} = invoiceData;
+
+	// Calculate due date (7 days from invoice date by default)
+	const dueDays = options?.dueDays || 7;
+	const dueDate = new Date(invoiceDate);
+	dueDate.setDate(dueDate.getDate() + dueDays);
+	const dueDateString = dueDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
 
 	// Default company info
 	const company = {
@@ -103,9 +112,10 @@ export function generateInvoiceHTML(
 		
 		.company-info h1 {
 			color: #000000;
-			font-size: 28px;
+			font-size: 32px;
 			margin-bottom: 10px;
 			font-weight: 700;
+			text-align: left;
 		}
 		
 		.company-info p {
@@ -117,11 +127,9 @@ export function generateInvoiceHTML(
 			text-align: right;
 		}
 		
-		.invoice-details h2 {
-			font-size: 32px;
-			color: #1f2937;
-			margin-bottom: 10px;
-			font-weight: 300;
+		.invoice-details p {
+			margin-bottom: 6px;
+			font-size: 14px;
 		}
 		
 		.invoice-meta {
@@ -232,8 +240,13 @@ export function generateInvoiceHTML(
 			padding-top: 20px;
 			border-top: 1px solid #e5e7eb;
 			text-align: center;
-			color: #9ca3af;
-			font-size: 11px;
+			color: #4b5563;
+			font-size: 12px;
+		}
+		
+		.footer p {
+			margin-bottom: 5px;
+			font-weight: 500;
 		}
 		
 			.payment-terms {
@@ -305,15 +318,16 @@ export function generateInvoiceHTML(
 			.payment-terms {
 				break-inside: avoid;
 			}
+            
             .footer {
-				color: ##9ca3af !important;
+				color: #4b5563 !important;
 				-webkit-print-color-adjust: exact;
 				print-color-adjust: exact;
 			}
 			
 			.footer p {
-				color: ##9ca3af !important;
-                font-size: 8px !important;
+				color: #4b5563 !important;
+                font-size: 10px !important;
 			}
 		}
 	</style>
@@ -322,16 +336,12 @@ export function generateInvoiceHTML(
 	<div class="invoice-container">
 		<div class="header">
 			<div class="company-info">
-				<h1>${company.name}</h1>
-				<p>${company.address.replace(/\n/g, '<br>')}</p>
-				<p>Email: ${company.email}</p>
-				<p>Phone: ${company.phone}</p>
-				<p>VAT Number: ${company.vatNumber}</p>
+				<h1>INVOICE</h1>
 			</div>
 			<div class="invoice-details">
-				<h2>INVOICE</h2>
 				<p><strong>Invoice #:</strong> ${invoiceNumber}</p>
-				<p><strong>Date:</strong> ${formatDate(invoiceDate)}</p>
+				<p><strong>Issued Date:</strong> ${formatDate(invoiceDate)}</p>
+				<p><strong>Due Date:</strong> ${formatDate(dueDateString)}</p>
 			</div>
 		</div>
 		
@@ -340,6 +350,8 @@ export function generateInvoiceHTML(
 				<div class="section-title">From:</div>
 				<p><strong>${company.name}</strong></p>
 				<p>${company.address.replace(/\n/g, '<br>')}</p>
+				<p>Email: ${company.email}</p>
+				<p>Phone: ${company.phone}</p>
 				${company.vatNumber ? `<p>VAT: ${company.vatNumber}</p>` : ''}
 				
 				<div class="bank-info">
@@ -423,11 +435,11 @@ export function generateInvoiceHTML(
 		
 		<div class="payment-terms">
 			<h3>Payment Terms</h3>
-			<p>Payment is due within 7 days of invoice date. Late payments may be subject to interest charges. Thank you for your business!</p>
+			<p>Payment is due within ${dueDays} days of invoice date. Late payments may be subject to interest charges.</p>
 		</div>
 		
 		<div class="footer">
-			<p>This invoice was generated automatically on ${formatDate(invoiceDate)}</p>
+			<p>Thank you for your business!</p>
 			<p>For any questions regarding this invoice, please contact ${company.email}</p>
 		</div>
 	</div>
