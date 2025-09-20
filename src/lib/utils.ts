@@ -252,32 +252,27 @@ export function getMonthName(month: number) {
  * @param price Price per delivered item
  * @param taxRate Tax rate to apply
  * @default price 4
- * @default taxRate 0.23
  * @returns Monetary value including tax
  */
 export function calculateDeliveryValue(
 	delivered: number,
 	price: number = PPU_DELIVERY,
-	taxRate: number = TAX_RATE
 ) {
-	return delivered * price * (1 + taxRate);
+	return delivered * price ;
 }
 
 /**
  * Calculate the monetary value of collected items
  * @param collected Number of collected items
  * @param price Price per collected item
- * @param taxRate Tax rate to apply
- * @default price 1
- * @default taxRate 0.23
  * @returns Monetary value including tax
  */
 export function calculateCollectedValue(
 	collected: number,
 	price: number = PPU_COLLECTION,
-	taxRate: number = TAX_RATE
+
 ) {
-	return collected * price * (1 + taxRate);
+	return collected * price;
 }
 
 /** Calculate VAT for a given amount

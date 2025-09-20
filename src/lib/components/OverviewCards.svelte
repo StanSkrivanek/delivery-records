@@ -1,7 +1,8 @@
 <script>
-	import { formatCurrency, formatNumber, getMonthName } from '$lib/utils';
+	import { calculateVAT, formatCurrency, formatNumber, getMonthName } from '$lib/utils';
 
 	let { analytics, selectedYear, selectedMonth } = $props();
+	console.log('🚀 ~ analytics:', analytics);
 </script>
 
 <div class="cards-section">
@@ -24,6 +25,7 @@
 			<div class="card success">
 				<div class="card-header">
 					<h3>Value</h3>
+					<span>VAT: {formatCurrency(calculateVAT(analytics.deliverySum))}</span>
 				</div>
 				<p class="card-value">{formatCurrency(analytics.deliverySum)}</p>
 				<p class="card-subtitle">Delivered parcels</p>
@@ -42,6 +44,7 @@
 			<div class="card success">
 				<div class="card-header">
 					<h3>Value</h3>
+					<span>VAT: {formatCurrency(calculateVAT(analytics.totalCollected))}</span>
 				</div>
 				<p class="card-value">{formatCurrency(analytics.collectedSum)}</p>
 				<p class="card-subtitle">Collected</p>
@@ -61,6 +64,7 @@
 			<div class="card purple">
 				<div class="card-header">
 					<h3>Invoice</h3>
+					<span>VAT: {formatCurrency(calculateVAT(analytics.toInvoice))}</span>
 				</div>
 				<p class="card-value">{formatCurrency(analytics.toInvoice)}</p>
 				<p class="card-subtitle">Total amount to invoice</p>
@@ -149,7 +153,12 @@
 		/* color: var(--color-slate-700); */
 		letter-spacing: 0.05rem;
 	}
-
+	.card-header span {
+		font-size: 0.85rem;
+		color: #b3b3b3;
+		font-weight: 500;
+		letter-spacing: 0.05rem;
+	}
 	.card-value {
 		font-size: 2rem;
 		font-weight: 700;
