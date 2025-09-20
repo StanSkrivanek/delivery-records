@@ -11,6 +11,7 @@
 	let returned = $state(0);
 	let missplaced = $state(0);
 	let expense = $state(0);
+	let expense_no_vat = $state(0);
 	let odometer = $state(0);
 	let selectedFile: File | null = $state(null);
 	let note = $state('');
@@ -55,6 +56,7 @@
 			returned = 0;
 			missplaced = 0;
 			expense = 0;
+			expense_no_vat = 0;
 			odometer = 0;
 			selectedFile = null;
 			selectedDate = getCurrentDate(); // Reset to current date
@@ -91,6 +93,7 @@
 			// Add the selected date to form data
 			formData.append('selectedDate', selectedDate);
 			formData.set('odometer', odometer.toString());
+			formData.set('expense_no_vat', expense_no_vat.toString());
 
 			// Add vehicle usage data
 			formData.set('usage_mode', usage_mode);
@@ -210,6 +213,18 @@
 							id="expense"
 							name="expense"
 							bind:value={expense}
+							min="0"
+							required
+							disabled={loading}
+						/>
+					</div>
+					<div class="input-group">
+						<label for="expense_no_vat">Expense (no VAT):</label>
+						<input
+							type="number"
+							id="expense_no_vat"
+							name="expense_no_vat"
+							bind:value={expense_no_vat}
 							min="0"
 							required
 							disabled={loading}

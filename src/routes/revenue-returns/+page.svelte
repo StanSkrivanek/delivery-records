@@ -22,12 +22,11 @@
 		goto(`?year=${selectedYear}`);
 	}
 
-	// Compute per-month VAT metrics for all 12 months
+	// Compute per-month VAT metrics for all 12 months (VAT-only figures)
 	type MonthRow = {
 		month: number;
 		vatRevenue: number; // VAT on deliveries+collections
-		expensesNet: number; // from invoice.records expense sum
-		vatExpenses: number; // VAT reclaim (assume 23%)
+		vatExpenses: number; // VAT reclaim (assume 23% of VAT-eligible expenses)
 		vatBalance: number; // vatRevenue - vatExpenses
 		totalIncomeGross: number; // invoice.grandTotal (optional display)
 	};
@@ -37,13 +36,13 @@
 		for (let m = 1; m <= 12; m++) {
 			const inv = invoiceMap.get(m);
 			if (inv) {
-				const expensesNet = inv.records.reduce((s, r) => s + (r.expense ?? 0), 0);
+				// VAT on expenses is based solely on VAT-eligible expenses captured in `expense`
+				const expensesVatBase = inv.records.reduce((s, r) => s + (r.expense ?? 0), 0);
 				const vatRevenue = (inv.deliverySubtotal + inv.collectionSubtotal) * 0.23;
-				const vatExpenses = calculateVAT(expensesNet);
+				const vatExpenses = calculateVAT(expensesVatBase);
 				rows.push({
 					month: m,
 					vatRevenue,
-					expensesNet,
 					vatExpenses,
 					vatBalance: vatRevenue - vatExpenses,
 					totalIncomeGross: inv.grandTotal
@@ -52,7 +51,6 @@
 				rows.push({
 					month: m,
 					vatRevenue: 0,
-					expensesNet: 0,
 					vatExpenses: 0,
 					vatBalance: 0,
 					totalIncomeGross: 0
@@ -67,13 +65,12 @@
 		return monthlyRows.reduce(
 			(acc, r) => {
 				acc.vatRevenue += r.vatRevenue;
-				acc.expensesNet += r.expensesNet;
 				acc.vatExpenses += r.vatExpenses;
 				acc.vatBalance += r.vatBalance;
 				acc.totalIncomeGross += r.totalIncomeGross;
 				return acc;
 			},
-			{ vatRevenue: 0, expensesNet: 0, vatExpenses: 0, vatBalance: 0, totalIncomeGross: 0 }
+			{ vatRevenue: 0, vatExpenses: 0, vatBalance: 0, totalIncomeGross: 0 }
 		);
 	});
 </script>
@@ -105,19 +102,17 @@
 			<thead>
 				<tr>
 					<th>Month</th>
-					<th>VAT on Revenue</th>
-					<th>Expenses (Net)</th>
+					<th>VAT on Income</th>
 					<th>VAT on Expenses</th>
-					<th>VAT Balance</th>
+					<th>VAT Returns</th>
 				</tr>
 			</thead>
 			<tbody>
 				{#each monthlyRows as row}
-					{@const hasData = row.vatRevenue > 0 || row.expensesNet > 0}
+					{@const hasData = row.vatRevenue > 0 || row.vatExpenses > 0}
 					<tr class={hasData ? '' : 'empty-month'}>
 						<td>{getMonthName(row.month)}</td>
 						<td>{formatCurrency(row.vatRevenue)}</td>
-						<td>{formatCurrency(row.expensesNet)}</td>
 						<td>{formatCurrency(row.vatExpenses)}</td>
 						<td class={row.vatBalance >= 0 ? 'positive' : 'negative'}>
 							{formatCurrency(row.vatBalance)}
@@ -129,7 +124,6 @@
 				<tr>
 					<td><strong>Year totals</strong></td>
 					<td><strong>{formatCurrency(totals.vatRevenue)}</strong></td>
-					<td><strong>{formatCurrency(totals.expensesNet)}</strong></td>
 					<td><strong>{formatCurrency(totals.vatExpenses)}</strong></td>
 					<td class={totals.vatBalance >= 0 ? 'positive' : 'negative'}>
 						<strong>{formatCurrency(totals.vatBalance)}</strong>

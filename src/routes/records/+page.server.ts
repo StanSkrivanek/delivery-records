@@ -6,7 +6,6 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async () => {
 	const records = await RecordService.getAllRecords();
 
-
 	// Extract unique years and months from the data
 	const yearsSet = new Set<number>();
 	const monthsSet = new Set<number>();
@@ -60,6 +59,7 @@ export const actions: Actions = {
 			const returned = Number(formData.get('returned'));
 			const missplaced = Number(formData.get('missplaced')) || 0;
 			const expense = Number(formData.get('expense')) || 0; // Default to 0 if not provided
+			const expense_no_vat = Number(formData.get('expense_no_vat')) || 0;
 			const selectedDate = formData.get('selectedDate') as string;
 			const imageFile = formData.get('image') as File | null;
 			const odometer = Number(formData.get('odometer')) || 0;
@@ -136,6 +136,7 @@ export const actions: Actions = {
 				returned,
 				missplaced,
 				expense,
+				expense_no_vat,
 				odometer,
 				image_path: imagePath,
 				note,

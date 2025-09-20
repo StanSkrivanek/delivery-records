@@ -16,6 +16,7 @@ export interface DeliveryRecord {
 	cutters?: number;
 	missplaced?: number;
 	expense?: number;
+	expense_no_vat?: number;
 	entry_date: string;
 	created_at?: string;
 	image_path?: string;
@@ -254,11 +255,8 @@ export function getMonthName(month: number) {
  * @default price 4
  * @returns Monetary value including tax
  */
-export function calculateDeliveryValue(
-	delivered: number,
-	price: number = PPU_DELIVERY,
-) {
-	return delivered * price ;
+export function calculateDeliveryValue(delivered: number, price: number = PPU_DELIVERY) {
+	return delivered * price;
 }
 
 /**
@@ -267,11 +265,7 @@ export function calculateDeliveryValue(
  * @param price Price per collected item
  * @returns Monetary value including tax
  */
-export function calculateCollectedValue(
-	collected: number,
-	price: number = PPU_COLLECTION,
-
-) {
+export function calculateCollectedValue(collected: number, price: number = PPU_COLLECTION) {
 	return collected * price;
 }
 

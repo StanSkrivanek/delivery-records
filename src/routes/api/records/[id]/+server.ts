@@ -29,6 +29,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		const returned = Number(formData.get('returned'));
 		const missplaced = Number(formData.get('missplaced')) || 0;
 		const expense = Number(formData.get('expense')) || 0;
+		const expense_no_vat = Number(formData.get('expense_no_vat')) || 0;
 		const odometer = Number(formData.get('odometer')) || 0;
 		const note = (formData.get('note') as string) || '';
 		const entryDate = formData.get('entry_date') as string;
@@ -106,6 +107,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 			returned,
 			missplaced,
 			expense,
+			expense_no_vat,
 			odometer,
 			note,
 			entry_date: entryDate,

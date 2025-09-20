@@ -136,7 +136,6 @@
 	interface VatRow {
 		month: number;
 		vatRevenue: number; // VAT from deliveries+collections
-		expensesNet: number;
 		vatExpenses: number; // reclaim
 		vatBalance: number; // vatRevenue - vatExpenses
 	}
@@ -147,32 +146,27 @@
 			(s) => s.month === month
 		);
 		if (!invoiceData) {
-			return { month, vatRevenue: 0, expensesNet: 0, vatExpenses: 0, vatBalance: 0 } as VatRow;
+			return { month, vatRevenue: 0, vatExpenses: 0, vatBalance: 0 } as VatRow;
 		}
-		const expensesNet = invoiceData.records.reduce((sum, r) => sum + (r.expense || 0), 0);
+		const expensesVatBase = invoiceData.records.reduce((sum, r) => sum + (r.expense || 0), 0);
 		const vatRevenue = invoiceData.deliveryVAT + invoiceData.collectionVAT;
-		const vatExpenses = expensesNet * 0.23;
+		const vatExpenses = expensesVatBase * 0.23;
 		return {
 			month,
 			vatRevenue,
-			expensesNet,
 			vatExpenses,
 			vatBalance: vatRevenue - vatExpenses
 		} as VatRow;
 	});
 
 	$: vatTotals = monthlyVatRows.reduce(
-		(
-			acc: { vatRevenue: number; expensesNet: number; vatExpenses: number; vatBalance: number },
-			r: VatRow
-		) => {
+		(acc: { vatRevenue: number; vatExpenses: number; vatBalance: number }, r: VatRow) => {
 			acc.vatRevenue += r.vatRevenue;
-			acc.expensesNet += r.expensesNet;
 			acc.vatExpenses += r.vatExpenses;
 			acc.vatBalance += r.vatBalance;
 			return acc;
 		},
-		{ vatRevenue: 0, expensesNet: 0, vatExpenses: 0, vatBalance: 0 }
+		{ vatRevenue: 0, vatExpenses: 0, vatBalance: 0 }
 	);
 </script>
 
@@ -310,18 +304,16 @@
 						<tr>
 							<th>Month</th>
 							<th>VAT on Revenue</th>
-							<th>Expenses (Net)</th>
 							<th>VAT on Expenses</th>
 							<th>VAT Balance</th>
 						</tr>
 					</thead>
 					<tbody>
 						{#each monthlyVatRows as row}
-							{@const hasData = row.vatRevenue > 0 || row.expensesNet > 0}
+							{@const hasData = row.vatRevenue > 0 || row.vatExpenses > 0}
 							<tr class={hasData ? '' : 'empty-month'}>
 								<td>{getMonthName(row.month)}</td>
 								<td>{formatCurrency(row.vatRevenue)}</td>
-								<td>{formatCurrency(row.expensesNet)}</td>
 								<td>{formatCurrency(row.vatExpenses)}</td>
 								<td class={row.vatBalance >= 0 ? 'profit-value' : 'tax-value'}>
 									{formatCurrency(row.vatBalance)}
@@ -333,7 +325,6 @@
 						<tr class="yearly-totals">
 							<td><strong>Year Totals</strong></td>
 							<td><strong>{formatCurrency(vatTotals.vatRevenue)}</strong></td>
-							<td><strong>{formatCurrency(vatTotals.expensesNet)}</strong></td>
 							<td><strong>{formatCurrency(vatTotals.vatExpenses)}</strong></td>
 							<td class={vatTotals.vatBalance >= 0 ? 'profit-value' : 'tax-value'}>
 								<strong>{formatCurrency(vatTotals.vatBalance)}</strong>

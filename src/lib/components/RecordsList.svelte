@@ -16,6 +16,7 @@
 		returned: 0,
 		missplaced: 0,
 		expense: 0,
+		expense_no_vat: 0,
 		odometer: 0,
 		note: '',
 		entry_date: '',
@@ -48,6 +49,7 @@
 		returned: number;
 		missplaced?: number;
 		expense?: number;
+		expense_no_vat?: number;
 		odometer?: number;
 		image_path?: string;
 		note?: string;
@@ -92,6 +94,7 @@
 						returned: fullRecord.returned,
 						missplaced: fullRecord.missplaced ?? 0,
 						expense: fullRecord.expense ?? 0,
+						expense_no_vat: fullRecord.expense_no_vat ?? 0,
 						odometer: fullRecord.odometer ?? 0,
 						image_path: fullRecord.image_path ?? '',
 						note: fullRecord.note || '',
@@ -111,6 +114,7 @@
 						returned: record.returned,
 						missplaced: record.missplaced ?? 0,
 						expense: record.expense ?? 0,
+						expense_no_vat: record.expense_no_vat ?? 0,
 						odometer: record.odometer ?? 0,
 						image_path: record.image_path ?? '',
 						note: record.note || '',
@@ -137,6 +141,7 @@
 					returned: record.returned,
 					missplaced: record.missplaced ?? 0,
 					expense: record.expense ?? 0,
+					expense_no_vat: record.expense_no_vat ?? 0,
 					odometer: record.odometer ?? 0,
 					image_path: record.image_path ?? '',
 					note: record.note || '',
@@ -163,6 +168,7 @@
 				returned: record.returned,
 				missplaced: record.missplaced ?? 0,
 				expense: record.expense ?? 0,
+				expense_no_vat: record.expense_no_vat ?? 0,
 				odometer: record.odometer ?? 0,
 				image_path: record.image_path ?? '',
 				note: record.note || '',
@@ -193,6 +199,7 @@
 			formData.append('returned', editRecord.returned.toString());
 			formData.append('missplaced', editRecord.missplaced.toString());
 			formData.append('expense', editRecord.expense.toString());
+			formData.append('expense_no_vat', editRecord.expense_no_vat.toString());
 			formData.append('odometer', editRecord.odometer.toString());
 			formData.append('note', editRecord.note || '');
 			formData.append('entry_date', editRecord.entry_date);
@@ -478,6 +485,11 @@
 					<label class="form-field">
 						<span>Expense:</span>
 						<input type="number" bind:value={editRecord.expense} min="0" step="0.01" />
+					</label>
+
+					<label class="form-field">
+						<span>Expense (no VAT):</span>
+						<input type="number" bind:value={editRecord.expense_no_vat} min="0" step="0.01" />
 					</label>
 
 					<!-- Dynamic field based on usage mode -->

@@ -16,6 +16,7 @@ db.exec(`
     returned INTEGER NOT NULL,
     missplaced INTEGER DEFAULT 0,
     expense REAL DEFAULT 0,
+		expense_no_vat REAL DEFAULT 0,
     odometer INTEGER DEFAULT 0,
     image_path TEXT,
     note TEXT,
@@ -53,6 +54,7 @@ export interface Record {
 	returned: number;
 	missplaced?: number;
 	expense?: number;
+	expense_no_vat?: number;
 	odometer?: number;
 	image_path?: string;
 	note?: string;
@@ -75,8 +77,8 @@ export class RecordService {
 	}
 	static async createRecord(record: Omit<Record, 'id' | 'created_at'>): Promise<number> {
 		const stmt = db.prepare(`
-      INSERT INTO records (loaded, collected, cutters, returned, missplaced, expense, odometer, image_path, note, entry_date)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO records (loaded, collected, cutters, returned, missplaced, expense, expense_no_vat, odometer, image_path, note, entry_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
 		const result = stmt.run(
@@ -86,6 +88,7 @@ export class RecordService {
 			record.returned,
 			record.missplaced || 0,
 			record.expense || 0,
+			record.expense_no_vat || 0,
 			record.odometer || 0,
 			record.image_path || null,
 			record.note || null,
@@ -148,7 +151,7 @@ export class RecordService {
 		const stmt = db.prepare(`
       UPDATE records 
       SET loaded = ?, collected = ?, cutters = ?, returned = ?, 
-          missplaced = ?, expense = ?, odometer = ?, image_path = ?, note = ?, entry_date = ?
+          missplaced = ?, expense = ?, expense_no_vat = ?, odometer = ?, image_path = ?, note = ?, entry_date = ?
       WHERE id = ?
     `);
 
@@ -159,6 +162,7 @@ export class RecordService {
 			record.returned,
 			record.missplaced || 0,
 			record.expense || 0,
+			record.expense_no_vat || 0,
 			record.odometer || 0,
 			record.image_path || null,
 			record.note || null,
@@ -593,7 +597,7 @@ export class RecordService {
 	// 	collected: number;
 	// }> {
 	// 	const monthKey = `${year}-${String(month).padStart(2, '0')}`;
-		
+
 	// 	const deliveredRow = db
 	// 	.prepare(
 	// 		`
@@ -604,7 +608,7 @@ export class RecordService {
 	// 		`
 	// 	)
 	// 	.get(monthKey);
-		
+
 	// 	const collectedRow = db
 	// 	.prepare(
 	// 		`
@@ -615,13 +619,13 @@ export class RecordService {
 	// 		`
 	// 	)
 	// 	.get(monthKey);
-		
+
 	// 	return {
 	// 		delivered: (deliveredRow as { total: number | null } | undefined)?.total || 0,
 	// 		collected: (collectedRow as { total: number | null } | undefined)?.total || 0
 	// 	};
 	// }
-	
+
 	//----------------------------------------------------------------------------------- MIGRATION METHODS
 	static async migrateExistingRecords(): Promise<void> {
 		try {
@@ -629,6 +633,9 @@ export class RecordService {
 			const hasEntryDate = columns.some((col) => col.name === 'entry_date');
 			const hasMissplaced = columns.some((col: { name: string }) => col.name === 'missplaced');
 			const hasExpense = columns.some((col: { name: string }) => col.name === 'expense');
+			const hasExpenseNoVat = columns.some(
+				(col: { name: string }) => col.name === 'expense_no_vat'
+			);
 			const hasOdometer = columns.some((col: { name: string }) => col.name === 'odometer');
 			const hasNote = columns.some((col: { name: string }) => col.name === 'note');
 
@@ -646,6 +653,11 @@ export class RecordService {
 			if (!hasExpense) {
 				db.exec('ALTER TABLE records ADD COLUMN expense REAL DEFAULT 0');
 				console.log('Added expense column');
+			}
+
+			if (!hasExpenseNoVat) {
+				db.exec('ALTER TABLE records ADD COLUMN expense_no_vat REAL DEFAULT 0');
+				console.log('Added expense_no_vat column');
 			}
 
 			// Ensure odometer column exists

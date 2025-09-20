@@ -47,6 +47,7 @@ export interface Record {
 	returned: number;
 	missplaced?: number;
 	expense?: number;
+	expense_no_vat?: number;
 	odometer?: number;
 	image_path?: string;
 	entry_date: string;
