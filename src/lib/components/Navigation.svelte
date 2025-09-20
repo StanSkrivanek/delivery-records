@@ -6,6 +6,7 @@
 	<a href="https://squoosh.app/" target="_blank" rel="noopener noreferrer">Squoosh</a>
     <a href="/odometer">Odometer</a>
     <a href="/invoice">Invoice</a>
+    <a href="/revenue-returns">Revenue</a>
     <a href="/demos">Demos</a>
 
 </nav>

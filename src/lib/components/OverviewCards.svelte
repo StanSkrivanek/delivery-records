@@ -63,11 +63,12 @@
 			<!-- To Invoice -->
 			<div class="card purple">
 				<div class="card-header">
-					<h3>Invoice</h3>
-					<span>VAT: {formatCurrency(calculateVAT(analytics.toInvoice))}</span>
+					<h3>Earned</h3>
+					<span>VAT: {
+					formatCurrency(calculateVAT(analytics.toInvoice))}</span>
 				</div>
 				<p class="card-value">{formatCurrency(analytics.toInvoice)}</p>
-				<p class="card-subtitle">Total amount to invoice</p>
+				<p class="card-subtitle">Total earnings (no VAT)</p>
 			</div>
 		</div>
 		<div class="block">
@@ -83,10 +84,10 @@
 			<!-- Net Profit -->
 			<div class="card teal">
 				<div class="card-header">
-					<h3>Net Profit</h3>
+					<h3>Netto</h3>
 				</div>
 				<p class="card-value">{formatCurrency(analytics.toInvoice - analytics.expenseSum)}</p>
-				<p class="card-subtitle">Before tax</p>
+				<p class="card-subtitle">After expences</p>
 			</div>
 		</div>
 	</div>
