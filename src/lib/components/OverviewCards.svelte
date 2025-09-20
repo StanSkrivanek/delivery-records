@@ -1,8 +1,7 @@
 <script>
-    import { formatCurrency, formatNumber, getMonthName } from '$lib/utils';
+	import { formatCurrency, formatNumber, getMonthName } from '$lib/utils';
 
-    let { analytics, selectedYear, selectedMonth } = $props();
-    
+	let { analytics, selectedYear, selectedMonth } = $props();
 </script>
 
 <div class="cards-section">
@@ -16,17 +15,15 @@
 			<div class="card blue">
 				<div class="card-header">
 					<h3>Delivered</h3>
-				
 				</div>
 				<p class="card-value">{analytics.totalDelivered} pcs</p>
-				 <!-- <p class="label">Total delivered ({getMonthName(selectedMonth)} {selectedYear})</p> -->
+				<!-- <p class="label">Total delivered ({getMonthName(selectedMonth)} {selectedYear})</p> -->
 				<p class="card-subtitle">Delivered parcels</p>
 			</div>
 			<!-- Delivery Sum Money -->
 			<div class="card success">
 				<div class="card-header">
 					<h3>Value</h3>
-				
 				</div>
 				<p class="card-value">{formatCurrency(analytics.deliverySum)}</p>
 				<p class="card-subtitle">Delivered parcels</p>
@@ -37,7 +34,6 @@
 			<div class="card blue">
 				<div class="card-header">
 					<h3>Collected</h3>
-					
 				</div>
 				<p class="card-value">{analytics.totalCollected}</p>
 				<p class="card-subtitle">Collected</p>
@@ -46,7 +42,6 @@
 			<div class="card success">
 				<div class="card-header">
 					<h3>Value</h3>
-					
 				</div>
 				<p class="card-value">{formatCurrency(analytics.collectedSum)}</p>
 				<p class="card-subtitle">Collected</p>
@@ -58,7 +53,6 @@
 			<div class="card warning">
 				<div class="card-header">
 					<h3>Average</h3>
-				
 				</div>
 				<p class="card-value">{formatNumber(analytics.averagePerDay)}</p>
 				<p class="card-subtitle">Parcels / day</p>
@@ -67,7 +61,6 @@
 			<div class="card purple">
 				<div class="card-header">
 					<h3>Invoice</h3>
-					
 				</div>
 				<p class="card-value">{formatCurrency(analytics.toInvoice)}</p>
 				<p class="card-subtitle">Total amount to invoice</p>
@@ -78,20 +71,18 @@
 			<div class="card total">
 				<div class="card-header">
 					<h3>Expenses</h3>
-					
 				</div>
 				<p class="card-value">{formatCurrency(analytics.expenseSum)}</p>
 				<p class="card-subtitle">Fuel, Car Maintenance, etc.</p>
 			</div>
 
-			<!-- Balance -->
+			<!-- Net Profit -->
 			<div class="card teal">
 				<div class="card-header">
-					<h3>Ballance</h3>
-					
+					<h3>Net Profit</h3>
 				</div>
 				<p class="card-value">{formatCurrency(analytics.toInvoice - analytics.expenseSum)}</p>
-				<p class="card-subtitle">Netto amount</p>
+				<p class="card-subtitle">Before tax</p>
 			</div>
 		</div>
 	</div>
@@ -152,13 +143,12 @@
 
 	.card-header h3 {
 		margin: 0;
-		font-family: "regular", sans-serif;
+		font-family: 'regular', sans-serif;
 		font-size: 1.4rem;
 		line-height: 1;
 		/* color: var(--color-slate-700); */
 		letter-spacing: 0.05rem;
 	}
-
 
 	.card-value {
 		font-size: 2rem;

@@ -44,7 +44,7 @@ export function generateInvoiceHTML(
 	} = invoiceData;
 
 	// Calculate due date (7 days from invoice date by default)
-	const dueDays = options?.dueDays || 7;
+	const dueDays = options?.dueDays || 14;
 	const dueDate = new Date(invoiceDate);
 	dueDate.setDate(dueDate.getDate() + dueDays);
 	const dueDateString = dueDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
@@ -279,10 +279,7 @@ export function generateInvoiceHTML(
 		}
 		
 		.to-section {
-			background: #f8fafc;
-			padding: 15px;
-			border-radius: 6px;
-			border-left: 4px solid #3b82f6;
+			padding-top: 15px;
 		}
 		
 		.section-title {
@@ -295,11 +292,7 @@ export function generateInvoiceHTML(
 		}
 		
 		.bank-info {
-			margin-top: 20px;
-			padding: 15px;
-			background: #f8fafc;
-			border-radius: 6px;
-			border-left: 4px solid #10b981;
+
 		}
 		
 		.bank-info p {
@@ -354,21 +347,22 @@ export function generateInvoiceHTML(
 				<p>Phone: ${company.phone}</p>
 				${company.vatNumber ? `<p>VAT: ${company.vatNumber}</p>` : ''}
 				
-				<div class="bank-info">
+				<div class="to-section">
+					<div class="section-title">Bill To:</div>
+					<p><strong>${receiver.name}</strong></p>
+					<p>${receiver.address.replace(/\n/g, '<br>')}</p>
+					${receiver.email ? `<p>Email: ${receiver.email}</p>` : ''}
+					${receiver.phone ? `<p>Phone: ${receiver.phone}</p>` : ''}
+					${receiver.vatNumber ? `<p>VAT: ${receiver.vatNumber}</p>` : ''}
+				</div>
+			</div>
+			
+			<div class="from-section">
 					<div class="section-title">Bank Details:</div>
 					<p><strong>Bank:</strong> ${company.bank.name}</p>
 					<p><strong>IBAN:</strong> ${company.bank.iban}</p>
 					<p><strong>BIC:</strong> ${company.bank.bic}</p>
-				</div>
-			</div>
-			
-			<div class="to-section">
-				<div class="section-title">Bill To:</div>
-				<p><strong>${receiver.name}</strong></p>
-				<p>${receiver.address.replace(/\n/g, '<br>')}</p>
-				${receiver.email ? `<p>Email: ${receiver.email}</p>` : ''}
-				${receiver.phone ? `<p>Phone: ${receiver.phone}</p>` : ''}
-				${receiver.vatNumber ? `<p>VAT: ${receiver.vatNumber}</p>` : ''}
+				
 			</div>
 		</div>
 		
@@ -431,11 +425,6 @@ export function generateInvoiceHTML(
 					<td class="text-right"><strong>${formatCurrency(grandTotal)}</strong></td>
 				</tr>
 			</table>
-		</div>
-		
-		<div class="payment-terms">
-			<h3>Payment Terms</h3>
-			<p>Payment is due within ${dueDays} days of invoice date. Late payments may be subject to interest charges.</p>
 		</div>
 		
 		<div class="footer">

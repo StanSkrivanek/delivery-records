@@ -4,8 +4,8 @@ import path from 'path';
 export const PPU_DELIVERY = 4; // Price per delivery without tax
 export const PPU_COLLECTION = 1; // Price per collection without tax
 export const TAX_RATE = 0.23; // Tax rate (23%)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const ODOMETER_INIT = 267317;  //INITIAL ODOMETER VALUE, NOT USED IN CALCULATIONS
+
+export const ODOMETER_INIT = 267317; //INITIAL ODOMETER VALUE, NOT USED IN CALCULATIONS
 /**
  * Type definition for a delivery record
  */
@@ -151,13 +151,10 @@ export function dpm(records: DeliveryRecord[]): number {
 // @returns Object containing calculated analytics
 //
 
-
 export function calculateAnalytics(records: DeliveryRecord[]) {
 	// console.log("🚀 ~ calculateAnalytics ~ records:", records)
 
-// these metrics use EVERY record but is should only use records with "loaded" > 0. Also neetd to think about odometer calculation when "loaded"= 0
- 
-
+	// these metrics use EVERY record but is should only use records with "loaded" > 0. Also neetd to think about odometer calculation when "loaded"= 0
 
 	// Basic metrics
 	const totalDelivered = calculateTotalDelivered(records);
@@ -258,7 +255,7 @@ export function getMonthName(month: number) {
  * @default taxRate 0.23
  * @returns Monetary value including tax
  */
-export function calculateDeliveryValue(
+export function calculateDeliveryValueNoVat(
 	delivered: number,
 	price: number = PPU_DELIVERY,
 	taxRate: number = TAX_RATE
@@ -334,8 +331,6 @@ export function calculateTotalExpense(records: DeliveryRecord[]): number {
 	return records.reduce((sum, record) => sum + (record.expense ?? 0), 0);
 }
 
-
-
 /**
  * Calculates all record totals needed for tables and analytics
  * @param records Array of delivery records
@@ -381,7 +376,6 @@ export function calculateRecordTotals(records: DeliveryRecord[]): RecordTotals {
 	}, totals);
 }
 
-
 // ODOMETER HELPER FUNCTIONS
 
 /**
@@ -389,7 +383,9 @@ export function calculateRecordTotals(records: DeliveryRecord[]): RecordTotals {
  * @param records Array of delivery records sorted by date (oldest to newest)
  * @returns Array of daily distances with corresponding dates
  */
-export function calculateDailyDistances(records: DeliveryRecord[]): { date: string; distance: number }[] {
+export function calculateDailyDistances(
+	records: DeliveryRecord[]
+): { date: string; distance: number }[] {
 	// Sort records by date if not already sorted
 	const sortedRecords = [...records].sort((a, b) => {
 		if (!a.entry_date || !b.entry_date) return 0;
@@ -447,7 +443,6 @@ export function calculateAverageDailyDistance(records: DeliveryRecord[]): number
 		: 0;
 }
 
-
 /**
  * Filter records for the current month
  * @param records Array of delivery records
@@ -458,7 +453,7 @@ export function filterCurrentMonthRecords(records: DeliveryRecord[]): DeliveryRe
 	const currentYear = now.getFullYear();
 	const currentMonth = now.getMonth(); // 0-based index (0 = January)
 
-	return records.filter(record => {
+	return records.filter((record) => {
 		if (!record.entry_date) return false;
 		const recordDate = new Date(record.entry_date);
 		return recordDate.getFullYear() === currentYear && recordDate.getMonth() === currentMonth;
@@ -470,7 +465,9 @@ export function filterCurrentMonthRecords(records: DeliveryRecord[]): DeliveryRe
  * @param records Array of delivery records
  * @returns Array of daily distances for the current month
  */
-export function calculateCurrentMonthDailyDistances(records: DeliveryRecord[]): { date: string; distance: number }[] {
+export function calculateCurrentMonthDailyDistances(
+	records: DeliveryRecord[]
+): { date: string; distance: number }[] {
 	const currentMonthRecords = filterCurrentMonthRecords(records);
 	return calculateDailyDistances(currentMonthRecords);
 }
@@ -568,21 +565,21 @@ export function getDistanceColorClass(distance: number): string {
  * @returns Validation result
  */
 export function validateOdometerReading(
-	currentReading: number, 
+	currentReading: number,
 	previousReading: number | null
 ): { isValid: boolean; message?: string } {
 	if (currentReading < 0) {
 		return { isValid: false, message: 'Odometer reading cannot be negative' };
 	}
-	
+
 	if (previousReading !== null && currentReading < previousReading) {
 		return { isValid: false, message: 'Odometer reading cannot be less than previous reading' };
 	}
-	
-	if (previousReading !== null && (currentReading - previousReading) > 1000) {
+
+	if (previousReading !== null && currentReading - previousReading > 1000) {
 		return { isValid: false, message: 'Daily distance seems unusually high (>1000km)' };
 	}
-	
+
 	return { isValid: true };
 }
 
@@ -592,6 +589,130 @@ export function validateOdometerReading(
  * @param totalDeliveries Total number of deliveries
  * @returns Average distance per delivery
  */
-export function calculateDistancePerDelivery(totalDistance: number, totalDeliveries: number): number {
+export function calculateDistancePerDelivery(
+	totalDistance: number,
+	totalDeliveries: number
+): number {
 	return totalDeliveries > 0 ? totalDistance / totalDeliveries : 0;
+}
+
+/**
+ * Irish Tax Calculation Functions
+ */
+
+/**
+ * Remove VAT from a gross amount
+ * @param grossAmount Amount including VAT
+ * @param vatRate VAT rate (default: 0.23 for 23%)
+ * @returns Amount excluding VAT
+ */
+export function removeVAT(grossAmount: number, vatRate: number = TAX_RATE): number {
+	return grossAmount / (1 + vatRate);
+}
+
+/**
+ * Calculate VAT amount from a gross amount
+ * @param grossAmount Amount including VAT
+ * @param vatRate VAT rate (default: 0.23 for 23%)
+ * @returns VAT amount
+ */
+export function calculateVATFromGross(grossAmount: number, vatRate: number = TAX_RATE): number {
+	return grossAmount - removeVAT(grossAmount, vatRate);
+}
+
+/**
+ * Calculate Income Tax for Irish Sole Trader
+ * @param taxableIncome Taxable income (profit)
+ * @returns Income tax amount
+ */
+export function calculateIncomeTax(taxableIncome: number): number {
+	// Simple flat rate of 35% on all profit
+	return taxableIncome * 0.35;
+}
+
+/**
+ * Calculate Universal Social Charge (USC)
+ * @param annualIncome Annual income
+ * @returns USC amount
+ */
+export function calculateUSC(annualIncome: number): number {
+	// USC rates for 2025 - may need updating for future years
+	const uscBands = [
+		{ threshold: 12012, rate: 0.005 }, // 0.5% on first €12,012
+		{ threshold: 25760, rate: 0.02 }, // 2% on next €13,748 (€25,760 - €12,012)
+		{ threshold: Infinity, rate: 0.045 } // 4.5% on balance
+	];
+
+	let remainingIncome = annualIncome;
+	let uscTotal = 0;
+
+	let previousThreshold = 0;
+	for (const band of uscBands) {
+		const bandWidth = band.threshold - previousThreshold;
+		const amountInBand = Math.min(remainingIncome, bandWidth);
+		uscTotal += amountInBand * band.rate;
+		remainingIncome -= amountInBand;
+		previousThreshold = band.threshold;
+
+		if (remainingIncome <= 0) break;
+	}
+
+	return uscTotal;
+}
+
+/**
+ * Calculate PRSI (Pay Related Social Insurance)
+ * @param annualIncome Annual income
+ * @returns PRSI amount
+ */
+export function calculatePRSI(annualIncome: number): number {
+	// Self-employed PRSI rate is 4%
+	const prsiRate = 0.04;
+	return annualIncome * prsiRate;
+}
+
+/**
+ * Calculate total tax (Income Tax + USC + PRSI)
+ * @param taxableIncome Taxable income (profit)
+ * @returns Total tax amount
+ */
+export function calculateTotalTax(taxableIncome: number): {
+	incomeTax: number;
+	usc: number;
+	prsi: number;
+	total: number;
+} {
+	const incomeTax = calculateIncomeTax(taxableIncome);
+	const usc = calculateUSC(taxableIncome);
+	const prsi = calculatePRSI(taxableIncome);
+
+	return {
+		incomeTax,
+		usc,
+		prsi,
+		total: incomeTax + usc + prsi
+	};
+}
+
+/**
+ * Calculate after-tax profit
+ * @param netProfit Net profit before tax
+ * @returns Profit after tax
+ */
+export function calculateProfitAfterTax(netProfit: number): {
+	netProfit: number;
+	tax: {
+		incomeTax: number;
+		usc: number;
+		prsi: number;
+		total: number;
+	};
+	profitAfterTax: number;
+} {
+	const tax = calculateTotalTax(netProfit);
+	return {
+		netProfit,
+		tax,
+		profitAfterTax: netProfit - tax.total
+	};
 }

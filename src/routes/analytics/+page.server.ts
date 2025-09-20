@@ -20,7 +20,6 @@ export const load: PageServerLoad = async () => {
 			}
 		}
 	});
-
 	// Convert sets to sorted arrays
 	const availableYears = Array.from(yearsSet).sort((a, b) => b - a); // Newest first
 	const availableMonths = Array.from(monthsSet).sort((a, b) => a - b); // January to December
