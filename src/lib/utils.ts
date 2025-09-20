@@ -255,7 +255,7 @@ export function getMonthName(month: number) {
  * @default taxRate 0.23
  * @returns Monetary value including tax
  */
-export function calculateDeliveryValueNoVat(
+export function calculateDeliveryValue(
 	delivered: number,
 	price: number = PPU_DELIVERY,
 	taxRate: number = TAX_RATE
@@ -278,6 +278,16 @@ export function calculateCollectedValue(
 	taxRate: number = TAX_RATE
 ) {
 	return collected * price * (1 + taxRate);
+}
+
+/** Calculate VAT for a given amount
+ * @param amount Amount to calculate VAT on
+ * @param taxRate Tax rate to apply
+ * @default taxRate 0.23
+ * @returns VAT amount
+ */
+export function calculateVAT(amount: number, taxRate: number = TAX_RATE): number {
+	return amount * taxRate;
 }
 
 /**
