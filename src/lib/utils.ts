@@ -124,9 +124,9 @@ export function formatDate(dateString: string): string {
 
 export function dlvPd(record: DeliveryRecord): number {
 	return (
-		record.loaded -
-			((record.collected ?? 0) + (record.cutters ?? 0)) -
-			((record.returned ?? 0) + (record.missplaced ?? 0)) || 0
+		// + (record.cutters ?? 0) // cutters are not delivered, they are collected but not displayed in scanner
+		record.loaded - (record.collected ?? 0) - ((record.returned ?? 0) + (record.missplaced ?? 0)) ||
+		0
 	);
 }
 
