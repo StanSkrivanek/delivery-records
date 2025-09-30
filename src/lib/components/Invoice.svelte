@@ -20,9 +20,9 @@
 	// Company information
 	let companyInfo = $state({
 		name: 'Stan Skrivanek',
-		address: '11 Ryecourt Manor, Cloughduv',
-		email: 's.skrivanek@gmail.com',
-		phone: '+353 868965111',
+		address: '11 Ryecourt Manor, Cloughduv, Co. Cork',
+		email: '',
+		phone: '',
 		vatNumber: '',
 		bank: {
 			name: 'TSB',
@@ -32,11 +32,11 @@
 	});
 
 	let invoiceReceiver = $state({
-		name: 'Krzysztof Karpinsky',
-		address: 'Unit 2, Blarney Business Park, Blarney, Co. Cork',
+		name: 'Grazyna Witkowska',
+		address: '3 The Granary, Glanworth, Co. Cork',
 		email: '',
 		phone: '',
-		vatNumber: ''
+		vatNumber: '1388135KA'
 	});
 
 	// Month options with names
