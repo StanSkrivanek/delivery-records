@@ -453,8 +453,8 @@
 		font-size: 0.9rem;
 	}
 
-	.control-group select,
-	.control-group input {
+	/* .control-group input, */
+	.control-group select{
 		padding: 0.5rem;
 		border: 1px solid #d1d5db;
 		border-radius: 4px;
@@ -462,8 +462,8 @@
 		min-width: 120px;
 	}
 
-	.control-group select:focus,
-	.control-group input:focus {
+	/* control-group input:focus, */
+	.control-group select:focus {
 		outline: none;
 		border-color: #3b82f6;
 		box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
@@ -734,8 +734,8 @@
 			flex-direction: column;
 		}
 
-		.control-group select,
-		.control-group input {
+		/* .control-group input, */
+		.control-group select {
 			min-width: auto;
 		}
 
