@@ -51,22 +51,22 @@ export function generateInvoiceHTML(
 
 	// Default company info
 	const company = {
-		name: companyInfo?.name || 'Your Company Name',
-		address: companyInfo?.address || 'Your Company Address\nCity, Country',
-		email: companyInfo?.email || 'contact@yourcompany.com',
-		phone: companyInfo?.phone || '+353 XX XXX XXXX',
+		name: companyInfo?.name || '',
+		address: companyInfo?.address || '',
+		email: companyInfo?.email || '',
+		phone: companyInfo?.phone || '',
 		vatNumber: companyInfo?.vatNumber || '-',
 		bank: {
-			name: companyInfo?.bank?.name || 'Your Bank',
-			iban: companyInfo?.bank?.iban || 'IEXXXXXXXXXXXXXXXXXX',
-			bic: companyInfo?.bank?.bic || 'XXXXXXXX'
+			name: companyInfo?.bank?.name || '',
+			iban: companyInfo?.bank?.iban || '',
+			bic: companyInfo?.bank?.bic || ''
 		}
 	};
 
 	// Default receiver info
 	const receiver = {
-		name: invoiceReceiver?.name || 'Client Name',
-		address: invoiceReceiver?.address || 'Client Address\nCity, Country',
+		name: invoiceReceiver?.name || '',
+		address: invoiceReceiver?.address || '',
 		email: invoiceReceiver?.email || '',
 		phone: invoiceReceiver?.phone || '',
 		vatNumber: invoiceReceiver?.vatNumber || ''
@@ -342,15 +342,15 @@ export function generateInvoiceHTML(
 			<div class="from-section">
 				<div class="section-title">From:</div>
 				<p><strong>${company.name}</strong></p>
-				<p>${company.address.replace(/\n/g, '<br>')}</p>
-				<p>Email: ${company.email}</p>
-				<p>Phone: ${company.phone}</p>
+				<p>${company.address.replace(/,\s*/g, '<br>').replace(/\n/g, '<br>')}</p>
+				${company.email ? `<p>Email: ${company.email}</p>` : ''}
+				${company.phone ? `<p>Phone: ${company.phone}</p>` : ''}
 				${company.vatNumber ? `<p>VAT: ${company.vatNumber}</p>` : ''}
 				
 				<div class="to-section">
 					<div class="section-title">Bill To:</div>
 					<p><strong>${receiver.name}</strong></p>
-					<p>${receiver.address.replace(/\n/g, '<br>')}</p>
+					<p>${receiver.address.replace(/,\s*/g, '<br>').replace(/\n/g, '<br>')}</p>
 					${receiver.email ? `<p>Email: ${receiver.email}</p>` : ''}
 					${receiver.phone ? `<p>Phone: ${receiver.phone}</p>` : ''}
 					${receiver.vatNumber ? `<p>VAT: ${receiver.vatNumber}</p>` : ''}
@@ -429,7 +429,7 @@ export function generateInvoiceHTML(
 		
 		<div class="footer">
 			<p>Thank you for your business!</p>
-			<p>For any questions regarding this invoice, please contact ${company.email}</p>
+			${company.email ? `<p>For any questions regarding this invoice, please contact ${company.email}</p>` : ''}
 		</div>
 	</div>
 </body>
