@@ -55,7 +55,7 @@ export function generateInvoiceHTML(
 		address: companyInfo?.address || '',
 		email: companyInfo?.email || '',
 		phone: companyInfo?.phone || '',
-		vatNumber: companyInfo?.vatNumber || '-',
+		vatNumber: companyInfo?.vatNumber || '',
 		bank: {
 			name: companyInfo?.bank?.name || '',
 			iban: companyInfo?.bank?.iban || '',

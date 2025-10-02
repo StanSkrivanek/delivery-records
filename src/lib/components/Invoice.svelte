@@ -23,7 +23,7 @@
 		address: '11 Ryecourt Manor, Cloughduv, Co. Cork',
 		email: '',
 		phone: '',
-		vatNumber: '',
+		vatNumber: 'IE5310591A',
 		bank: {
 			name: 'TSB',
 			iban: 'IE31IPBS99070310051401',

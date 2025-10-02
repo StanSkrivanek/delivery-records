@@ -44,3 +44,30 @@ PAID 6,350.00
 ---------------
 DUE 713.00
 -------------------------------------------------------------------- -->
+
+<!-- TODO -->
+
+ADDITIONAL FEATURES
+
+- [ ] Setting page
+  - [ ] Depot setting
+    - [ ] Add depot (address, name, description)
+    - [ ] Edit depot (address, name, description)
+    - [ ] Delete depot (address, name, description)
+    - [ ] Set default depot
+  - [ ] Vehicle setting
+    - [ ] Add vehicle (name, description, license plate, capacity)
+    - [ ] Edit vehicle (name, description, license plate, capacity)
+    - [ ] Delete vehicle (name, description, license plate, capacity)
+    - [ ] Assign vehicle to depot
+    - [ ] Set default vehicle for depot
+  - [ ] Driver setting
+    - [ ] Add driver (name, description, phone number)
+    - [ ] Edit driver (name, description, phone number)
+    - [ ] Delete driver (name, description, phone number)
+    - [ ] Set default driver for vehicle
+  - [ ] Parcels setting
+    - [ ] Collection default price per item
+    - [ ] Delivery default price per item
+    - [ ] add other parcel price with option Delivery or Pickup (special deals from GLS) will add input into daily report form
+  - [ ]
