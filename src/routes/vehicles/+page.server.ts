@@ -1,7 +1,6 @@
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	// We'll add dashboard statistics later
 	return {
 		user: locals.user
 	};

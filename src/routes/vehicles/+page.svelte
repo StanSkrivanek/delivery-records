@@ -5,30 +5,40 @@
 </script>
 
 <svelte:head>
-	<title>Records - Fleet Management</title>
+	<title>Vehicles - Fleet Management</title>
 </svelte:head>
 
 <div class="placeholder-page">
 	<div class="placeholder-card">
-		<div class="icon">🚧</div>
-		<h1>Records System Coming Soon</h1>
-		<p>The delivery records feature is being updated for the new multi-vehicle system.</p>
+		<div class="icon">🚚</div>
+		<h1>Vehicle Management</h1>
+		<p>Set up and manage your delivery fleet.</p>
 		
-		<div class="info-box">
-			<h3>What's Coming in Phase 3:</h3>
-			<ul>
-				<li>✅ Select vehicle for each delivery</li>
-				<li>✅ Multi-driver support</li>
-				<li>✅ Enhanced record tracking</li>
-				<li>✅ Image uploads</li>
-				<li>✅ Odometer management</li>
-				<li>✅ Vehicle usage logs</li>
-			</ul>
+		<div class="info-box warning">
+			<h3>⚠️ Admin Panel Coming in Phase 2</h3>
+			<p>Vehicle management UI is being developed. For now, you can add vehicles via SQL.</p>
+		</div>
+
+		<div class="sql-example">
+			<h3>Temporary: Add Vehicle via SQL</h3>
+			<pre><code>sqlite3 database.db
+
+INSERT INTO vehicles (
+  organization_id, 
+  license_plate, 
+  make, 
+  model, 
+  is_active
+) VALUES (
+  1, 
+  '25-D-12345', 
+  'Mercedes', 
+  'Sprinter', 
+  1
+);</code></pre>
 		</div>
 
 		<div class="next-steps">
-			<p><strong>Next Step:</strong> Set up your vehicles first!</p>
-			<a href="/admin/vehicles" class="btn-primary">Go to Vehicle Management</a>
 			<a href="/" class="btn-secondary">Back to Dashboard</a>
 		</div>
 	</div>
@@ -47,7 +57,8 @@
 		background: white;
 		border-radius: 16px;
 		padding: 3rem;
-		max-width: 600px;
+		max-width: 700px;
+		width: 100%;
 		text-align: center;
 		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 		border: 1px solid #e5e7eb;
@@ -68,12 +79,11 @@
 		color: #6b7280;
 		margin: 0 0 2rem 0;
 		font-size: 1.1rem;
-		line-height: 1.6;
 	}
 
 	.info-box {
-		background: #f9fafb;
-		border: 1px solid #e5e7eb;
+		background: #fef3c7;
+		border: 1px solid #fbbf24;
 		border-radius: 12px;
 		padding: 1.5rem;
 		margin-bottom: 2rem;
@@ -81,59 +91,61 @@
 	}
 
 	.info-box h3 {
-		margin: 0 0 1rem 0;
-		color: #374151;
+		margin: 0 0 0.5rem 0;
+		color: #92400e;
 		font-size: 1rem;
 	}
 
-	.info-box ul {
+	.info-box p {
 		margin: 0;
-		padding-left: 1.5rem;
-		color: #4b5563;
+		color: #78350f;
+		font-size: 0.95rem;
 	}
 
-	.info-box li {
-		margin-bottom: 0.5rem;
-		line-height: 1.5;
+	.sql-example {
+		background: #1f2937;
+		border-radius: 12px;
+		padding: 1.5rem;
+		margin-bottom: 2rem;
+		text-align: left;
+	}
+
+	.sql-example h3 {
+		margin: 0 0 1rem 0;
+		color: #f3f4f6;
+		font-size: 0.9rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.sql-example pre {
+		margin: 0;
+		overflow-x: auto;
+	}
+
+	.sql-example code {
+		color: #10b981;
+		font-family: 'Monaco', 'Courier New', monospace;
+		font-size: 0.85rem;
+		line-height: 1.6;
 	}
 
 	.next-steps {
 		display: flex;
-		flex-direction: column;
 		gap: 1rem;
-		align-items: center;
+		justify-content: center;
 	}
 
-	.next-steps p {
-		margin: 0 0 1rem 0;
-		color: #374151;
-	}
-
-	.btn-primary,
 	.btn-secondary {
 		display: inline-block;
 		padding: 0.75rem 1.5rem;
 		border-radius: 8px;
 		font-weight: 600;
 		text-decoration: none;
-		transition: all 0.2s;
-		min-width: 200px;
-	}
-
-	.btn-primary {
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-		color: white;
-	}
-
-	.btn-primary:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
-	}
-
-	.btn-secondary {
 		background: #f3f4f6;
 		color: #374151;
 		border: 1px solid #d1d5db;
+		transition: all 0.2s;
 	}
 
 	.btn-secondary:hover {
@@ -145,12 +157,12 @@
 			padding: 2rem 1.5rem;
 		}
 
-		h1 {
-			font-size: 1.5rem;
+		.sql-example {
+			padding: 1rem;
 		}
 
-		.icon {
-			font-size: 3rem;
+		.sql-example code {
+			font-size: 0.75rem;
 		}
 	}
 </style>

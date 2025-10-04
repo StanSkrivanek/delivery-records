@@ -2,726 +2,599 @@ import { dev } from '$app/environment';
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
+import bcrypt from 'bcrypt';
 
 const dbPath = dev ? 'database.db' : './database.db';
 const db = new Database(dbPath);
 
-// Initialize database schema with all fields
+// Enable foreign keys
+db.pragma('foreign_keys = ON');
+
+// ============================================================================
+// SCHEMA DEFINITIONS
+// ============================================================================
+
+// Initialize database schema
 db.exec(`
+  -- ============================================================================
+  -- USERS & AUTHENTICATION
+  -- ============================================================================
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    phone TEXT,
+    role TEXT NOT NULL CHECK (role IN ('super_admin', 'org_admin', 'depot_manager', 'driver', 'viewer')) DEFAULT 'driver',
+    is_active BOOLEAN DEFAULT 1,
+    organization_id INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_login_at DATETIME,
+    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE SET NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+  CREATE INDEX IF NOT EXISTS idx_users_organization ON users(organization_id);
+  CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+
+  -- ============================================================================
+  -- ORGANIZATIONS
+  -- ============================================================================
+  CREATE TABLE IF NOT EXISTS organizations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    legal_name TEXT,
+    vat_number TEXT,
+    tax_id TEXT,
+    phone TEXT,
+    email TEXT,
+    address TEXT,
+    city TEXT,
+    postal_code TEXT,
+    country TEXT DEFAULT 'Ireland',
+    logo_url TEXT,
+    is_active BOOLEAN DEFAULT 1,
+    settings JSON, -- Organization-specific settings
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_organizations_active ON organizations(is_active);
+
+  -- ============================================================================
+  -- DEPOTS / LOCATIONS
+  -- ============================================================================
+  CREATE TABLE IF NOT EXISTS depots (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    organization_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    code TEXT, -- Short code like "DUB01", "CRK01"
+    address TEXT,
+    city TEXT,
+    postal_code TEXT,
+    phone TEXT,
+    email TEXT,
+    manager_id INTEGER, -- User who manages this depot
+    is_active BOOLEAN DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+    FOREIGN KEY (manager_id) REFERENCES users(id) ON DELETE SET NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_depots_organization ON depots(organization_id);
+  CREATE INDEX IF NOT EXISTS idx_depots_active ON depots(is_active);
+
+  -- ============================================================================
+  -- VEHICLES
+  -- ============================================================================
+  CREATE TABLE IF NOT EXISTS vehicles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    organization_id INTEGER NOT NULL,
+    depot_id INTEGER,
+    license_plate TEXT NOT NULL,
+    make TEXT,
+    model TEXT,
+    year INTEGER,
+    vin TEXT,
+    initial_odometer INTEGER DEFAULT 0,
+    current_odometer INTEGER DEFAULT 0,
+    fuel_type TEXT CHECK (fuel_type IN ('diesel', 'petrol', 'electric', 'hybrid')),
+    is_active BOOLEAN DEFAULT 1,
+    notes TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+    FOREIGN KEY (depot_id) REFERENCES depots(id) ON DELETE SET NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_vehicles_organization ON vehicles(organization_id);
+  CREATE INDEX IF NOT EXISTS idx_vehicles_depot ON vehicles(depot_id);
+  CREATE INDEX IF NOT EXISTS idx_vehicles_license ON vehicles(license_plate);
+  CREATE INDEX IF NOT EXISTS idx_vehicles_active ON vehicles(is_active);
+
+  -- ============================================================================
+  -- VEHICLE ASSIGNMENTS (Driver-Vehicle assignments)
+  -- ============================================================================
+  CREATE TABLE IF NOT EXISTS vehicle_assignments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vehicle_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    assigned_date DATE NOT NULL,
+    unassigned_date DATE,
+    is_active BOOLEAN DEFAULT 1,
+    notes TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_assignments_vehicle ON vehicle_assignments(vehicle_id);
+  CREATE INDEX IF NOT EXISTS idx_assignments_user ON vehicle_assignments(user_id);
+  CREATE INDEX IF NOT EXISTS idx_assignments_date ON vehicle_assignments(assigned_date);
+
+  -- ============================================================================
+  -- DELIVERY RECORDS
+  -- ============================================================================
   CREATE TABLE IF NOT EXISTS records (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    loaded INTEGER NOT NULL,
-    collected INTEGER NOT NULL,
-    cutters INTEGER NOT NULL,
-    returned INTEGER NOT NULL,
+    organization_id INTEGER NOT NULL,
+    depot_id INTEGER,
+    vehicle_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    entry_date DATE NOT NULL,
+    
+    -- Parcel counts
+    loaded INTEGER NOT NULL DEFAULT 0,
+    collected INTEGER NOT NULL DEFAULT 0,
+    cutters INTEGER NOT NULL DEFAULT 0,
+    returned INTEGER NOT NULL DEFAULT 0,
     missplaced INTEGER DEFAULT 0,
+    
+    -- Financial
     expense REAL DEFAULT 0,
-		expense_no_vat REAL DEFAULT 0,
-    odometer INTEGER DEFAULT 0,
+    expense_no_vat REAL DEFAULT 0,
+    
+    -- Vehicle data
+    odometer_start INTEGER,
+    odometer_end INTEGER,
+    
+    -- Documentation
     image_path TEXT,
     note TEXT,
-    entry_date DATE NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
+    
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+    FOREIGN KEY (depot_id) REFERENCES depots(id) ON DELETE SET NULL,
+    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE RESTRICT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
+  );
 
-// Table for tracking vehicle usage
-db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_records_organization ON records(organization_id);
+  CREATE INDEX IF NOT EXISTS idx_records_depot ON records(depot_id);
+  CREATE INDEX IF NOT EXISTS idx_records_vehicle ON records(vehicle_id);
+  CREATE INDEX IF NOT EXISTS idx_records_user ON records(user_id);
+  CREATE INDEX IF NOT EXISTS idx_records_date ON records(entry_date);
+
+  -- ============================================================================
+  -- VEHICLE USAGE LOG
+  -- ============================================================================
   CREATE TABLE IF NOT EXISTS vehicle_usage_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    record_id INTEGER NOT NULL,
+    vehicle_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
     entry_date DATE NOT NULL,
     usage_mode TEXT NOT NULL CHECK (usage_mode IN ('standard', 'no_used', 'other')),
-    vehicle_id INTEGER DEFAULT 1,
+    odometer_start INTEGER,
     odometer_end INTEGER,
     distance_manual INTEGER DEFAULT 0,
     purpose TEXT,
     comment TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    record_id INTEGER REFERENCES records(id)
-  )
+    FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE,
+    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_usage_record ON vehicle_usage_log(record_id);
+  CREATE INDEX IF NOT EXISTS idx_usage_vehicle ON vehicle_usage_log(vehicle_id);
+  CREATE INDEX IF NOT EXISTS idx_usage_date ON vehicle_usage_log(entry_date);
+
+  -- ============================================================================
+  -- CLIENTS (Invoice recipients)
+  -- ============================================================================
+  CREATE TABLE IF NOT EXISTS clients (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    organization_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    contact_name TEXT,
+    email TEXT,
+    phone TEXT,
+    address TEXT,
+    city TEXT,
+    postal_code TEXT,
+    vat_number TEXT,
+    payment_terms INTEGER DEFAULT 30, -- Days
+    pricing_delivery REAL DEFAULT 4.0,
+    pricing_collection REAL DEFAULT 1.0,
+    is_active BOOLEAN DEFAULT 1,
+    notes TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_clients_organization ON clients(organization_id);
+  CREATE INDEX IF NOT EXISTS idx_clients_active ON clients(is_active);
+
+  -- ============================================================================
+  -- INVOICES
+  -- ============================================================================
+  CREATE TABLE IF NOT EXISTS invoices (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    organization_id INTEGER NOT NULL,
+    client_id INTEGER NOT NULL,
+    invoice_number TEXT UNIQUE NOT NULL,
+    invoice_date DATE NOT NULL,
+    due_date DATE NOT NULL,
+    period_start DATE NOT NULL,
+    period_end DATE NOT NULL,
+    subtotal REAL NOT NULL,
+    vat_amount REAL NOT NULL,
+    total_amount REAL NOT NULL,
+    status TEXT CHECK (status IN ('draft', 'sent', 'paid', 'overdue', 'cancelled')) DEFAULT 'draft',
+    paid_date DATE,
+    notes TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+    FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE RESTRICT
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_invoices_organization ON invoices(organization_id);
+  CREATE INDEX IF NOT EXISTS idx_invoices_client ON invoices(client_id);
+  CREATE INDEX IF NOT EXISTS idx_invoices_number ON invoices(invoice_number);
+  CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
+  CREATE INDEX IF NOT EXISTS idx_invoices_date ON invoices(invoice_date);
+
+  -- ============================================================================
+  -- SESSIONS (for authentication)
+  -- ============================================================================
+  CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
+  CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
 `);
 
-// Create index if it doesn't exist
-db.exec(`
-  CREATE INDEX IF NOT EXISTS idx_vehicle_usage_log_record_id ON vehicle_usage_log(record_id);
-`);
+// ============================================================================
+// SEED DATA - Create initial super admin
+// ============================================================================
+export async function seedDatabase() {
+  const existingUsers = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
+  
+  if (existingUsers.count === 0) {
+    console.log('🌱 Seeding database with initial data...');
+    
+    // Create default organization
+    const orgStmt = db.prepare(`
+      INSERT INTO organizations (name, legal_name, country, is_active)
+      VALUES (?, ?, ?, ?)
+    `);
+    
+    const orgResult = orgStmt.run(
+      'Default Organization',
+      'Default Organization Ltd.',
+      'Ireland',
+      1
+    );
+    
+    const orgId = orgResult.lastInsertRowid;
+    
+    // Create super admin user
+    const passwordHash = await bcrypt.hash('admin123', 10);
+    const userStmt = db.prepare(`
+      INSERT INTO users (email, password_hash, first_name, last_name, role, organization_id, is_active)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    userStmt.run(
+      'admin@example.com',
+      passwordHash,
+      'Super',
+      'Admin',
+      'super_admin',
+      orgId,
+      1
+    );
+    
+    console.log('✅ Database seeded successfully!');
+    console.log('📧 Login: admin@example.com');
+    console.log('🔑 Password: admin123');
+    console.log('⚠️  CHANGE THIS PASSWORD IMMEDIATELY!');
+  }
+}
+
+// Initialize seed data on startup
+seedDatabase().catch(console.error);
+
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
+
+export interface User {
+  id?: number;
+  email: string;
+  password_hash?: string;
+  first_name: string;
+  last_name: string;
+  phone?: string;
+  role: 'super_admin' | 'org_admin' | 'depot_manager' | 'driver' | 'viewer';
+  is_active: boolean;
+  organization_id?: number;
+  created_at?: string;
+  updated_at?: string;
+  last_login_at?: string;
+}
+
+export interface Organization {
+  id?: number;
+  name: string;
+  legal_name?: string;
+  vat_number?: string;
+  tax_id?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  city?: string;
+  postal_code?: string;
+  country?: string;
+  logo_url?: string;
+  is_active: boolean;
+  settings?: string; // JSON
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Depot {
+  id?: number;
+  organization_id: number;
+  name: string;
+  code?: string;
+  address?: string;
+  city?: string;
+  postal_code?: string;
+  phone?: string;
+  email?: string;
+  manager_id?: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Vehicle {
+  id?: number;
+  organization_id: number;
+  depot_id?: number;
+  license_plate: string;
+  make?: string;
+  model?: string;
+  year?: number;
+  vin?: string;
+  initial_odometer?: number;
+  current_odometer?: number;
+  fuel_type?: 'diesel' | 'petrol' | 'electric' | 'hybrid';
+  is_active: boolean;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
 export interface Record {
-	id?: number;
-	loaded: number;
-	collected: number;
-	cutters: number;
-	returned: number;
-	missplaced?: number;
-	expense?: number;
-	expense_no_vat?: number;
-	odometer?: number;
-	image_path?: string;
-	note?: string;
-	entry_date: string;
-	created_at?: string;
-}
-export interface OdometerReading {
-	id: number;
-	entry_date: string;
-	odometer: number;
-	previous_odometer: number | null;
-	daily_difference: number | null;
-	days_between: number | null;
-	created_at?: string;
+  id?: number;
+  organization_id: number;
+  depot_id?: number;
+  vehicle_id: number;
+  user_id: number;
+  entry_date: string;
+  loaded: number;
+  collected: number;
+  cutters: number;
+  returned: number;
+  missplaced?: number;
+  expense?: number;
+  expense_no_vat?: number;
+  odometer_start?: number;
+  odometer_end?: number;
+  image_path?: string;
+  note?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export class RecordService {
-	static getAvailableYearsAndMonths() {
-		throw new Error('Method not implemented.');
-	}
-	static async createRecord(record: Omit<Record, 'id' | 'created_at'>): Promise<number> {
-		const stmt = db.prepare(`
-      INSERT INTO records (loaded, collected, cutters, returned, missplaced, expense, expense_no_vat, odometer, image_path, note, entry_date)
+export interface Client {
+  id?: number;
+  organization_id: number;
+  name: string;
+  contact_name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  postal_code?: string;
+  vat_number?: string;
+  payment_terms?: number;
+  pricing_delivery?: number;
+  pricing_collection?: number;
+  is_active: boolean;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// ============================================================================
+// DATABASE SERVICE CLASSES
+// ============================================================================
+
+export class AuthService {
+  static async createUser(user: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<number> {
+    const stmt = db.prepare(`
+      INSERT INTO users (email, password_hash, first_name, last_name, phone, role, organization_id, is_active)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    const result = stmt.run(
+      user.email,
+      user.password_hash,
+      user.first_name,
+      user.last_name,
+      user.phone || null,
+      user.role,
+      user.organization_id || null,
+      user.is_active ? 1 : 0
+    );
+    
+    return result.lastInsertRowid as number;
+  }
+
+  static async getUserByEmail(email: string): Promise<User | null> {
+    const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
+    return stmt.get(email) as User | null;
+  }
+
+  static async getUserById(id: number): Promise<User | null> {
+    const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
+    return stmt.get(id) as User | null;
+  }
+
+  static async updateLastLogin(userId: number): Promise<void> {
+    const stmt = db.prepare('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?');
+    stmt.run(userId);
+  }
+
+  static async verifyPassword(password: string, hash: string): Promise<boolean> {
+    return bcrypt.compare(password, hash);
+  }
+
+  static async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 10);
+  }
+
+  static async createSession(userId: number): Promise<string> {
+    const sessionId = crypto.randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
+
+    const stmt = db.prepare(`
+      INSERT INTO sessions (id, user_id, expires_at)
+      VALUES (?, ?, ?)
+    `);
+    
+    stmt.run(sessionId, userId, expiresAt.toISOString());
+    return sessionId;
+  }
+
+  static async getSession(sessionId: string): Promise<{ user_id: number; expires_at: string } | null> {
+    const stmt = db.prepare('SELECT * FROM sessions WHERE id = ? AND expires_at > CURRENT_TIMESTAMP');
+    return stmt.get(sessionId) as { user_id: number; expires_at: string } | null;
+  }
+
+  static async deleteSession(sessionId: string): Promise<void> {
+    const stmt = db.prepare('DELETE FROM sessions WHERE id = ?');
+    stmt.run(sessionId);
+  }
+
+  static async cleanExpiredSessions(): Promise<void> {
+    const stmt = db.prepare('DELETE FROM sessions WHERE expires_at < CURRENT_TIMESTAMP');
+    stmt.run();
+  }
+}
+
+export class OrganizationService {
+  static async create(org: Omit<Organization, 'id' | 'created_at' | 'updated_at'>): Promise<number> {
+    const stmt = db.prepare(`
+      INSERT INTO organizations (name, legal_name, vat_number, tax_id, phone, email, address, city, postal_code, country, is_active)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-
-		const result = stmt.run(
-			record.loaded,
-			record.collected,
-			record.cutters,
-			record.returned,
-			record.missplaced || 0,
-			record.expense || 0,
-			record.expense_no_vat || 0,
-			record.odometer || 0,
-			record.image_path || null,
-			record.note || null,
-			record.entry_date
-		);
-
-		return result.lastInsertRowid as number;
-	}
-
-	//----------------------------------------------------------------------------------- RECORD METHODS
-	static async getAllRecords(): Promise<Record[]> {
-		const stmt = db.prepare('SELECT * FROM records ORDER BY entry_date DESC, created_at DESC');
-		return stmt.all() as Record[];
-	}
-
-	static async getLatestOdometer(): Promise<number | null> {
-		const stmt = db.prepare(
-			'SELECT odometer FROM records ORDER BY entry_date DESC, created_at DESC LIMIT 1'
-		);
-		const record = stmt.get() as Record | undefined;
-		return record && typeof record.odometer === 'number' ? record.odometer : null;
-	}
-
-	static async getRecordById(id: number): Promise<Record | null> {
-		const stmt = db.prepare('SELECT * FROM records WHERE id = ?');
-		return stmt.get(id) as Record | null;
-	}
-
-	static async getRecordWithVehicleUsageById(id: number): Promise<
-		| (Record & {
-				usage_mode?: 'standard' | 'no_used' | 'other';
-				distance_manual?: number;
-				purpose?: string;
-		  })
-		| null
-	> {
-		const stmt = db.prepare(`
-			SELECT 
-				r.*,
-				v.usage_mode,
-				v.distance_manual,
-				v.purpose
-			FROM records r 
-			LEFT JOIN vehicle_usage_log v ON r.id = v.record_id OR (v.record_id IS NULL AND r.entry_date = v.entry_date)
-			WHERE r.id = ?
-		`);
-		return stmt.get(id) as
-			| (Record & {
-					usage_mode?: 'standard' | 'no_used' | 'other';
-					distance_manual?: number;
-					purpose?: string;
-			  })
-			| null;
-	}
-
-	static async updateRecord(
-		id: number,
-		record: Partial<Omit<Record, 'id' | 'created_at'>>
-	): Promise<Record> {
-		const stmt = db.prepare(`
-      UPDATE records 
-      SET loaded = ?, collected = ?, cutters = ?, returned = ?, 
-          missplaced = ?, expense = ?, expense_no_vat = ?, odometer = ?, image_path = ?, note = ?, entry_date = ?
-      WHERE id = ?
-    `);
-
-		const result = stmt.run(
-			record.loaded,
-			record.collected,
-			record.cutters,
-			record.returned,
-			record.missplaced || 0,
-			record.expense || 0,
-			record.expense_no_vat || 0,
-			record.odometer || 0,
-			record.image_path || null,
-			record.note || null,
-			record.entry_date,
-			id
-		);
-
-		if (result.changes === 0) {
-			throw new Error('Record not found');
-		}
-
-		// Return the updated record
-		const updatedRecord = await this.getRecordById(id);
-		if (!updatedRecord) {
-			throw new Error('Failed to retrieve updated record');
-		}
-
-		return updatedRecord;
-	}
-
-	static async deleteRecord(id: number): Promise<boolean> {
-		const stmt = db.prepare('DELETE FROM records WHERE id = ?');
-		const result = stmt.run(id);
-		return result.changes > 0;
-	}
-
-	static async getRecordsByDateRange(startDate: string, endDate: string): Promise<Record[]> {
-		const stmt = db.prepare(`
-      SELECT * FROM records 
-      WHERE entry_date BETWEEN ? AND ? 
-      ORDER BY entry_date DESC, created_at DESC
-    `);
-		return stmt.all(startDate, endDate) as Record[];
-	}
-
-	static async getRecordsByCurrentMonth() {
-		const stmt = db.prepare(`
-	  SELECT * FROM records
-	  WHERE strftime('%Y-%m', entry_date) = strftime('%Y-%m', 'now')
-	`);
-		return stmt.all() as Record[];
-	}
-
-	static async getRecordsByMonth(year: number, month: number): Promise<Record[]> {
-		const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-		const endDate = `${year}-${String(month).padStart(2, '0')}-31`;
-		return this.getRecordsByDateRange(startDate, endDate);
-	}
-	//----------------------------------------------------------------------------------- VEHICLE USAGE LOG
-	static async createVehicleUsageLog(log: {
-		entry_date: string;
-		usage_mode: 'standard' | 'no_used' | 'other';
-		vehicle_id?: number;
-		odometer_end?: number;
-		distance_manual?: number;
-		purpose?: string;
-		comment?: string;
-		record_id?: number;
-	}): Promise<number> {
-		const stmt = db.prepare(`
-		INSERT INTO vehicle_usage_log (
-			entry_date, usage_mode, vehicle_id, odometer_end, distance_manual, purpose, comment, record_id
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-	`);
-
-		const result = stmt.run(
-			log.entry_date,
-			log.usage_mode,
-			log.vehicle_id || 1,
-			log.odometer_end ?? null,
-			log.distance_manual ?? 0,
-			log.purpose || null,
-			log.comment || null,
-			log.record_id || null
-		);
-
-		return result.lastInsertRowid as number;
-	}
-
-	static async deleteVehicleUsageLogByDate(entry_date: string): Promise<boolean> {
-		const stmt = db.prepare('DELETE FROM vehicle_usage_log WHERE entry_date = ?');
-		const result = stmt.run(entry_date);
-		return result.changes > 0;
-	}
-
-	static async deleteVehicleUsageLogByRecordId(record_id: number): Promise<boolean> {
-		const stmt = db.prepare('DELETE FROM vehicle_usage_log WHERE record_id = ?');
-		const result = stmt.run(record_id);
-		return result.changes > 0;
-	}
-
-	static async updateVehicleUsageLog(
-		entry_date: string,
-		log: {
-			usage_mode: 'standard' | 'no_used' | 'other';
-			vehicle_id?: number;
-			odometer_end?: number;
-			distance_manual?: number;
-			purpose?: string;
-			comment?: string;
-		}
-	): Promise<boolean> {
-		const stmt = db.prepare(`
-		UPDATE vehicle_usage_log 
-		SET usage_mode = ?, vehicle_id = ?, odometer_end = ?, distance_manual = ?, purpose = ?, comment = ?
-		WHERE entry_date = ?
-	`);
-
-		const result = stmt.run(
-			log.usage_mode,
-			log.vehicle_id || 1,
-			log.odometer_end ?? null,
-			log.distance_manual ?? 0,
-			log.purpose || null,
-			log.comment || null,
-			entry_date
-		);
-
-		return result.changes > 0;
-	}
-
-	static async getVehicleUsageLogByDate(entry_date: string): Promise<{
-		id: number;
-		entry_date: string;
-		usage_mode: 'standard' | 'no_used' | 'other';
-		vehicle_id: number;
-		odometer_end: number | null;
-		distance_manual: number;
-		purpose: string | null;
-		comment: string | null;
-		created_at: string;
-	} | null> {
-		const stmt = db.prepare('SELECT * FROM vehicle_usage_log WHERE entry_date = ? LIMIT 1');
-		const result = stmt.get(entry_date);
-		return result
-			? (result as {
-					id: number;
-					entry_date: string;
-					usage_mode: 'standard' | 'no_used' | 'other';
-					vehicle_id: number;
-					odometer_end: number | null;
-					distance_manual: number;
-					purpose: string | null;
-					comment: string | null;
-					created_at: string;
-				})
-			: null;
-	}
-	//----------------------------------------------------------------------------------- ODOMETER METHODS
-
-	/**
-	 * Get odometer readings with daily differences for a specific month
-	 * This version correctly handles cross-month boundaries for the first record
-	 * @param year - Year (e.g., 2025)
-	 * @param month - Month (1-12)
-	 * @returns Array of odometer readings with calculated differences
-	 */
-	static async getOdometerDifferencesByMonth(
-		year: number,
-		month: number
-	): Promise<OdometerReading[]> {
-		const stmt = db.prepare(`
-			WITH all_readings AS (
-				-- Get all readings with their previous reading (across all months)
-				SELECT 
-					id,
-					entry_date,
-					odometer,
-					LAG(odometer) OVER (ORDER BY entry_date, created_at) AS previous_odometer,
-					LAG(entry_date) OVER (ORDER BY entry_date, created_at) AS previous_date
-				FROM records 
-				WHERE odometer > 0
-				ORDER BY entry_date, created_at
-			),
-			filtered_readings AS (
-				-- Filter to get only the target month readings
-				SELECT *
-				FROM all_readings
-				WHERE strftime('%Y', entry_date) = ? 
-					AND strftime('%m', entry_date) = ?
-			)
-			SELECT 
-				id,
-				entry_date,
-				odometer,
-				previous_odometer,
-				CASE 
-					WHEN previous_odometer IS NOT NULL 
-					THEN odometer - previous_odometer 
-					ELSE NULL 
-				END AS daily_difference,
-				CASE 
-					WHEN previous_date IS NOT NULL 
-					THEN julianday(entry_date) - julianday(previous_date)
-					ELSE NULL 
-				END AS days_between
-			FROM filtered_readings
-			ORDER BY entry_date, id
-		`);
-
-		const yearStr = year.toString();
-		const monthStr = String(month).padStart(2, '0');
-
-		return stmt.all(yearStr, monthStr) as OdometerReading[];
-	}
-
-	/**
-	 * Get odometer readings with daily differences for current month
-	 * @returns Array of odometer readings with calculated differences
-	 */
-	static async getOdometerDifferencesCurrentMonth(): Promise<OdometerReading[]> {
-		const now = new Date();
-		return this.getOdometerDifferencesByMonth(now.getFullYear(), now.getMonth() + 1);
-	}
-
-	/**
-	 * Alternative method: Get odometer readings for a month with explicit previous month context
-	 * This version shows the previous reading even if it's from a different month
-	 * @param year - Year (e.g., 2025)
-	 * @param month - Month (1-12)
-	 * @returns Array of odometer readings with calculated differences
-	 */
-	static async getOdometerDifferencesWithContext(
-		year: number,
-		month: number
-	): Promise<OdometerReading[]> {
-		const stmt = db.prepare(`
-			WITH target_month_readings AS (
-				-- Get readings for the target month
-				SELECT 
-					id,
-					entry_date,
-					odometer
-				FROM records 
-				WHERE strftime('%Y', entry_date) = ? 
-					AND strftime('%m', entry_date) = ?
-					AND odometer > 0
-				ORDER BY entry_date, created_at
-			),
-			previous_reading AS (
-				-- Get the last reading from before the target month
-				SELECT 
-					odometer as previous_odometer,
-					entry_date as previous_date
-				FROM records 
-				WHERE entry_date < (
-					SELECT MIN(entry_date) 
-					FROM target_month_readings
-				)
-				AND odometer > 0
-				ORDER BY entry_date DESC, created_at DESC
-				LIMIT 1
-			),
-			readings_with_previous AS (
-				SELECT 
-					tmr.id,
-					tmr.entry_date,
-					tmr.odometer,
-					CASE 
-						WHEN ROW_NUMBER() OVER (ORDER BY tmr.entry_date, tmr.id) = 1 
-						THEN pr.previous_odometer
-						ELSE LAG(tmr.odometer) OVER (ORDER BY tmr.entry_date, tmr.id)
-					END AS previous_odometer,
-					CASE 
-						WHEN ROW_NUMBER() OVER (ORDER BY tmr.entry_date, tmr.id) = 1 
-						THEN pr.previous_date
-						ELSE LAG(tmr.entry_date) OVER (ORDER BY tmr.entry_date, tmr.id)
-					END AS previous_date
-				FROM target_month_readings tmr
-				CROSS JOIN previous_reading pr
-			)
-			SELECT 
-				id,
-				entry_date,
-				odometer,
-				previous_odometer,
-				CASE 
-					WHEN previous_odometer IS NOT NULL 
-					THEN odometer - previous_odometer 
-					ELSE NULL 
-				END AS daily_difference,
-				CASE 
-					WHEN previous_date IS NOT NULL 
-					THEN julianday(entry_date) - julianday(previous_date)
-					ELSE NULL 
-				END AS days_between
-			FROM readings_with_previous
-			ORDER BY entry_date, id
-		`);
-
-		const yearStr = year.toString();
-		const monthStr = String(month).padStart(2, '0');
-
-		return stmt.all(yearStr, monthStr) as OdometerReading[];
-	}
-
-	/**
-	 * Get total distance traveled in a specific month (accounting for cross-month boundaries)
-	 * @param year - Year (e.g., 2025)
-	 * @param month - Month (1-12)
-	 * @returns Total distance traveled in the month
-	 */
-	static async getTotalDistanceByMonth(year: number, month: number): Promise<number> {
-		const readings = await this.getOdometerDifferencesByMonth(year, month);
-		return readings
-			.filter((reading) => reading.daily_difference !== null && reading.daily_difference > 0)
-			.reduce((total, reading) => total + (reading.daily_difference || 0), 0);
-	}
-
-	/**
-	 * Get odometer statistics for a specific month (with proper cross-month calculation)
-	 * @param year - Year (e.g., 2025)
-	 * @param month - Month (1-12)
-	 * @returns Object with odometer statistics
-	 */
-	static async getOdometerStatsByMonth(year: number, month: number) {
-		const readings = await this.getOdometerDifferencesByMonth(year, month);
-		const validDifferences = readings
-			.map((r) => r.daily_difference)
-			.filter((diff): diff is number => diff !== null && diff > 0);
-
-		const totalDistance = validDifferences.reduce((sum, diff) => sum + diff, 0);
-		const averageDaily = validDifferences.length > 0 ? totalDistance / validDifferences.length : 0;
-		const maxDaily = validDifferences.length > 0 ? Math.max(...validDifferences) : 0;
-		const minDaily = validDifferences.length > 0 ? Math.min(...validDifferences) : 0;
-
-		const firstReading = readings.find((r) => r.odometer > 0);
-		const lastReading = readings
-			.slice()
-			.reverse()
-			.find((r) => r.odometer > 0);
-
-		// Calculate the starting odometer for the month (could be from previous month)
-		const startOdometer = firstReading?.previous_odometer || firstReading?.odometer || 0;
-		const endOdometer = lastReading?.odometer || 0;
-
-		return {
-			totalDistance,
-			averageDaily,
-			maxDaily,
-			minDaily,
-			daysWithReadings: validDifferences.length,
-			startOdometer,
-			endOdometer,
-			totalReadings: readings.length
-		};
-	}
-
-	/**
-	 * Get a summary view that shows month boundaries clearly
-	 * @param year - Year (e.g., 2025)
-	 * @param month - Month (1-12)
-	 * @returns Object with month summary and boundary information
-	 */
-	static async getMonthSummaryWithBoundaries(year: number, month: number) {
-		const readings = await this.getOdometerDifferencesByMonth(year, month);
-
-		if (readings.length === 0) {
-			return {
-				monthReadings: readings,
-				summary: {
-					totalDistance: 0,
-					firstReading: null,
-					lastReading: null,
-					previousMonthLastReading: null,
-					crossMonthDistance: 0
-				}
-			};
-		}
-
-		const firstReading = readings[0];
-		const lastReading = readings[readings.length - 1];
-
-		// Get the last reading from the previous month
-		const prevMonthStmt = db.prepare(`
-			SELECT odometer, entry_date 
-			FROM records 
-			WHERE entry_date < ? 
-				AND odometer > 0 
-			ORDER BY entry_date DESC, created_at DESC 
-			LIMIT 1
-		`);
-
-		const startOfMonth = `${year}-${String(month).padStart(2, '0')}-01`;
-		const previousMonthLastReading = prevMonthStmt.get(startOfMonth) as
-			| { odometer: number; entry_date: string }
-			| undefined;
-
-		// Calculate cross-month distance (distance from last reading of previous month to first reading of this month)
-		const crossMonthDistance =
-			previousMonthLastReading && firstReading
-				? firstReading.odometer - previousMonthLastReading.odometer
-				: 0;
-
-		const totalDistance = readings
-			.filter((r) => r.daily_difference !== null && r.daily_difference > 0)
-			.reduce((sum, r) => sum + (r.daily_difference || 0), 0);
-
-		return {
-			monthReadings: readings,
-			summary: {
-				totalDistance,
-				firstReading: firstReading
-					? {
-							date: firstReading.entry_date,
-							odometer: firstReading.odometer,
-							previousOdometer: firstReading.previous_odometer
-						}
-					: null,
-				lastReading: lastReading
-					? {
-							date: lastReading.entry_date,
-							odometer: lastReading.odometer
-						}
-					: null,
-				previousMonthLastReading: previousMonthLastReading
-					? {
-							date: previousMonthLastReading.entry_date,
-							odometer: previousMonthLastReading.odometer
-						}
-					: null,
-				crossMonthDistance
-			}
-		};
-	}
-
-	//----------------------------------------------------------------------------------- INVOICE METHODS
-	// get monthly sum of delibered ond collected parcels for invoice
-
-	// static async getMonthlyInvoiceData(year: number, month: number): Promise<{
-	// 	delivered: number;
-	// 	collected: number;
-	// }> {
-	// 	const monthKey = `${year}-${String(month).padStart(2, '0')}`;
-
-	// 	const deliveredRow = db
-	// 	.prepare(
-	// 		`
-	// 		SELECT SUM(amount) as total
-	// 		FROM invoices
-	// 		WHERE status = 'delivered'
-	// 		AND strftime('%Y-%m', created_at) = ?
-	// 		`
-	// 	)
-	// 	.get(monthKey);
-
-	// 	const collectedRow = db
-	// 	.prepare(
-	// 		`
-	// 		SELECT SUM(amount) as total
-	// 		FROM invoices
-	// 		WHERE status = 'collected'
-	// 		AND strftime('%Y-%m', created_at) = ?
-	// 		`
-	// 	)
-	// 	.get(monthKey);
-
-	// 	return {
-	// 		delivered: (deliveredRow as { total: number | null } | undefined)?.total || 0,
-	// 		collected: (collectedRow as { total: number | null } | undefined)?.total || 0
-	// 	};
-	// }
-
-	//----------------------------------------------------------------------------------- MIGRATION METHODS
-	static async migrateExistingRecords(): Promise<void> {
-		try {
-			const columns = db.prepare('PRAGMA table_info(records)').all() as { name: string }[];
-			const hasEntryDate = columns.some((col) => col.name === 'entry_date');
-			const hasMissplaced = columns.some((col: { name: string }) => col.name === 'missplaced');
-			const hasExpense = columns.some((col: { name: string }) => col.name === 'expense');
-			const hasExpenseNoVat = columns.some(
-				(col: { name: string }) => col.name === 'expense_no_vat'
-			);
-			const hasOdometer = columns.some((col: { name: string }) => col.name === 'odometer');
-			const hasNote = columns.some((col: { name: string }) => col.name === 'note');
-
-			if (!hasEntryDate) {
-				db.exec('ALTER TABLE records ADD COLUMN entry_date DATE');
-				db.exec(`UPDATE records SET entry_date = DATE(created_at) WHERE entry_date IS NULL`);
-				console.log('Added entry_date column and migrated existing records');
-			}
-
-			if (!hasMissplaced) {
-				db.exec('ALTER TABLE records ADD COLUMN missplaced INTEGER DEFAULT 0');
-				console.log('Added missplaced column');
-			}
-
-			if (!hasExpense) {
-				db.exec('ALTER TABLE records ADD COLUMN expense REAL DEFAULT 0');
-				console.log('Added expense column');
-			}
-
-			if (!hasExpenseNoVat) {
-				db.exec('ALTER TABLE records ADD COLUMN expense_no_vat REAL DEFAULT 0');
-				console.log('Added expense_no_vat column');
-			}
-
-			// Ensure odometer column exists
-			if (!hasOdometer) {
-				db.exec('ALTER TABLE records ADD COLUMN odometer INTEGER DEFAULT 0');
-				console.log('Added odometer column');
-			}
-			if (!hasNote) {
-				db.exec('ALTER TABLE records ADD COLUMN note TEXT');
-				console.log('Added note column');
-			}
-			// Ensure vehicle_usage_log table exists
-			const vehicleLogTable = db
-				.prepare(
-					`
-  SELECT name FROM sqlite_master WHERE type='table' AND name='vehicle_usage_log'
-`
-				)
-				.get();
-
-			if (!vehicleLogTable) {
-				db.exec(`
-    CREATE TABLE vehicle_usage_log (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      entry_date DATE NOT NULL,
-      usage_mode TEXT NOT NULL CHECK (usage_mode IN ('standard', 'no_used', 'other')),
-      vehicle_id INTEGER DEFAULT 1,
-      odometer_end INTEGER,
-      distance_manual INTEGER DEFAULT 0,
-      purpose TEXT,
-      comment TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    
+    const result = stmt.run(
+      org.name,
+      org.legal_name || null,
+      org.vat_number || null,
+      org.tax_id || null,
+      org.phone || null,
+      org.email || null,
+      org.address || null,
+      org.city || null,
+      org.postal_code || null,
+      org.country || 'Ireland',
+      org.is_active ? 1 : 0
     );
-  `);
-				console.log('Created vehicle_usage_log table');
-			}
-		} catch (error) {
-			console.error('Migration error:', error);
-		}
-	}
+    
+    return result.lastInsertRowid as number;
+  }
 
-	static async deleteAllRecords(): Promise<number> {
-		const stmt = db.prepare('DELETE FROM records');
-		const result = stmt.run();
-		return result.changes;
-	}
+  static async getById(id: number): Promise<Organization | null> {
+    const stmt = db.prepare('SELECT * FROM organizations WHERE id = ?');
+    return stmt.get(id) as Organization | null;
+  }
 
-	static async resetAutoIncrement(): Promise<void> {
-		db.exec("DELETE FROM sqlite_sequence WHERE name='records'");
-	}
-
-	static async clearAllData(): Promise<void> {
-		await this.deleteAllRecords();
-		await this.resetAutoIncrement();
-	}
+  static async getAll(): Promise<Organization[]> {
+    const stmt = db.prepare('SELECT * FROM organizations ORDER BY name');
+    return stmt.all() as Organization[];
+  }
 }
 
-// Run migration on startup
-RecordService.migrateExistingRecords();
+export class VehicleService {
+  static async create(vehicle: Omit<Vehicle, 'id' | 'created_at' | 'updated_at'>): Promise<number> {
+    const stmt = db.prepare(`
+      INSERT INTO vehicles (organization_id, depot_id, license_plate, make, model, year, vin, initial_odometer, current_odometer, fuel_type, is_active, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    const result = stmt.run(
+      vehicle.organization_id,
+      vehicle.depot_id || null,
+      vehicle.license_plate,
+      vehicle.make || null,
+      vehicle.model || null,
+      vehicle.year || null,
+      vehicle.vin || null,
+      vehicle.initial_odometer || 0,
+      vehicle.current_odometer || 0,
+      vehicle.fuel_type || null,
+      vehicle.is_active ? 1 : 0,
+      vehicle.notes || null
+    );
+    
+    return result.lastInsertRowid as number;
+  }
+
+  static async getByOrganization(organizationId: number): Promise<Vehicle[]> {
+    const stmt = db.prepare('SELECT * FROM vehicles WHERE organization_id = ? AND is_active = 1 ORDER BY license_plate');
+    return stmt.all(organizationId) as Vehicle[];
+  }
+
+  static async getById(id: number): Promise<Vehicle | null> {
+    const stmt = db.prepare('SELECT * FROM vehicles WHERE id = ?');
+    return stmt.get(id) as Vehicle | null;
+  }
+}
 
 // Ensure static/images directory exists
 const imagesDir = path.join(process.cwd(), 'static', 'images');
 if (!fs.existsSync(imagesDir)) {
-	fs.mkdirSync(imagesDir, { recursive: true });
+  fs.mkdirSync(imagesDir, { recursive: true });
 }
 
 export default db;

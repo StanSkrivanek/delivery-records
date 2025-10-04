@@ -1,231 +1,292 @@
 <script lang="ts">
-	import BarGroups from '$lib/components/charts/BarGoups.svelte';
-	import { calculateAnalytics, dlvPd, getMonthName } from '$lib/utils.js';
-	import { onMount } from 'svelte';
-	let { data } = $props();
-
-	// Map through each record in the array and process it, or process the entire array
-	// const delivery = data.monthly.map((record) => dlvPd(record));
-	const monthly = data.monthly.map((item) => {
-		return {
-			date: item.entry_date,
-			delivery: dlvPd(item),
-			collections: (item.collected ?? 0) + (item.cutters ?? 0),
-			fails: (item.returned ?? 0) + (item.missplaced ?? 0)
-		};
-	});
-
-	const sum = calculateAnalytics(data.monthly);
-
-	const currentMonth = new Date().getMonth();
-	const successRate =
-		Number(((sum.totalDelivered / (sum.totalDelivered + sum.returnedSum)) * 100).toFixed(2)) || 0;
-	const latestOdometer = data.getLatestOdometer ? data.getLatestOdometer : 0;
-
-	// const deliverySum = monthly.reduce((acc, item) => acc + item.delivery, 0);
-	// const collectionSum = monthly.reduce((acc, item) => acc + item.collections, 0);
-	// const failsSum = monthly.reduce((acc, item) => acc + item.fails, 0);
-
-	// get current computed CSS prpps and avlues paplied to <body> element
+	import type { PageData } from './$types';
+	
+	let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
-	<title>Monthly Overview</title>
+	<title>Dashboard - Fleet Management</title>
 </svelte:head>
 
-<header>
-	<h1>{getMonthName(currentMonth)} {new Date().getFullYear()}</h1>
-</header>
-<BarGroups
-	title="Delivery"
-	data={monthly}
-	xKey="date"
-	yKeys={['delivery', 'collections', 'fails']}
-	height="480"
-	fillMissingDates={true}
-/>
-<div class="cards-grid">
-	<!-- Total Delivered -->
-	<div class="card green">
-		<div class="card-header">
-			<h3>Delivered</h3>
-		</div>
-		<p class="card-value">{sum.totalDelivered} pcs</p>
-		<!-- <p class="label">Total delivered ({getMonthName(selectedMonth)} {selectedYear})</p> -->
-		<p class="card-subtitle">Delivered parcels</p>
+<div class="dashboard">
+	<div class="welcome-section">
+		<h1>Welcome back, {data.user?.first_name}! 👋</h1>
+		<p>Here's what's happening with your fleet today.</p>
 	</div>
-	<!-- Collected Sum  -->
-	<div class="card blue">
-		<div class="card-header">
-			<h3>Collected</h3>
+
+	<div class="stats-grid">
+		<div class="stat-card">
+			<div class="stat-icon">📦</div>
+			<div class="stat-content">
+				<h3>Today's Deliveries</h3>
+				<p class="stat-value">0</p>
+				<span class="stat-label">parcels delivered</span>
+			</div>
 		</div>
-		<p class="card-value">{sum.totalCollected} pcs</p>
-		<p class="card-subtitle">Collected</p>
+
+		<div class="stat-card">
+			<div class="stat-icon">🚚</div>
+			<div class="stat-content">
+				<h3>Active Vehicles</h3>
+				<p class="stat-value">0</p>
+				<span class="stat-label">vehicles in fleet</span>
+			</div>
+		</div>
+
+		<div class="stat-card">
+			<div class="stat-icon">👥</div>
+			<div class="stat-content">
+				<h3>Active Drivers</h3>
+				<p class="stat-value">0</p>
+				<span class="stat-label">drivers on duty</span>
+			</div>
+		</div>
+
+		<div class="stat-card">
+			<div class="stat-icon">💰</div>
+			<div class="stat-content">
+				<h3>Monthly Revenue</h3>
+				<p class="stat-value">€0</p>
+				<span class="stat-label">this month</span>
+			</div>
+		</div>
 	</div>
-	<!-- Fails Sum  -->
-	<div class="card red">
-		<div class="card-header">
-			<h3>Fails</h3>
+
+	<div class="info-section">
+		<div class="info-card">
+			<h2>🎉 Welcome to Fleet Management System</h2>
+			<p>Your new fleet management system is ready! Here's what you can do:</p>
+			<ul>
+				<li><strong>Manage Vehicles:</strong> Add and track your delivery vehicles</li>
+				<li><strong>Record Deliveries:</strong> Log daily delivery data and expenses</li>
+				<li><strong>Track Analytics:</strong> View comprehensive reports and statistics</li>
+				<li><strong>Generate Invoices:</strong> Create professional invoices for clients</li>
+				<li><strong>Multi-User Support:</strong> Assign drivers to vehicles and track their performance</li>
+			</ul>
+
+			{#if data.user?.role === 'super_admin' || data.user?.role === 'org_admin'}
+				<div class="admin-notice">
+					<strong>⚙️ Admin Quick Start:</strong>
+					<ol>
+						<li>Go to <a href="/admin/vehicles">Admin → Vehicles</a> to add your fleet</li>
+						<li>Add <a href="/admin/users">team members</a> and assign them to vehicles</li>
+						<li>Set up <a href="/admin/clients">clients</a> for invoicing</li>
+						<li>Start <a href="/records">recording deliveries</a></li>
+					</ol>
+				</div>
+			{/if}
 		</div>
-		<p class="card-value">{sum.returnedSum} pcs</p>
-		<p class="card-subtitle">Failed deliveries</p>
-	</div>
-	<div class="card purple">
-		<div class="card-header">
-			<h3>Rate</h3>
+
+		<div class="info-card">
+			<h2>📊 Quick Stats</h2>
+			<div class="quick-stats">
+				<div class="quick-stat">
+					<span class="label">Your Role:</span>
+					<span class="value">{data.user?.role.replace('_', ' ')}</span>
+				</div>
+				<div class="quick-stat">
+					<span class="label">Account Status:</span>
+					<span class="value status-active">Active</span>
+				</div>
+				<div class="quick-stat">
+					<span class="label">Last Login:</span>
+					<span class="value">Just now</span>
+				</div>
+			</div>
 		</div>
-		<p class="card-value">{successRate} %</p>
-		<p class="card-subtitle">Success Rate</p>
-	</div>
-	<div class="card">
-		<div class="card-header">
-			<h3>Average</h3>
-		</div>
-		<p class="card-value">{sum.averagePerDay} pcs</p>
-		<p class="card-subtitle">Average pcs / day</p>
-	</div>
-	<div class="card">
-		<div class="card-header">
-			<h3>Odometer</h3>
-		</div>
-		<p class="card-value">{latestOdometer} km</p>
-		<p class="card-subtitle">Odometer in km</p>
 	</div>
 </div>
 
-<!-- 	yLabels={['Delivery', 'Collections', 'Fails']}
-	xLabel="Date"
-	xType="time"
-	yType="linear"
-	yMin={0}
-	yMax={Math.max(...monthly.map((item) => Math.max(item.delivery, item.collections, item.fails)))}
-	yTickFormat={(d) => d.toLocaleString()}
-	xTickFormat={(d) => new Date(d).toLocaleDateString('en-US', {
-		month: 'short',
-		day: 'numeric'
-	})}
-	tooltipFormat={(d) => new Date(d).toLocaleDateString('en-US', {
-		month: 'short',
-		day: 'numeric',
-		year: 'numeric'
-	})}
-	tooltipLabelFormat={(d) => new Date(d).toLocaleDateString('en-US', {
-		month: 'short',
-		day: 'numeric',
-		year: 'numeric'
-	})}
-	tooltipValueFormat={(d) => d.toLocaleString()}
-	tooltipLabel="Date"		
-	fillMissingDates={true} -->
-
 <style>
-	header {
-		text-align: center;
-		margin-bottom: 2rem;
-		font-size: 2.5rem;
-		font-family: 'regular', sans-serif;
+	.dashboard {
+		max-width: 1200px;
+		margin: 0 auto;
 	}
-	.cards-grid {
+
+	.welcome-section {
+		margin-bottom: 2rem;
+	}
+
+	.welcome-section h1 {
+		margin: 0 0 0.5rem 0;
+		color: #1f2937;
+		font-size: 2rem;
+	}
+
+	.welcome-section p {
+		margin: 0;
+		color: #6b7280;
+		font-size: 1.1rem;
+	}
+
+	.stats-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		gap: 1.5rem;
+		margin-bottom: 2rem;
+	}
+
+	.stat-card {
+		background: white;
+		border-radius: 12px;
+		padding: 1.5rem;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		display: flex;
+		gap: 1rem;
+		align-items: flex-start;
+		border: 1px solid #e5e7eb;
+		transition: all 0.2s;
+	}
+
+	.stat-card:hover {
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+		transform: translateY(-2px);
+	}
+
+	.stat-icon {
+		font-size: 2.5rem;
+		line-height: 1;
+	}
+
+	.stat-content {
+		flex: 1;
+	}
+
+	.stat-content h3 {
+		margin: 0 0 0.5rem 0;
+		font-size: 0.875rem;
+		color: #6b7280;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.stat-value {
+		margin: 0 0 0.25rem 0;
+		font-size: 2rem;
+		font-weight: 700;
+		color: #1f2937;
+		line-height: 1;
+	}
+
+	.stat-label {
+		color: #9ca3af;
+		font-size: 0.875rem;
+	}
+
+	.info-section {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 		gap: 1.5rem;
 	}
 
-	.card {
+	.info-card {
 		background: white;
-		border-radius: 0.25rem;
-		width: auto;
-		text-align: right;
+		border-radius: 12px;
+		padding: 2rem;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		border: 1px solid #e5e7eb;
+	}
+
+	.info-card h2 {
+		margin: 0 0 1rem 0;
+		color: #1f2937;
+		font-size: 1.25rem;
+	}
+
+	.info-card p {
+		color: #4b5563;
+		line-height: 1.6;
+		margin: 0 0 1rem 0;
+	}
+
+	.info-card ul {
+		margin: 0;
+		padding-left: 1.5rem;
+		color: #4b5563;
+	}
+
+	.info-card li {
+		margin-bottom: 0.5rem;
+		line-height: 1.6;
+	}
+
+	.admin-notice {
+		margin-top: 1.5rem;
 		padding: 1rem;
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-		border-left: 12px solid;
-		transition:
-			transform 0.2s ease,
-			box-shadow 0.2s ease;
+		background: #f0fdf4;
+		border: 1px solid #86efac;
+		border-radius: 8px;
 	}
 
-	.card:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+	.admin-notice strong {
+		color: #166534;
+		display: block;
+		margin-bottom: 0.5rem;
 	}
 
-	.card-header {
+	.admin-notice ol {
+		margin: 0.5rem 0 0 0;
+		padding-left: 1.5rem;
+		color: #166534;
+	}
+
+	.admin-notice li {
+		margin-bottom: 0.25rem;
+	}
+
+	.admin-notice a {
+		color: #059669;
+		font-weight: 600;
+		text-decoration: underline;
+	}
+
+	.quick-stats {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.quick-stat {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 1rem;
-		text-transform: uppercase;
+		padding: 0.75rem;
+		background: #f9fafb;
+		border-radius: 6px;
 	}
 
-	.card-header h3 {
-		margin: 0;
-		font-family: 'regular', sans-serif;
-		font-size: 1.4rem;
-		line-height: 1;
-		/* color: var(--color-slate-700); */
-		letter-spacing: 0.05rem;
+	.quick-stat .label {
+		color: #6b7280;
+		font-weight: 500;
+		font-size: 0.9rem;
 	}
 
-	.card-value {
-		font-size: 2rem;
-		font-weight: 700;
-		color: #333;
-		margin-bottom: 0.5rem;
-		line-height: 1;
-		letter-spacing: 0.075rem;
+	.quick-stat .value {
+		color: #1f2937;
+		font-weight: 600;
+		text-transform: capitalize;
 	}
 
-	.card-subtitle {
-		font-size: 0.85rem;
-		color: #666;
-		margin: 0;
-	}
-
-	/* Card color themes */
-	.card.blue {
-		border-left-color: #3c9aff;
-		/* background: linear-gradient(135deg, #dcedff  0%, #fff 100%); */
-	}
-	.card.red {
-		border-left-color: #ef5766;
-		/* background: linear-gradient(135deg, #ffe9f0 0%, #fff 100%); */
-	}
-	.card.green {
-		border-left-color: #61e47f;
-		/* background: linear-gradient(135deg, #dcffe4 0%, #fff 100%); */
-	}
-
-	/* .card.yellow {
-		border-left-color: #ffc107;
-	} */
-
-	.card.purple {
-		border-left-color: #c686ff;
-		/* background: linear-gradient(90deg, #c686ff  0%, #fff 100%); */
+	.status-active {
+		color: #059669 !important;
 	}
 
 	@media (max-width: 768px) {
-		.cards-grid {
-			grid-template-columns: 1fr;
-			gap: 1rem;
-		}
-
-		.card {
-			padding: 1.25rem;
-		}
-
-		.card-value {
-			font-size: 1.75rem;
-		}
-	}
-
-	@media (max-width: 480px) {
-		.card-value {
+		.welcome-section h1 {
 			font-size: 1.5rem;
 		}
 
-		.card-header h3 {
-			font-size: 0.9rem;
+		.stats-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.info-section {
+			grid-template-columns: 1fr;
+		}
+
+		.info-card {
+			padding: 1.5rem;
 		}
 	}
 </style>
