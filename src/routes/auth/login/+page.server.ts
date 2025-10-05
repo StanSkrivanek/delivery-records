@@ -81,8 +81,9 @@ export const actions: Actions = {
 		  [email, ip]
 		);
 
-		// Create session
-		const { id: sessionId } = await auth.createSession(user.id!);
+		// Create session with context
+		const ua = request.headers.get('user-agent') || undefined;
+		const { id: sessionId } = await auth.createSession(user.id!, { ip, userAgent: ua });
 		
 		// Update last login
 		await auth.touchLastLogin(user.id!);

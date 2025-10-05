@@ -59,7 +59,9 @@ export const actions: Actions = {
     });
 
     // Create a session
-    const { id: sessionId } = await auth.createSession(userId);
+    const ua = request.headers.get('user-agent') || undefined;
+    const ip = (request.headers.get('x-forwarded-for') || '').split(',')[0] || undefined;
+    const { id: sessionId } = await auth.createSession(userId, { ip, userAgent: ua });
 
     // Set cookie
     cookies.set('session_id', sessionId, {

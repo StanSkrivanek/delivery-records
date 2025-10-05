@@ -37,3 +37,7 @@ You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
 
+## Documentation
+
+- Supabase implementation, Auth, security, connection pooling, and local setup: see docs/README.md
+- Better Auth integration: docs/better-auth.md

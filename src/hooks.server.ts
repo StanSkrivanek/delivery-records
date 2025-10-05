@@ -19,8 +19,15 @@ const authHandle: Handle = async ({ event, resolve }) => {
 		if (session) {
 			const user = await auth.getUserById(session.user_id);
 			if (user && user.is_active) {
+				// Sliding session: refresh expiry and last_seen, refresh cookie
+				await auth.updateSessionActivity(sessionId);
 				event.locals.user = user;
 				event.locals.session = { id: sessionId, ...session };
+				// refresh cookie TTL
+				event.cookies.set('session_id', sessionId, {
+					path: '/', httpOnly: true, sameSite: 'strict',
+					secure: process.env.NODE_ENV === 'production', maxAge: 60 * 60 * 24 * 30
+				});
 			} else {
 				// Invalid session, clear cookie
 				event.cookies.delete('session_id', { path: '/' });
