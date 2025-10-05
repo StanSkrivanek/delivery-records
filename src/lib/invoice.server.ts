@@ -1,5 +1,5 @@
 // src/lib/invoice.server.ts
-import { RecordService } from '$lib/db.server';
+import { RecordService } from '$lib/records.pg';
 import {
 	PPU_DELIVERY,
 	PPU_COLLECTION,

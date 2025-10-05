@@ -1,292 +1,104 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	
-	let { data }: { data: PageData } = $props();
+	// public landing, no data required
+	import { Package, Truck, BarChart3, ReceiptText } from 'lucide-svelte';
 </script>
 
 <svelte:head>
-	<title>Dashboard - Fleet Management</title>
+	<title>Fleet Management SaaS - Deliver smarter</title>
 </svelte:head>
 
-<div class="dashboard">
-	<div class="welcome-section">
-		<h1>Welcome back, {data.user?.first_name}! 👋</h1>
-		<p>Here's what's happening with your fleet today.</p>
-	</div>
-
-	<div class="stats-grid">
-		<div class="stat-card">
-			<div class="stat-icon">📦</div>
-			<div class="stat-content">
-				<h3>Today's Deliveries</h3>
-				<p class="stat-value">0</p>
-				<span class="stat-label">parcels delivered</span>
-			</div>
+<div class="landing">
+	<header class="hero">
+		<h1>Fleet Management SaaS</h1>
+		<p>Track deliveries, vehicles and invoices — all in one place.</p>
+		<div class="cta">
+			<a class="btn primary" href="/auth/register">Get started</a>
+			<a class="btn" href="/auth/login">Sign in</a>
 		</div>
+	</header>
 
-		<div class="stat-card">
-			<div class="stat-icon">🚚</div>
-			<div class="stat-content">
-				<h3>Active Vehicles</h3>
-				<p class="stat-value">0</p>
-				<span class="stat-label">vehicles in fleet</span>
-			</div>
+	<section class="features">
+<div class="feat">
+			<Package size={28} />
+			<h3>Delivery records</h3>
+			<p>Fast daily entry with images and notes.</p>
 		</div>
-
-		<div class="stat-card">
-			<div class="stat-icon">👥</div>
-			<div class="stat-content">
-				<h3>Active Drivers</h3>
-				<p class="stat-value">0</p>
-				<span class="stat-label">drivers on duty</span>
-			</div>
+<div class="feat">
+			<Truck size={28} />
+			<h3>Vehicle tracking</h3>
+			<p>Odometer, assignments and usage logs.</p>
 		</div>
-
-		<div class="stat-card">
-			<div class="stat-icon">💰</div>
-			<div class="stat-content">
-				<h3>Monthly Revenue</h3>
-				<p class="stat-value">€0</p>
-				<span class="stat-label">this month</span>
-			</div>
+<div class="feat">
+			<BarChart3 size={28} />
+			<h3>Analytics</h3>
+			<p>Performance and revenue insights.</p>
 		</div>
-	</div>
-
-	<div class="info-section">
-		<div class="info-card">
-			<h2>🎉 Welcome to Fleet Management System</h2>
-			<p>Your new fleet management system is ready! Here's what you can do:</p>
-			<ul>
-				<li><strong>Manage Vehicles:</strong> Add and track your delivery vehicles</li>
-				<li><strong>Record Deliveries:</strong> Log daily delivery data and expenses</li>
-				<li><strong>Track Analytics:</strong> View comprehensive reports and statistics</li>
-				<li><strong>Generate Invoices:</strong> Create professional invoices for clients</li>
-				<li><strong>Multi-User Support:</strong> Assign drivers to vehicles and track their performance</li>
-			</ul>
-
-			{#if data.user?.role === 'super_admin' || data.user?.role === 'org_admin'}
-				<div class="admin-notice">
-					<strong>⚙️ Admin Quick Start:</strong>
-					<ol>
-						<li>Go to <a href="/admin/vehicles">Admin → Vehicles</a> to add your fleet</li>
-						<li>Add <a href="/admin/users">team members</a> and assign them to vehicles</li>
-						<li>Set up <a href="/admin/clients">clients</a> for invoicing</li>
-						<li>Start <a href="/records">recording deliveries</a></li>
-					</ol>
-				</div>
-			{/if}
+<div class="feat">
+			<ReceiptText size={28} />
+			<h3>Invoices</h3>
+			<p>Generate client invoices in one click.</p>
 		</div>
-
-		<div class="info-card">
-			<h2>📊 Quick Stats</h2>
-			<div class="quick-stats">
-				<div class="quick-stat">
-					<span class="label">Your Role:</span>
-					<span class="value">{data.user?.role.replace('_', ' ')}</span>
-				</div>
-				<div class="quick-stat">
-					<span class="label">Account Status:</span>
-					<span class="value status-active">Active</span>
-				</div>
-				<div class="quick-stat">
-					<span class="label">Last Login:</span>
-					<span class="value">Just now</span>
-				</div>
-			</div>
-		</div>
-	</div>
+	</section>
 </div>
 
 <style>
-	.dashboard {
-		max-width: 1200px;
+	.landing {
+		max-width: 1100px;
 		margin: 0 auto;
+		padding: 2rem 1rem;
 	}
-
-	.welcome-section {
-		margin-bottom: 2rem;
+	.hero {
+		text-align: center;
+		padding: 3rem 0;
 	}
-
-	.welcome-section h1 {
+	.hero h1 {
 		margin: 0 0 0.5rem 0;
-		color: #1f2937;
-		font-size: 2rem;
+		font-size: 2.25rem;
+		color: #111827;
 	}
-
-	.welcome-section p {
-		margin: 0;
+	.hero p {
+		margin: 0 0 1.25rem 0;
 		color: #6b7280;
 		font-size: 1.1rem;
 	}
-
-	.stats-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-		gap: 1.5rem;
-		margin-bottom: 2rem;
-	}
-
-	.stat-card {
-		background: white;
-		border-radius: 12px;
-		padding: 1.5rem;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	.cta {
 		display: flex;
-		gap: 1rem;
-		align-items: flex-start;
-		border: 1px solid #e5e7eb;
-		transition: all 0.2s;
+		gap: 0.75rem;
+		justify-content: center;
 	}
-
-	.stat-card:hover {
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-		transform: translateY(-2px);
-	}
-
-	.stat-icon {
-		font-size: 2.5rem;
-		line-height: 1;
-	}
-
-	.stat-content {
-		flex: 1;
-	}
-
-	.stat-content h3 {
-		margin: 0 0 0.5rem 0;
-		font-size: 0.875rem;
-		color: #6b7280;
-		font-weight: 500;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-
-	.stat-value {
-		margin: 0 0 0.25rem 0;
-		font-size: 2rem;
-		font-weight: 700;
-		color: #1f2937;
-		line-height: 1;
-	}
-
-	.stat-label {
-		color: #9ca3af;
-		font-size: 0.875rem;
-	}
-
-	.info-section {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-		gap: 1.5rem;
-	}
-
-	.info-card {
-		background: white;
-		border-radius: 12px;
-		padding: 2rem;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-		border: 1px solid #e5e7eb;
-	}
-
-	.info-card h2 {
-		margin: 0 0 1rem 0;
-		color: #1f2937;
-		font-size: 1.25rem;
-	}
-
-	.info-card p {
-		color: #4b5563;
-		line-height: 1.6;
-		margin: 0 0 1rem 0;
-	}
-
-	.info-card ul {
-		margin: 0;
-		padding-left: 1.5rem;
-		color: #4b5563;
-	}
-
-	.info-card li {
-		margin-bottom: 0.5rem;
-		line-height: 1.6;
-	}
-
-	.admin-notice {
-		margin-top: 1.5rem;
-		padding: 1rem;
-		background: #f0fdf4;
-		border: 1px solid #86efac;
+	.btn {
+		display: inline-block;
+		padding: 0.75rem 1.25rem;
+		border: 1px solid #d1d5db;
 		border-radius: 8px;
-	}
-
-	.admin-notice strong {
-		color: #166534;
-		display: block;
-		margin-bottom: 0.5rem;
-	}
-
-	.admin-notice ol {
-		margin: 0.5rem 0 0 0;
-		padding-left: 1.5rem;
-		color: #166534;
-	}
-
-	.admin-notice li {
-		margin-bottom: 0.25rem;
-	}
-
-	.admin-notice a {
-		color: #059669;
+		text-decoration: none;
+		color: #111827;
 		font-weight: 600;
-		text-decoration: underline;
 	}
-
-	.quick-stats {
-		display: flex;
-		flex-direction: column;
+	.btn.primary {
+		background: #111827;
+		color: white;
+		border-color: #111827;
+	}
+	.features {
+		margin-top: 3rem;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 		gap: 1rem;
 	}
-
-	.quick-stat {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 0.75rem;
-		background: #f9fafb;
-		border-radius: 6px;
+	.feat {
+		background: white;
+		border: 1px solid #e5e7eb;
+		border-radius: 12px;
+		padding: 1rem;
+		text-align: center;
 	}
-
-	.quick-stat .label {
+	.feat :global(svg) { display: block; margin: 0 auto; }
+	.feat h3 {
+		margin: 0.5rem 0 0.25rem;
+	}
+	.feat p {
+		margin: 0;
 		color: #6b7280;
-		font-weight: 500;
-		font-size: 0.9rem;
-	}
-
-	.quick-stat .value {
-		color: #1f2937;
-		font-weight: 600;
-		text-transform: capitalize;
-	}
-
-	.status-active {
-		color: #059669 !important;
-	}
-
-	@media (max-width: 768px) {
-		.welcome-section h1 {
-			font-size: 1.5rem;
-		}
-
-		.stats-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.info-section {
-			grid-template-columns: 1fr;
-		}
-
-		.info-card {
-			padding: 1.5rem;
-		}
 	}
 </style>

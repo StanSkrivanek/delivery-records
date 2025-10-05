@@ -1,6 +1,6 @@
 // src/routes/api/odometer/+server.ts
 import { json } from '@sveltejs/kit';
-import { RecordService } from '$lib/db.server';
+import { RecordService } from '$lib/records.pg';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url }) => {

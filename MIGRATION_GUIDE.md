@@ -172,19 +172,20 @@ pnpm format
 
 ## 🗃️ Database Management
 
-### **Reset Database**
+### Reset local Supabase database
 ```bash
-rm database.db
-pnpm dev  # Will auto-seed with admin user
+supabase db reset --workdir . --local --yes
+# Seeds run from supabase/seed.sql
 ```
 
-### **View Database**
+### Start local Supabase stack
 ```bash
-sqlite3 database.db
-.tables
-.schema users
-SELECT * FROM users;
+supabase start --workdir . --yes
 ```
+
+### View/inspect your database
+- Supabase Studio: http://127.0.0.1:55423
+- psql: `psql postgresql://postgres:postgres@127.0.0.1:55422/postgres`
 
 ---
 
@@ -200,29 +201,26 @@ SELECT * FROM users;
 
 ---
 
-## 📝 API Services Available
+## 📝 Data Access Helpers
+
+Postgres-backed service (no ORM): `$lib/records.pg.ts`
 
 ```typescript
-// Authentication
-AuthService.createUser(user)
-AuthService.getUserByEmail(email)
-AuthService.getUserById(id)
-AuthService.verifyPassword(password, hash)
-AuthService.createSession(userId)
-AuthService.getSession(sessionId)
-AuthService.deleteSession(sessionId)
+// Records
+RecordService.getAllRecords()
+RecordService.getRecordById(id)
+RecordService.getRecordsByMonth(year, month)
+RecordService.updateRecord(id, fields)
+RecordService.deleteRecord(id)
 
-// Organizations
-OrganizationService.create(org)
-OrganizationService.getById(id)
-OrganizationService.getAll()
+// Vehicle usage
+RecordService.createVehicleUsageLog(input)
+RecordService.deleteVehicleUsageLogByRecordId(recordId)
+RecordService.getVehicleUsageLogByDate(date)
 
-// Vehicles
-VehicleService.create(vehicle)
-VehicleService.getByOrganization(orgId)
-VehicleService.getById(id)
-
-// More services coming in Phase 2...
+// Odometer analytics
+RecordService.getOdometerDifferencesByMonth(year, month)
+RecordService.getOdometerStatsByMonth(year, month)
 ```
 
 ---
@@ -291,17 +289,12 @@ VehicleService.getById(id)
 
 ## 💾 Database Seeding
 
-The system auto-seeds on first run with:
+Seed runs from `supabase/seed.sql` during `supabase db reset`.
 
-```sql
--- Default Organization
-INSERT INTO organizations (name, legal_name, country)
-VALUES ('Default Organization', 'Default Organization Ltd.', 'Ireland');
-
--- Super Admin User
-INSERT INTO users (email, password_hash, first_name, last_name, role, organization_id)
-VALUES ('admin@example.com', '$bcrypt_hash', 'Super', 'Admin', 'super_admin', 1);
-```
+- Creates a default organization
+- Inserts super admin user:
+  - Email: admin@example.com
+  - Password: admin123 (bcrypt hashed)
 
 ---
 

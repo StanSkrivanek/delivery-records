@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ActionData } from './$types';
-
+	import { Truck } from 'lucide-svelte';
 	let { form }: { form: ActionData } = $props();
 </script>
 
@@ -11,7 +11,7 @@
 <div class="login-container">
 	<div class="login-card">
 		<div class="login-header">
-			<h1>🚚 Fleet Management</h1>
+			<h1><Truck size={18} style="vertical-align:-3px;margin-right:6px;"/> Fleet Management</h1>
 			<p>Sign in to your account</p>
 		</div>
 

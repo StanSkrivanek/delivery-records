@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	
+	import { Settings, Users, Truck, Building2, Landmark, UserRound, BarChart3, CheckCircle2, Hammer, Hourglass } from 'lucide-svelte';
 	let { data }: { data: PageData } = $props();
 </script>
 
@@ -10,48 +10,48 @@
 
 <div class="admin-page">
 	<div class="page-header">
-		<h1>⚙️ Admin Panel</h1>
+		<h1><Settings size={20} style="vertical-align:-3px;margin-right:6px;"/> Admin Panel</h1>
 		<p>Manage your organization, users, vehicles, and settings.</p>
 	</div>
 
 	<div class="admin-grid">
 		<div class="admin-card disabled">
-			<div class="card-icon">👥</div>
+			<div class="card-icon"><Users /></div>
 			<h3>User Management</h3>
 			<p>Create and manage user accounts, assign roles and permissions.</p>
 			<span class="badge">Phase 2</span>
 		</div>
 
 		<div class="admin-card disabled">
-			<div class="card-icon">🚚</div>
+			<div class="card-icon"><Truck /></div>
 			<h3>Vehicle Management</h3>
 			<p>Add vehicles, assign to depots, track maintenance and usage.</p>
 			<span class="badge">Phase 2</span>
 		</div>
 
 		<div class="admin-card disabled">
-			<div class="card-icon">🏢</div>
+			<div class="card-icon"><Building2 /></div>
 			<h3>Depot Management</h3>
 			<p>Manage depot locations, assign managers, configure settings.</p>
 			<span class="badge">Phase 2</span>
 		</div>
 
 		<div class="admin-card disabled">
-			<div class="card-icon">🏛️</div>
+			<div class="card-icon"><Landmark /></div>
 			<h3>Organization Settings</h3>
 			<p>Update company info, VAT details, bank information, and more.</p>
 			<span class="badge">Phase 2</span>
 		</div>
 
 		<div class="admin-card disabled">
-			<div class="card-icon">👤</div>
+			<div class="card-icon"><UserRound /></div>
 			<h3>Client Management</h3>
 			<p>Manage invoice recipients and billing contacts.</p>
 			<span class="badge">Phase 5</span>
 		</div>
 
 		<div class="admin-card disabled">
-			<div class="card-icon">📊</div>
+			<div class="card-icon"><BarChart3 /></div>
 			<h3>Reports & Analytics</h3>
 			<p>Generate system-wide reports and analytics.</p>
 			<span class="badge">Phase 4</span>
@@ -59,12 +59,12 @@
 	</div>
 
 	<div class="info-section">
-		<h2>🚧 Admin Features Under Development</h2>
+		<h2><Hammer size={18} style="vertical-align:-3px;margin-right:6px;"/> Admin Features Under Development</h2>
 		<p>The full admin panel is being built in Phase 2. Here's what's coming:</p>
 		
 		<div class="timeline">
 			<div class="timeline-item completed">
-				<div class="timeline-marker">✅</div>
+				<div class="timeline-marker"><CheckCircle2 /></div>
 				<div class="timeline-content">
 					<h4>Phase 1: Authentication</h4>
 					<p>User login, session management, role-based access control</p>
@@ -72,7 +72,7 @@
 			</div>
 
 			<div class="timeline-item current">
-				<div class="timeline-marker">🔨</div>
+				<div class="timeline-marker"><Hammer /></div>
 				<div class="timeline-content">
 					<h4>Phase 2: Admin Panel (Next)</h4>
 					<p>User CRUD, Vehicle CRUD, Depot management, Settings page</p>
@@ -80,7 +80,7 @@
 			</div>
 
 			<div class="timeline-item">
-				<div class="timeline-marker">⏳</div>
+				<div class="timeline-marker"><Hourglass /></div>
 				<div class="timeline-content">
 					<h4>Phase 3: Records System</h4>
 					<p>Multi-vehicle delivery tracking, image uploads</p>

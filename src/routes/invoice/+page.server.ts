@@ -1,5 +1,5 @@
 // src/routes/invoice/+page.server.ts
-import { RecordService } from '$lib/db.server';
+import { RecordService } from '$lib/records.pg';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {

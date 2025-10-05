@@ -1,4 +1,4 @@
-import { RecordService } from '$lib/db.server';
+import { RecordService } from '$lib/records.pg';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 

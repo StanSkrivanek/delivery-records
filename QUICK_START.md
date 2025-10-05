@@ -2,9 +2,9 @@
 
 ## 📋 First Time Setup
 
-1. **Delete old database** (if exists):
+1. **Start local Supabase**
    ```bash
-   rm database.db
+   supabase start --workdir . --yes
    ```
 
 2. **Install dependencies** (if not done):
@@ -12,7 +12,12 @@
    pnpm install
    ```
 
-3. **Start the app**:
+3. **Reset and seed database (optional)**
+   ```bash
+   supabase db reset --workdir . --local --yes
+   ```
+
+4. **Start the app**:
    ```bash
    pnpm dev
    ```
@@ -52,19 +57,14 @@ invoices           - Generated invoices
 sessions           - Login sessions
 ```
 
-### **View Data**
-```bash
-sqlite3 database.db
-
-# See all tables
-.tables
-
-# View users
-SELECT id, email, first_name, last_name, role FROM users;
-
-# View vehicles
-SELECT id, license_plate, make, model FROM vehicles;
-```
+### View Data
+- Supabase Studio: http://127.0.0.1:55423
+- psql example:
+  ```bash
+  psql postgresql://postgres:postgres@127.0.0.1:55422/postgres
+  # \dt to list tables
+  # SELECT id, email, first_name, last_name, role FROM public.users;
+  ```
 
 ---
 
@@ -95,16 +95,17 @@ INSERT INTO vehicles (
 );
 ```
 
-### **Reset Password** (via SQL)
+### Reset Password (via SQL)
 ```typescript
 // Generate hash in Node.js console:
 const bcrypt = require('bcrypt');
 const hash = await bcrypt.hash('newpassword123', 10);
 console.log(hash);
-
-// Then in SQLite:
-UPDATE users 
-SET password_hash = '$2b$10$...' 
+```
+Then in Supabase (Studio SQL editor or psql):
+```sql
+UPDATE public.users 
+SET password_hash = '$2b$10$...'
 WHERE email = 'admin@example.com';
 ```
 
@@ -112,16 +113,15 @@ WHERE email = 'admin@example.com';
 
 ## 🚨 Troubleshooting
 
-### **Problem: Can't login**
-```bash
-# Check user exists and is active
-sqlite3 database.db "SELECT * FROM users WHERE email='admin@example.com';"
-
-# Verify session table
-sqlite3 database.db "SELECT * FROM sessions;"
-
-# Clear all sessions
-sqlite3 database.db "DELETE FROM sessions;"
+### Problem: Can't login
+Use Supabase Studio (Tables) or psql:
+```sql
+-- Check user exists and is active
+SELECT * FROM public.users WHERE email='admin@example.com';
+-- Verify sessions
+SELECT * FROM public.sessions;
+-- Clear all sessions
+DELETE FROM public.sessions;
 ```
 
 ### **Problem: Blank page after login**
@@ -129,17 +129,15 @@ sqlite3 database.db "DELETE FROM sessions;"
 - Verify `locals.user` is set in hooks
 - Check that layout is receiving user data
 
-### **Problem: Database locked**
+### Problem: Database issues
+If you need a clean state locally:
 ```bash
-# Kill any processes using the database
-lsof database.db
-kill -9 <PID>
+supabase db reset --workdir . --local --yes
 ```
 
-### **Problem: Need to reset everything**
+### Problem: Need to reset everything
 ```bash
-rm database.db
-pnpm dev  # Will recreate with default admin
+supabase db reset --workdir . --local --yes
 ```
 
 ---
@@ -165,11 +163,11 @@ pnpm format  # Auto-format
 
 ## 🔐 Security Notes
 
-- **Never commit** `database.db` to git
-- **Change default password** immediately
-- **Use HTTPS** in production (secure cookies)
-- **Set strong passwords** (min 12 characters)
-- **Backup database** regularly
+- Do not commit secrets; keep .env.local out of git
+- Change default password immediately
+- Use HTTPS in production (secure cookies)
+- Set strong passwords (min 12 characters)
+- Backup database regularly (use Postgres backups)
 
 ---
 

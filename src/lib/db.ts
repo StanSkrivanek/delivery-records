@@ -1,0 +1,16 @@
+import { Pool } from 'pg';
+
+// Use DATABASE_URL from env; fallback to local Supabase default.
+const connectionString = process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@127.0.0.1:55422/postgres';
+
+// Singleton pool instance
+export const pgPool = new Pool({ connectionString, max: 10 });
+
+export async function healthcheck(): Promise<boolean> {
+  try {
+    const res = await pgPool.query('select 1 as ok');
+    return res.rows?.[0]?.ok === 1;
+  } catch (e) {
+    return false;
+  }
+}

@@ -192,7 +192,7 @@
 					<td class="odometer-value">
 						{reading.previous_odometer ? formatOdometer(reading.previous_odometer) : '-'}
 					</td>
-					<td class="odometer-value">{formatOdometer(reading.odometer)}</td>
+<td class="odometer-value">{formatOdometer(reading.odometer ?? 0)}</td>
 					<td class="distance-value {getDistanceColorClass(reading.daily_difference || 0)}">
 						{reading.daily_difference ? formatDistance(reading.daily_difference) : '-'}
 					</td>

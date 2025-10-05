@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	
+	import { Truck } from 'lucide-svelte';
 	let { data }: { data: PageData } = $props();
 </script>
 
@@ -10,7 +10,7 @@
 
 <div class="placeholder-page">
 	<div class="placeholder-card">
-		<div class="icon">🚚</div>
+		<div class="icon"><Truck size={48} /></div>
 		<h1>Vehicle Management</h1>
 		<p>Set up and manage your delivery fleet.</p>
 		
@@ -21,9 +21,8 @@
 
 		<div class="sql-example">
 			<h3>Temporary: Add Vehicle via SQL</h3>
-			<pre><code>sqlite3 database.db
-
-INSERT INTO vehicles (
+			<pre><code>-- Via Supabase Studio (SQL) or psql
+INSERT INTO public.vehicles (
   organization_id, 
   license_plate, 
   make, 
@@ -34,8 +33,9 @@ INSERT INTO vehicles (
   '25-D-12345', 
   'Mercedes', 
   'Sprinter', 
-  1
-);</code></pre>
+  true
+);
+</code></pre>
 		</div>
 
 		<div class="next-steps">
@@ -65,7 +65,6 @@ INSERT INTO vehicles (
 	}
 
 	.icon {
-		font-size: 4rem;
 		margin-bottom: 1rem;
 	}
 

@@ -1,6 +1,10 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { AuthService } from '$lib/db.server';
 import type { Actions, PageServerLoad } from './$types';
+import { pgPool } from '$lib/db';
+import { createBetterAuth } from '$lib/auth';
+import bcrypt from 'bcrypt';
+
+const auth = createBetterAuth(pgPool, { cookieName: 'session_id', sessionMaxAgeDays: 30 });
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// If already logged in, redirect to home
@@ -11,7 +15,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	login: async ({ request, cookies }) => {
+	login: async ({ request, cookies, getClientAddress }) => {
 		const data = await request.formData();
 		const email = data.get('email') as string;
 		const password = data.get('password') as string;
@@ -24,9 +28,26 @@ export const actions: Actions = {
 			});
 		}
 
+		// Throttle: block after 5 failed attempts in the last 15 minutes per email or IP
+		const ip = getClientAddress();
+		const { rows: attemptRows } = await pgPool.query(
+		  `select count(*)::int as cnt from public.auth_attempts
+		   where (email = $1 or ip = $2)
+		     and success = false
+		     and attempted_at > now() - interval '15 minutes'`,
+		  [email, ip]
+		);
+		if ((attemptRows?.[0]?.cnt ?? 0) >= 5) {
+			return fail(429, { error: 'Too many attempts. Try again later.', email });
+		}
+
 		// Check if user exists
-		const user = await AuthService.getUserByEmail(email);
+		const user = await auth.getUserByEmail(email);
 		if (!user) {
+			await pgPool.query(
+			  `insert into public.auth_attempts (email, ip, success) values ($1, $2, false)`,
+			  [email, ip]
+			);
 			return fail(400, { 
 				error: 'Invalid email or password',
 				email 
@@ -42,19 +63,29 @@ export const actions: Actions = {
 		}
 
 		// Verify password
-		const validPassword = await AuthService.verifyPassword(password, user.password_hash!);
+		const validPassword = await bcrypt.compare(password, user.password_hash!);
 		if (!validPassword) {
+			await pgPool.query(
+			  `insert into public.auth_attempts (email, ip, success) values ($1, $2, false)`,
+			  [email, ip]
+			);
 			return fail(400, { 
 				error: 'Invalid email or password',
 				email 
 			});
 		}
 
+		// Log successful auth attempt
+		await pgPool.query(
+		  `insert into public.auth_attempts (email, ip, success) values ($1, $2, true)`,
+		  [email, ip]
+		);
+
 		// Create session
-		const sessionId = await AuthService.createSession(user.id!);
+		const { id: sessionId } = await auth.createSession(user.id!);
 		
 		// Update last login
-		await AuthService.updateLastLogin(user.id!);
+		await auth.touchLastLogin(user.id!);
 
 		// Set cookie
 		cookies.set('session_id', sessionId, {
@@ -65,6 +96,6 @@ export const actions: Actions = {
 			maxAge: 60 * 60 * 24 * 30 // 30 days
 		});
 
-		throw redirect(303, '/');
+		throw redirect(303, '/dashboard');
 	}
 };

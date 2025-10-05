@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	
+	import { Wrench } from 'lucide-svelte';
 	let { data }: { data: PageData } = $props();
 </script>
 
@@ -10,7 +10,7 @@
 
 <div class="placeholder-page">
 	<div class="placeholder-card">
-		<div class="icon">🚧</div>
+		<div class="icon"><Wrench size={48} /></div>
 		<h1>Records System Coming Soon</h1>
 		<p>The delivery records feature is being updated for the new multi-vehicle system.</p>
 		
@@ -54,7 +54,6 @@
 	}
 
 	.icon {
-		font-size: 4rem;
 		margin-bottom: 1rem;
 	}
 

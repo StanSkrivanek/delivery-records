@@ -2,7 +2,7 @@
 // This file handles the API requests for a single delivery record.
 // It includes PUT and DELETE methods to update and delete records respectively.
 
-import { RecordService } from '$lib/db.server';
+import { RecordService } from '$lib/records.pg';
 import { createImagePath, deleteImageFile, saveImageFile } from '$lib/utils';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';

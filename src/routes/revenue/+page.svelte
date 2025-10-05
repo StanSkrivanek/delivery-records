@@ -429,10 +429,6 @@
 		border-top: 2px solid #d1d5db;
 	}
 
-	.revenue-value {
-		font-weight: 500;
-		color: #1f2937;
-	}
 
 	.profit-value {
 		font-weight: 500;

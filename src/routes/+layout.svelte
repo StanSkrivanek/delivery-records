@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { LayoutData } from './$types';
 	import '../app.css';
+	import { Truck } from 'lucide-svelte';
 
 	let { data, children }: { data: LayoutData; children: any } = $props();
 </script>
@@ -11,11 +12,11 @@
 		<header class="app-header">
 			<div class="header-content">
 				<div class="logo">
-					<h1>🚚 Fleet Manager</h1>
+					<h1><Truck size={18} style="vertical-align: -2px; margin-right: 6px;" /> Fleet Manager</h1>
 				</div>
 				
 				<nav class="main-nav">
-					<a href="/" class="nav-link">Dashboard</a>
+					<a href="/dashboard" class="nav-link">Dashboard</a>
 					<a href="/records" class="nav-link">Records</a>
 					<a href="/vehicles" class="nav-link">Vehicles</a>
 					<a href="/analytics" class="nav-link">Analytics</a>

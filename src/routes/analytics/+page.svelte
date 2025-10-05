@@ -31,7 +31,7 @@
     // Get available months for the selected year using $derived
     let availableMonthsForYear: number[] = $derived.by(() => {
         const monthsInYear = new Set<number>();
-        data.records.forEach((record) => {
+data.records.forEach((record: any) => {
             const dateString = record.entry_date || record.created_at;
             if (dateString) {
                 const recordDate = new Date(dateString);
@@ -45,7 +45,7 @@
 
     // Filter records based on selected year and month using $derived
     let filteredRecords = $derived.by(() => {
-        return data.records.filter((record) => {
+return data.records.filter((record: any) => {
             const dateString = record.entry_date || record.created_at;
             if (!dateString) return false;
             const recordDate = new Date(dateString);

@@ -1,5 +1,5 @@
 // src/routes/odometer/+page.server.ts
-import { RecordService as rs } from '$lib/db.server'; // Your server-side database service
+import { RecordService as rs } from '$lib/records.pg'; // Postgres-backed record service
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -10,7 +10,13 @@ export const load: PageServerLoad = async () => {
 	const currentMonth = now.getMonth() + 1;
 
 
-	const odoByMonth = await rs.getOdometerDifferencesByMonth(currentYear, currentMonth);
+const rawOdo = await rs.getOdometerDifferencesByMonth(currentYear, currentMonth);
+const odoByMonth = rawOdo.map((r) => ({
+  entry_date: r.date,
+  previous_odometer: null as number | null,
+  odometer: null as number | null,
+  daily_difference: r.distance as number
+}));
 	
 
 	
