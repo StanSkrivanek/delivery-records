@@ -10,58 +10,76 @@ const auth = createBetterAuth(pgPool, { cookieName: 'session_id', sessionMaxAgeD
 const publicRoutes = ['/', '/health', '/auth/login', '/auth/register', '/auth/forgot', '/auth/reset', '/blog', '/contact'];
 
 const authHandle: Handle = async ({ event, resolve }) => {
-	// Get session from cookie
+	// Public route fast-path: if no session cookie and public, skip any DB work
+	const isPublicRoute = publicRoutes.some((route) => event.url.pathname.startsWith(route));
 	const sessionId = event.cookies.get('session_id');
+	if (isPublicRoute && !sessionId) {
+		return resolve(event);
+	}
 
+	// If we have a session cookie, try to validate it
 	if (sessionId) {
-		const session = await auth.getSession(sessionId);
-		
-		if (session) {
-			const user = await auth.getUserById(session.user_id);
-			if (user && user.is_active) {
-				// Sliding session: refresh expiry and last_seen, refresh cookie
-				await auth.updateSessionActivity(sessionId);
-				event.locals.user = user;
-				event.locals.session = { id: sessionId, ...session };
-				// refresh cookie TTL
-				event.cookies.set('session_id', sessionId, {
-					path: '/', httpOnly: true, sameSite: 'strict',
-					secure: process.env.NODE_ENV === 'production', maxAge: 60 * 60 * 24 * 30
-				});
+		try {
+			const session = await auth.getSession(sessionId);
+			if (session) {
+				const user = await auth.getUserById(session.user_id);
+				if (user && user.is_active) {
+					// Sliding session: refresh expiry and last_seen, refresh cookie
+					await auth.updateSessionActivity(sessionId);
+					event.locals.user = user;
+					event.locals.session = { id: sessionId, ...session };
+					// refresh cookie TTL
+					event.cookies.set('session_id', sessionId, {
+						path: '/', httpOnly: true, sameSite: 'strict',
+						secure: process.env.NODE_ENV === 'production', maxAge: 60 * 60 * 24 * 30
+					});
+				} else {
+					// Invalid session, clear cookie
+					event.cookies.delete('session_id', { path: '/' });
+				}
 			} else {
-				// Invalid session, clear cookie
+				// Expired session, clear cookie
 				event.cookies.delete('session_id', { path: '/' });
 			}
-		} else {
-			// Expired session, clear cookie
+		} catch (e) {
+			// Fail open for public routes if DB hiccups
+			if (isPublicRoute) {
+				return resolve(event);
+			}
+			// Otherwise, treat as unauthenticated
 			event.cookies.delete('session_id', { path: '/' });
 		}
 	}
 
-	// Check if route requires authentication
-	const isPublicRoute = publicRoutes.some((route) => event.url.pathname.startsWith(route));
-	
+	// Auth gate
 	if (!isPublicRoute && !event.locals.user) {
-		// Redirect to login if not authenticated
 		throw redirect(303, '/auth/login');
 	}
 
-	// If logged in and trying to access login page, redirect to home
-if (event.locals.user && event.url.pathname === '/auth/login') {
+	// Redirect logged-in users away from login page
+	if (event.locals.user && event.url.pathname === '/auth/login') {
 		throw redirect(303, '/dashboard');
 	}
 
-	const response = await resolve(event);
-	return response;
+	return resolve(event);
 };
 
 // Clean expired sessions periodically
 const cleanupHandle: Handle = async ({ event, resolve }) => {
-	// Run cleanup once every 100 requests (adjust as needed)
-	if (Math.random() < 0.01) {
-		auth.cleanExpiredSessions().catch(console.error);
+	const start = Date.now();
+	const response = await resolve(event);
+	const dt = Date.now() - start;
+	// Dev-only perf log for slow requests (>200ms)
+	if (process.env.NODE_ENV !== 'production' && dt > 200) {
+		console.log(`[perf] ${event.request.method} ${event.url.pathname} ${dt}ms`);
 	}
-	return resolve(event);
+	// Do cleanup in the background so it never blocks
+	if (Math.random() < 0.01) {
+		setTimeout(() => {
+			auth.cleanExpiredSessions().catch(console.error);
+		}, 0);
+	}
+	return response;
 };
 
 export const handle = sequence(cleanupHandle, authHandle);
