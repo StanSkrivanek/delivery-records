@@ -6,9 +6,12 @@ import { RecordService } from '$lib/records.pg';
 import { createImagePath, deleteImageFile, saveImageFile } from '$lib/utils';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { requireUser } from '$lib/server/authz';
 
-export const PUT: RequestHandler = async ({ params, request }) => {
+export const PUT: RequestHandler = async ({ params, request, locals }) => {
 	try {
+		// Require authentication
+		requireUser(locals.user);
 		const recordId = parseInt(params.id);
 		if (isNaN(recordId)) {
 			throw error(400, 'Invalid record ID');
@@ -130,7 +133,9 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		});
 
 		return json(updatedRecord);
-	} catch (err) {
+	} catch (err: any) {
+		if (err?.code === 401) return json({ error: 'UNAUTHENTICATED' }, { status: 401 });
+		if (err?.code === 403) return json({ error: 'FORBIDDEN' }, { status: 403 });
 		console.error('Update record error:', err);
 		if (err && typeof err === 'object' && 'status' in err) {
 			throw err; // Re-throw SvelteKit errors
@@ -139,8 +144,10 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 	}
 };
 
-export const DELETE: RequestHandler = async ({ params }) => {
+export const DELETE: RequestHandler = async ({ params, locals }) => {
 	try {
+		// Require authentication
+		requireUser(locals.user);
 		const recordId = parseInt(params.id);
 		if (isNaN(recordId)) {
 			throw error(400, 'Invalid record ID');
@@ -177,7 +184,9 @@ export const DELETE: RequestHandler = async ({ params }) => {
 		}
 
 		return json({ success: true });
-	} catch (err) {
+	} catch (err: any) {
+		if (err?.code === 401) return json({ error: 'UNAUTHENTICATED' }, { status: 401 });
+		if (err?.code === 403) return json({ error: 'FORBIDDEN' }, { status: 403 });
 		console.error('Delete record error:', err);
 		if (err && typeof err === 'object' && 'status' in err) {
 			throw err; // Re-throw SvelteKit errors

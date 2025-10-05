@@ -7,11 +7,14 @@ import { createBetterAuth } from '$lib/auth';
 const auth = createBetterAuth(pgPool, { cookieName: 'session_id', sessionMaxAgeDays: 30 });
 
 // Public routes that don't require authentication
-const publicRoutes = ['/', '/health', '/auth/login', '/auth/register', '/auth/forgot', '/auth/reset', '/blog', '/contact'];
+// Use exact matches for root-like paths and prefix matches for sections
+const publicExact = ['/', '/health'];
+const publicPrefixes = ['/auth/', '/blog', '/contact'];
 
 const authHandle: Handle = async ({ event, resolve }) => {
-	// Public route fast-path: if no session cookie and public, skip any DB work
-	const isPublicRoute = publicRoutes.some((route) => event.url.pathname.startsWith(route));
+// Public route fast-path: if no session cookie and public, skip any DB work
+	const pathname = event.url.pathname;
+	const isPublicRoute = publicExact.includes(pathname) || publicPrefixes.some((p) => pathname.startsWith(p));
 	const sessionId = event.cookies.get('session_id');
 	if (isPublicRoute && !sessionId) {
 		return resolve(event);
@@ -41,7 +44,7 @@ const authHandle: Handle = async ({ event, resolve }) => {
 				// Expired session, clear cookie
 				event.cookies.delete('session_id', { path: '/' });
 			}
-		} catch (e) {
+		} catch {
 			// Fail open for public routes if DB hiccups
 			if (isPublicRoute) {
 				return resolve(event);
