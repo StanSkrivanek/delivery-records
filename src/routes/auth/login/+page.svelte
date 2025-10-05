@@ -11,7 +11,7 @@
 <div class="login-container">
 	<div class="login-card">
 		<div class="login-header">
-			<h1><Truck size={18} style="vertical-align:-3px;margin-right:6px;"/> Fleet Management</h1>
+			<h1><Truck size={18} style="vertical-align:-3px;margin-right:6px;" /> Fleet Management</h1>
 			<p>Sign in to your account</p>
 		</div>
 
@@ -47,9 +47,7 @@
 				/>
 			</div>
 
-			<button type="submit" class="login-button">
-				Sign In
-			</button>
+			<button type="submit" class="login-button"> Sign In </button>
 		</form>
 
 		<div class="login-footer">

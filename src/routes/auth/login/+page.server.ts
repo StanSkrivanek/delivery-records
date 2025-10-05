@@ -22,20 +22,20 @@ export const actions: Actions = {
 
 		// Validate inputs
 		if (!email || !password) {
-			return fail(400, { 
+			return fail(400, {
 				error: 'Email and password are required',
-				email 
+				email
 			});
 		}
 
 		// Throttle: block after 5 failed attempts in the last 15 minutes per email or IP
 		const ip = getClientAddress();
 		const { rows: attemptRows } = await pgPool.query(
-		  `select count(*)::int as cnt from public.auth_attempts
+			`select count(*)::int as cnt from public.auth_attempts
 		   where (email = $1 or ip = $2)
 		     and success = false
 		     and attempted_at > now() - interval '15 minutes'`,
-		  [email, ip]
+			[email, ip]
 		);
 		if ((attemptRows?.[0]?.cnt ?? 0) >= 5) {
 			return fail(429, { error: 'Too many attempts. Try again later.', email });
@@ -45,20 +45,20 @@ export const actions: Actions = {
 		const user = await auth.getUserByEmail(email);
 		if (!user) {
 			await pgPool.query(
-			  `insert into public.auth_attempts (email, ip, success) values ($1, $2, false)`,
-			  [email, ip]
+				`insert into public.auth_attempts (email, ip, success) values ($1, $2, false)`,
+				[email, ip]
 			);
-			return fail(400, { 
+			return fail(400, {
 				error: 'Invalid email or password',
-				email 
+				email
 			});
 		}
 
 		// Check if user is active
 		if (!user.is_active) {
-			return fail(400, { 
+			return fail(400, {
 				error: 'Your account has been deactivated. Please contact your administrator.',
-				email 
+				email
 			});
 		}
 
@@ -66,25 +66,25 @@ export const actions: Actions = {
 		const validPassword = await bcrypt.compare(password, user.password_hash!);
 		if (!validPassword) {
 			await pgPool.query(
-			  `insert into public.auth_attempts (email, ip, success) values ($1, $2, false)`,
-			  [email, ip]
+				`insert into public.auth_attempts (email, ip, success) values ($1, $2, false)`,
+				[email, ip]
 			);
-			return fail(400, { 
+			return fail(400, {
 				error: 'Invalid email or password',
-				email 
+				email
 			});
 		}
 
 		// Log successful auth attempt
 		await pgPool.query(
-		  `insert into public.auth_attempts (email, ip, success) values ($1, $2, true)`,
-		  [email, ip]
+			`insert into public.auth_attempts (email, ip, success) values ($1, $2, true)`,
+			[email, ip]
 		);
 
 		// Create session with context
 		const ua = request.headers.get('user-agent') || undefined;
 		const { id: sessionId } = await auth.createSession(user.id!, { ip, userAgent: ua });
-		
+
 		// Update last login
 		await auth.touchLastLogin(user.id!);
 

@@ -18,22 +18,22 @@
 	</header>
 
 	<section class="features">
-<div class="feat">
+		<div class="feat">
 			<Package size={28} />
 			<h3>Delivery records</h3>
 			<p>Fast daily entry with images and notes.</p>
 		</div>
-<div class="feat">
+		<div class="feat">
 			<Truck size={28} />
 			<h3>Vehicle tracking</h3>
 			<p>Odometer, assignments and usage logs.</p>
 		</div>
-<div class="feat">
+		<div class="feat">
 			<BarChart3 size={28} />
 			<h3>Analytics</h3>
 			<p>Performance and revenue insights.</p>
 		</div>
-<div class="feat">
+		<div class="feat">
 			<ReceiptText size={28} />
 			<h3>Invoices</h3>
 			<p>Generate client invoices in one click.</p>
@@ -93,7 +93,10 @@
 		padding: 1rem;
 		text-align: center;
 	}
-	.feat :global(svg) { display: block; margin: 0 auto; }
+	.feat :global(svg) {
+		display: block;
+		margin: 0 auto;
+	}
 	.feat h3 {
 		margin: 0.5rem 0 0.25rem;
 	}

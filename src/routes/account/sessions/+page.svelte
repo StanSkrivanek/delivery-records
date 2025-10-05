@@ -43,12 +43,39 @@
 </div>
 
 <style>
-	.page { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
-	h1 { margin: 0 0 1rem 0; }
-	.actions { margin-bottom: 1rem; }
-	.btn { padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid #d1d5db; background: #f9fafb; cursor: pointer; }
-	.btn.danger { border-color: #ef4444; color: #ef4444; }
-	table { width: 100%; border-collapse: collapse; }
-	th, td { padding: 0.5rem 0.6rem; border-bottom: 1px solid #eee; text-align: left; }
-	code { font-size: 0.8rem; }
+	.page {
+		max-width: 900px;
+		margin: 0 auto;
+		padding: 2rem 1rem;
+	}
+	h1 {
+		margin: 0 0 1rem 0;
+	}
+	.actions {
+		margin-bottom: 1rem;
+	}
+	.btn {
+		padding: 0.4rem 0.8rem;
+		border-radius: 6px;
+		border: 1px solid #d1d5db;
+		background: #f9fafb;
+		cursor: pointer;
+	}
+	.btn.danger {
+		border-color: #ef4444;
+		color: #ef4444;
+	}
+	table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	th,
+	td {
+		padding: 0.5rem 0.6rem;
+		border-bottom: 1px solid #eee;
+		text-align: left;
+	}
+	code {
+		font-size: 0.8rem;
+	}
 </style>

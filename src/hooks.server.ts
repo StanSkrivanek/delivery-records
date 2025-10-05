@@ -12,9 +12,10 @@ const publicExact = ['/', '/health'];
 const publicPrefixes = ['/auth/', '/blog', '/contact'];
 
 const authHandle: Handle = async ({ event, resolve }) => {
-// Public route fast-path: if no session cookie and public, skip any DB work
+	// Public route fast-path: if no session cookie and public, skip any DB work
 	const pathname = event.url.pathname;
-	const isPublicRoute = publicExact.includes(pathname) || publicPrefixes.some((p) => pathname.startsWith(p));
+	const isPublicRoute =
+		publicExact.includes(pathname) || publicPrefixes.some((p) => pathname.startsWith(p));
 	const sessionId = event.cookies.get('session_id');
 	if (isPublicRoute && !sessionId) {
 		return resolve(event);
@@ -33,8 +34,11 @@ const authHandle: Handle = async ({ event, resolve }) => {
 					event.locals.session = { id: sessionId, ...session };
 					// refresh cookie TTL
 					event.cookies.set('session_id', sessionId, {
-						path: '/', httpOnly: true, sameSite: 'strict',
-						secure: process.env.NODE_ENV === 'production', maxAge: 60 * 60 * 24 * 30
+						path: '/',
+						httpOnly: true,
+						sameSite: 'strict',
+						secure: process.env.NODE_ENV === 'production',
+						maxAge: 60 * 60 * 24 * 30
 					});
 				} else {
 					// Invalid session, clear cookie

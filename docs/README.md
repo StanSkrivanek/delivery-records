@@ -10,6 +10,7 @@ This folder contains implementation docs for our Supabase stack: architecture, c
 - Local Setup (pnpm, CLI, env): [local-setup.md](./local-setup.md)
 
 Notes
+
 - Accessibility will be handled later, per project plan.
 - Replace any placeholders like {{ENV_VAR_NAME}} before running commands.
 - This app currently uses a Postgres-native Better Auth layer; the Supabase Auth guide is provided for teams that choose to migrate to Supabase-managed Auth.

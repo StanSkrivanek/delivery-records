@@ -1,6 +1,17 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Settings, Users, Truck, Building2, Landmark, UserRound, BarChart3, CheckCircle2, Hammer, Hourglass } from 'lucide-svelte';
+	import {
+		Settings,
+		Users,
+		Truck,
+		Building2,
+		Landmark,
+		UserRound,
+		BarChart3,
+		CheckCircle2,
+		Hammer,
+		Hourglass
+	} from 'lucide-svelte';
 	let { data }: { data: PageData } = $props();
 </script>
 
@@ -10,7 +21,7 @@
 
 <div class="admin-page">
 	<div class="page-header">
-		<h1><Settings size={20} style="vertical-align:-3px;margin-right:6px;"/> Admin Panel</h1>
+		<h1><Settings size={20} style="vertical-align:-3px;margin-right:6px;" /> Admin Panel</h1>
 		<p>Manage your organization, users, vehicles, and settings.</p>
 	</div>
 
@@ -59,9 +70,11 @@
 	</div>
 
 	<div class="info-section">
-		<h2><Hammer size={18} style="vertical-align:-3px;margin-right:6px;"/> Admin Features Under Development</h2>
+		<h2>
+			<Hammer size={18} style="vertical-align:-3px;margin-right:6px;" /> Admin Features Under Development
+		</h2>
 		<p>The full admin panel is being built in Phase 2. Here's what's coming:</p>
-		
+
 		<div class="timeline">
 			<div class="timeline-item completed">
 				<div class="timeline-marker"><CheckCircle2 /></div>

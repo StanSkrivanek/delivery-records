@@ -207,7 +207,7 @@
 					disabled={loading}
 					title="Print or save as PDF"
 				>
-				Print/PDF
+					Print/PDF
 				</button>
 
 				<button
@@ -335,27 +335,27 @@
 						<label for="company-vat">VAT Number:</label>
 						<input type="text" id="company-vat" bind:value={companyInfo.vatNumber} />
 					</div>
-					
+
 					<h4>Bank Details</h4>
 					<div class="form-row">
 						<div class="form-group">
 							<label for="bank-name">Bank Name:</label>
 							<input type="text" id="bank-name" bind:value={companyInfo.bank.name} />
 						</div>
-						
+
 						<div class="form-group">
 							<label for="bank-iban">IBAN:</label>
 							<input type="text" id="bank-iban" bind:value={companyInfo.bank.iban} />
 						</div>
 					</div>
-					
+
 					<div class="form-group">
 						<label for="bank-bic">BIC/SWIFT:</label>
 						<input type="text" id="bank-bic" bind:value={companyInfo.bank.bic} />
 					</div>
 				</div>
 			</div>
-			
+
 			<div class="preview-section">
 				<h3>Receiver Information Preview</h3>
 				<p class="preview-note">
@@ -454,7 +454,7 @@
 	}
 
 	/* .control-group input, */
-	.control-group select{
+	.control-group select {
 		padding: 0.5rem;
 		border: 1px solid #d1d5db;
 		border-radius: 4px;
@@ -639,8 +639,6 @@
 		font-weight: 600;
 		border-bottom: none;
 		border-top: 2px solid #d1d5db;
-       
-
 	}
 	.breakdown-table tfoot td:nth-child(2) {
 		text-align: right;
@@ -754,7 +752,6 @@
 		.breakdown-table th,
 		.breakdown-table td {
 			padding: 0.5rem 0.25rem;
-          
 		}
 	}
 

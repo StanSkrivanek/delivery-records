@@ -22,7 +22,7 @@
 	// 	const url = new URL(page.url);
 	// 	url.searchParams.set('year', selectedYear.toString());
 	// 	url.searchParams.set('month', selectedMonth.toString());
-		
+
 	// 	// Navigate to new URL, which will trigger server load
 	// 	await goto(url.toString(), { replaceState: true });
 	// 	loading = false;
@@ -30,8 +30,18 @@
 
 	// Derived values for month names
 	const monthNames = $derived([
-		'January', 'February', 'March', 'April', 'May', 'June',
-		'July', 'August', 'September', 'October', 'November', 'December'
+		'January',
+		'February',
+		'March',
+		'April',
+		'May',
+		'June',
+		'July',
+		'August',
+		'September',
+		'October',
+		'November',
+		'December'
 	]);
 
 	// const currentMonthName = $derived(monthNames[selectedMonth - 1]);
@@ -58,9 +68,9 @@
 
 	// Check if first reading has cross-month calculation
 	const hasMonthBoundary = $derived(
-		data.odometerReadings.length > 0 && 
-		data.odometerReadings[0].previous_odometer !== null &&
-		data.odometerReadings[0].daily_difference !== null
+		data.odometerReadings.length > 0 &&
+			data.odometerReadings[0].previous_odometer !== null &&
+			data.odometerReadings[0].daily_difference !== null
 	);
 
 	// Track if we've already tried to load this combination to prevent loops
@@ -86,7 +96,7 @@
 <div class="odometer-display">
 	<div class="header">
 		<h1>Odometer Readings - {selectedMonth} {selectedYear}</h1>
-		
+
 		<!-- Month/Year Selector -->
 		<!-- <div class="date-selector">
 			<select bind:value={selectedMonth} disabled={loading}>
@@ -121,10 +131,11 @@
 			<div class="boundary-info">
 				<h3>Month Boundary Information</h3>
 				<p class="boundary-note">
-					<strong>Note:</strong> The first reading of this month ({formatDate(data.odometerReadings[0].entry_date)}) 
-					includes distance from the previous month's last reading 
-					({formatOdometer(data.odometerReadings[0].previous_odometer || 0)}) 
-					→ {formatOdometer(data.odometerReadings[0].odometer)} 
+					<strong>Note:</strong> The first reading of this month ({formatDate(
+						data.odometerReadings[0].entry_date
+					)}) includes distance from the previous month's last reading ({formatOdometer(
+						data.odometerReadings[0].previous_odometer || 0
+					)}) → {formatOdometer(data.odometerReadings[0].odometer)}
 					= {formatDistance(data.odometerReadings[0].daily_difference || 0)}
 				</p>
 			</div>
@@ -225,7 +236,7 @@
 		border-radius: 4px;
 		background: white;
 	} */
-/* 
+	/* 
 	.date-selector select:disabled {
 		opacity: 0.6;
 		cursor: not-allowed;
@@ -291,10 +302,11 @@
 		background: white;
 		border-radius: 8px;
 		overflow: hidden;
-		box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 
-	th, td {
+	th,
+	td {
 		padding: 0.75rem;
 		text-align: left;
 		border-bottom: 1px solid #e9ecef;
@@ -408,11 +420,21 @@
 	} */
 
 	/* Color classes for distance values */
-	:global(.text-gray-400) { color: #9ca3af; }
-	:global(.text-green-600) { color: #16a34a; }
-	:global(.text-blue-600) { color: #2563eb; }
-	:global(.text-yellow-600) { color: #ca8a04; }
-	:global(.text-red-600) { color: #dc2626; }
+	:global(.text-gray-400) {
+		color: #9ca3af;
+	}
+	:global(.text-green-600) {
+		color: #16a34a;
+	}
+	:global(.text-blue-600) {
+		color: #2563eb;
+	}
+	:global(.text-yellow-600) {
+		color: #ca8a04;
+	}
+	:global(.text-red-600) {
+		color: #dc2626;
+	}
 
 	/* Responsive design */
 	@media (max-width: 768px) {
@@ -420,11 +442,11 @@
 			flex-direction: column;
 			align-items: flex-start;
 		}
-		
+
 		.stats-grid {
 			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 		}
-		
+
 		.readings-table {
 			font-size: 0.9rem;
 		}
@@ -433,7 +455,8 @@
 			display: none; /* Hide notes column on mobile */
 		}
 
-		th:last-child, td:last-child {
+		th:last-child,
+		td:last-child {
 			display: none;
 		}
 	}

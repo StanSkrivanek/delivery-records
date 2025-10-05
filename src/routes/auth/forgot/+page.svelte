@@ -19,10 +19,32 @@
 </div>
 
 <style>
-	.page { max-width: 600px; margin: 0 auto; padding: 2rem 1rem; }
-	label { display:block; margin-top: 1rem; }
-	input { width: 100%; padding: 0.6rem; }
-	button { margin-top: 1rem; }
-	.msg { background:#ecfdf5; border:1px solid #10b981; padding:0.6rem; border-radius:6px; }
-	.err { background:#fef2f2; border:1px solid #ef4444; padding:0.6rem; border-radius:6px; }
+	.page {
+		max-width: 600px;
+		margin: 0 auto;
+		padding: 2rem 1rem;
+	}
+	label {
+		display: block;
+		margin-top: 1rem;
+	}
+	input {
+		width: 100%;
+		padding: 0.6rem;
+	}
+	button {
+		margin-top: 1rem;
+	}
+	.msg {
+		background: #ecfdf5;
+		border: 1px solid #10b981;
+		padding: 0.6rem;
+		border-radius: 6px;
+	}
+	.err {
+		background: #fef2f2;
+		border: 1px solid #ef4444;
+		padding: 0.6rem;
+		border-radius: 6px;
+	}
 </style>

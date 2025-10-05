@@ -3,26 +3,30 @@
 ## 📋 First Time Setup
 
 1. **Start local Supabase**
+
    ```bash
    supabase start --workdir . --yes
    ```
 
 2. **Install dependencies** (if not done):
+
    ```bash
    pnpm install
    ```
 
 3. **Reset and seed database (optional)**
+
    ```bash
    supabase db reset --workdir . --local --yes
    ```
 
 4. **Start the app**:
+
    ```bash
    pnpm dev
    ```
 
-4. **Login**:
+5. **Login**:
    - URL: http://localhost:5173
    - Email: `admin@example.com`
    - Password: `admin123`
@@ -31,19 +35,20 @@
 
 ## 🔑 User Roles & Permissions
 
-| Role | Can Do |
-|------|--------|
-| **Super Admin** | Everything - Full system access |
-| **Org Admin** | Manage organization, users, vehicles, records |
-| **Depot Manager** | Manage specific depot and its vehicles |
-| **Driver** | Create delivery records only |
-| **Viewer** | View reports and analytics (read-only) |
+| Role              | Can Do                                        |
+| ----------------- | --------------------------------------------- |
+| **Super Admin**   | Everything - Full system access               |
+| **Org Admin**     | Manage organization, users, vehicles, records |
+| **Depot Manager** | Manage specific depot and its vehicles        |
+| **Driver**        | Create delivery records only                  |
+| **Viewer**        | View reports and analytics (read-only)        |
 
 ---
 
 ## 🗄️ Database Quick Reference
 
 ### **Tables**
+
 ```
 users              - System users with roles
 organizations      - Tenant organizations
@@ -58,6 +63,7 @@ sessions           - Login sessions
 ```
 
 ### View Data
+
 - Supabase Studio: http://127.0.0.1:55423
 - psql example:
   ```bash
@@ -71,9 +77,10 @@ sessions           - Login sessions
 ## 🛠️ Common Tasks
 
 ### **Add a New User** (via SQL until Admin UI is ready)
+
 ```sql
 INSERT INTO users (
-  email, password_hash, first_name, last_name, 
+  email, password_hash, first_name, last_name,
   role, organization_id, is_active
 ) VALUES (
   'driver@example.com',
@@ -87,6 +94,7 @@ INSERT INTO users (
 ```
 
 ### **Add a Vehicle**
+
 ```sql
 INSERT INTO vehicles (
   organization_id, license_plate, make, model, is_active
@@ -96,15 +104,18 @@ INSERT INTO vehicles (
 ```
 
 ### Reset Password (via SQL)
+
 ```typescript
 // Generate hash in Node.js console:
 const bcrypt = require('bcrypt');
 const hash = await bcrypt.hash('newpassword123', 10);
 console.log(hash);
 ```
+
 Then in Supabase (Studio SQL editor or psql):
+
 ```sql
-UPDATE public.users 
+UPDATE public.users
 SET password_hash = '$2b$10$...'
 WHERE email = 'admin@example.com';
 ```
@@ -114,7 +125,9 @@ WHERE email = 'admin@example.com';
 ## 🚨 Troubleshooting
 
 ### Problem: Can't login
+
 Use Supabase Studio (Tables) or psql:
+
 ```sql
 -- Check user exists and is active
 SELECT * FROM public.users WHERE email='admin@example.com';
@@ -125,17 +138,21 @@ DELETE FROM public.sessions;
 ```
 
 ### **Problem: Blank page after login**
+
 - Check browser console for errors
 - Verify `locals.user` is set in hooks
 - Check that layout is receiving user data
 
 ### Problem: Database issues
+
 If you need a clean state locally:
+
 ```bash
 supabase db reset --workdir . --local --yes
 ```
 
 ### Problem: Need to reset everything
+
 ```bash
 supabase db reset --workdir . --local --yes
 ```
@@ -145,6 +162,7 @@ supabase db reset --workdir . --local --yes
 ## 📝 Development Workflow
 
 ### **Typical Day:**
+
 1. Start dev server: `pnpm dev`
 2. Login to app
 3. Make changes to code
@@ -153,6 +171,7 @@ supabase db reset --workdir . --local --yes
 6. Format code: `pnpm format`
 
 ### **Before Committing:**
+
 ```bash
 pnpm check   # Type checking
 pnpm lint    # Linting
@@ -187,6 +206,7 @@ pnpm format  # Auto-format
 Ready to add more features? Here's what's coming:
 
 **Phase 2: Admin Panel**
+
 - Vehicle management UI
 - User management UI
 - Depot management UI

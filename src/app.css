@@ -64,8 +64,6 @@
 	/* Theme Colors */
 	--clr-primary: oklch(64.837% 0.19627 284.829); /* #8676FF*/
 
-
-
 	--clr-bg: oklch(98.036% 0.00946 279.599); /* #DBDFF1 */
 
 	/* Brand Colors in OKLCH */
@@ -585,7 +583,7 @@
 		color: var(--text-primary);
 		line-height: 1.6;
 	}
-	
+
 	main,
 	.main {
 		max-width: var(--max-w);

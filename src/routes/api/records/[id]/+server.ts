@@ -3,7 +3,7 @@
 // It includes PUT and DELETE methods to update and delete records respectively.
 
 import { RecordService } from '$lib/records.pg';
-import { createImagePath, deleteImageFile, saveImageFile } from '$lib/utils';
+import { createImagePath, deleteImageFile, saveImageFile } from '$lib/server/files';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { requireUser } from '$lib/server/authz';

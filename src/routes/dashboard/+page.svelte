@@ -13,7 +13,15 @@
 </div>
 
 <style>
-	.dashboard { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem; }
-	h1 { margin: 0 0 0.5rem 0; }
-	p { color: #6b7280; }
+	.dashboard {
+		max-width: 1100px;
+		margin: 0 auto;
+		padding: 2rem 1rem;
+	}
+	h1 {
+		margin: 0 0 0.5rem 0;
+	}
+	p {
+		color: #6b7280;
+	}
 </style>

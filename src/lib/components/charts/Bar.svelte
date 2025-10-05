@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { Spring } from 'svelte/motion';
-	import {dlvPd} from '$lib/utils.js';
+	import { dlvPd } from '$lib/utils.js';
 
 	// Type definitions
 	type DeliveryDataPoint = {
@@ -27,7 +27,7 @@
 
 	let {
 		apiData = [
-			// Sample data 
+			// Sample data
 			// { date: '2025-01-01', delivery: 120, collections: 45, fails: 8 },
 			// { date: '2025-01-02', delivery: 135, collections: 52, fails: 12 },
 			// { date: '2025-01-03', delivery: 98, collections: 38, fails: 5 },
@@ -44,19 +44,19 @@
 			// { date: '2025-01-28', delivery: 156, collections: 65, fails: 19 },
 			// { date: '2025-01-30', delivery: 142, collections: 54, fails: 13 }
 		] as DeliveryDataPoint[],
-		
+
 		// Target month (format: YYYY-MM) - defaults to current month
 		targetMonth = new Date().toISOString().slice(0, 7) as string,
-		
+
 		// Color mapping for metrics
 		metricColors = {
 			delivery: '#10b981', // Green
-			collections: '#3b82f6', // Blue  
+			collections: '#3b82f6', // Blue
 			fails: '#ef4444' // Red
 		} as { [key: string]: string },
-		
+
 		width = '100%' as number | string,
-		height = "auto" as number | string,
+		height = 'auto' as number | string,
 		padding = 60,
 		showTooltip = true,
 		animate = true,
@@ -89,7 +89,7 @@
 	// Helper functions to handle responsive dimensions
 	const getNumericValue = (value: number | string): number => {
 		if (typeof value === 'number') return value;
-		
+
 		if (typeof value === 'string') {
 			if (value.includes('vw')) {
 				const num = parseFloat(value);
@@ -114,24 +114,28 @@
 			const parsed = parseFloat(value);
 			return isNaN(parsed) ? 800 : parsed;
 		}
-		
+
 		return 800;
 	};
 
 	// Get actual dimensions
-	const actualWidth = $derived((() => {
-		if (typeof width === 'string' && (width.includes('%') || width === '100%')) {
-			return containerWidth;
-		}
-		return getNumericValue(width);
-	})());
+	const actualWidth = $derived(
+		(() => {
+			if (typeof width === 'string' && (width.includes('%') || width === '100%')) {
+				return containerWidth;
+			}
+			return getNumericValue(width);
+		})()
+	);
 
-	const actualHeight = $derived((() => {
-		if (typeof height === 'string' && (height.includes('%') || height === '100%')) {
-			return containerHeight;
-		}
-		return getNumericValue(height);
-	})());
+	const actualHeight = $derived(
+		(() => {
+			if (typeof height === 'string' && (height.includes('%') || height === '100%')) {
+				return containerHeight;
+			}
+			return getNumericValue(height);
+		})()
+	);
 
 	// Metrics configuration
 	const metrics = $derived(
@@ -151,7 +155,7 @@
 			const year = parseInt(targetMonth.split('-')[0]);
 			const month = parseInt(targetMonth.split('-')[1]);
 			const daysInMonth = new Date(year, month, 0).getDate();
-			
+
 			const dates: string[] = [];
 			for (let day = 1; day <= daysInMonth; day++) {
 				const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
@@ -165,7 +169,7 @@
 	const processedData = $derived(
 		(() => {
 			const dataMap = new Map<string, DeliveryDataPoint>();
-			
+
 			// Create map from existing data
 			apiData.forEach((item) => {
 				if (item.date.startsWith(targetMonth)) {
@@ -177,7 +181,7 @@
 			return allDatesInMonth.map((date) => {
 				const existing = dataMap.get(date);
 				const day = parseInt(date.split('-')[2]);
-				
+
 				return {
 					date,
 					day,
@@ -218,9 +222,7 @@
 
 	// Create Spring instances for each bar
 	const animatedHeights = $derived(
-		processedData.map(() =>
-			metrics.map(() => new Spring(0, { stiffness: 0.15, damping: 0.8 }))
-		)
+		processedData.map(() => metrics.map(() => new Spring(0, { stiffness: 0.15, damping: 0.8 })))
 	);
 
 	// Calculate bar heights
@@ -235,7 +237,7 @@
 
 	onMount(() => {
 		mounted = true;
-		
+
 		// Set up ResizeObserver to track container size changes
 		if (containerElement) {
 			const updateContainerSize = () => {
@@ -243,14 +245,14 @@
 				containerWidth = rect.width;
 				containerHeight = rect.height;
 			};
-			
+
 			// Initial size
 			updateContainerSize();
-			
+
 			// Watch for size changes
 			const resizeObserver = new ResizeObserver(updateContainerSize);
 			resizeObserver.observe(containerElement);
-			
+
 			return () => {
 				resizeObserver.disconnect();
 			};
@@ -313,10 +315,14 @@
 		if (day >= 11 && day <= 13) return 'th';
 		const lastDigit = day % 10;
 		switch (lastDigit) {
-			case 1: return 'st';
-			case 2: return 'nd';
-			case 3: return 'rd';
-			default: return 'th';
+			case 1:
+				return 'st';
+			case 2:
+				return 'nd';
+			case 3:
+				return 'rd';
+			default:
+				return 'th';
 		}
 	}
 
@@ -332,14 +338,20 @@
 <div
 	bind:this={containerElement}
 	class="chart-container"
-	style="width: {formatDimension(width)}; height: {formatDimension(height)}; --legend-gap: {legendGap}px; --legend-height: {legendHeight}px;"
+	style="width: {formatDimension(width)}; height: {formatDimension(
+		height
+	)}; --legend-gap: {legendGap}px; --legend-height: {legendHeight}px;"
 >
 	<!-- Chart Title -->
 	<div class="chart-title">
 		<h3>Daily Delivery Statistics - {monthName}</h3>
 	</div>
 
-	<svg width="100%" height="calc(100% - 40px)" viewBox="0 0 {actualWidth} {actualHeight - legendHeight - 40}">
+	<svg
+		width="100%"
+		height="calc(100% - 40px)"
+		viewBox="0 0 {actualWidth} {actualHeight - legendHeight - 40}"
+	>
 		<!-- Chart bars -->
 		{#each processedData as dayData, dayIndex}
 			{@const groupX = padding + dayIndex * (groupWidth + groupSpacing)}
@@ -390,7 +402,8 @@
 			{/each}
 
 			<!-- Day labels at bottom - show every 2nd, 5th, or 10th day based on width -->
-			{@const shouldShowLabel = groupWidth > 30 || dayData.day % (groupWidth > 15 ? 2 : groupWidth > 8 ? 5 : 10) === 1}
+			{@const shouldShowLabel =
+				groupWidth > 30 || dayData.day % (groupWidth > 15 ? 2 : groupWidth > 8 ? 5 : 10) === 1}
 			{#if shouldShowLabel}
 				<text
 					x={groupX + groupWidth / 2}
@@ -627,16 +640,16 @@
 		.chart-container {
 			padding: 12px;
 		}
-		
+
 		.chart-title h3 {
 			font-size: 14px;
 		}
-		
+
 		.legend {
 			gap: 12px;
 			padding: 8px 12px;
 		}
-		
+
 		.legend-label {
 			font-size: 12px;
 		}

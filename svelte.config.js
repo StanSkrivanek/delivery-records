@@ -14,15 +14,15 @@ const config = {
 		// Enable inspector only in development to avoid PostCSS issues in preview/prod
 		inspector: isDev
 			? {
-				// change shortcut
-				toggleKeyCombo: 'meta-shift', // SHIFT + COMMAND
-				// hold and release key to toggle inspector mode
-				holdMode: true,
-				// show or hide the inspector option
-				showToggleButton: 'always',
-				// inspector position
-				toggleButtonPos: 'top-right'
-			}
+					// change shortcut
+					toggleKeyCombo: 'meta-shift', // SHIFT + COMMAND
+					// hold and release key to toggle inspector mode
+					holdMode: true,
+					// show or hide the inspector option
+					showToggleButton: 'always',
+					// inspector position
+					toggleButtonPos: 'top-right'
+				}
 			: false
 	}
 };

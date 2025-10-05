@@ -86,7 +86,7 @@
 		flex-wrap: wrap;
 		gap: 1rem;
 	}
-	.stat-card{
+	.stat-card {
 		background: #4782cf;
 		padding: 1rem;
 		border-radius: 0.25em;
@@ -97,7 +97,7 @@
 			color: #f0f1f1;
 		}
 	}
-	.stat-value{
+	.stat-value {
 		margin: 0;
 		font-size: 1.5rem;
 		letter-spacing: 0.1em;

@@ -64,8 +64,7 @@
 			<div class="card purple">
 				<div class="card-header">
 					<h3>Earned</h3>
-					<span>VAT: {
-					formatCurrency(calculateVAT(analytics.toInvoice))}</span>
+					<span>VAT: {formatCurrency(calculateVAT(analytics.toInvoice))}</span>
 				</div>
 				<p class="card-value">{formatCurrency(analytics.toInvoice)}</p>
 				<p class="card-subtitle">Total earnings (no VAT)</p>

@@ -11,12 +11,12 @@ export const load: PageServerLoad = async () => {
 
 	const rawOdo = await rs.getOdometerDifferencesByMonth(currentYear, currentMonth);
 	const odoByMonth = rawOdo.map((r) => ({
-	  entry_date: r.date,
-	  previous_odometer: null as number | null,
-	  odometer: null as number | null,
-	  daily_difference: r.distance as number
+		entry_date: r.date,
+		previous_odometer: null as number | null,
+		odometer: null as number | null,
+		daily_difference: r.distance as number
 	}));
-	
+
 	const yearsSet = new Set<number>();
 	const monthsSet = new Set<number>();
 
@@ -50,5 +50,5 @@ export const load: PageServerLoad = async () => {
 		defaultYear,
 		defaultMonth,
 		odoByMonth
-	};	
+	};
 };

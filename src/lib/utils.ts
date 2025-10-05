@@ -1,6 +1,3 @@
-import fs from 'fs';
-import path from 'path';
-
 export const PPU_DELIVERY = 4; // Price per delivery without tax
 export const PPU_COLLECTION = 1; // Price per collection without tax
 export const TAX_RATE = 0.23; // Tax rate (23%)
@@ -39,64 +36,6 @@ export interface RecordTotals {
 	deliveryValue: number;
 	collectedValue: number;
 	totalValue: number;
-}
-// IMAGE HELPER-fn-
-
-// This function creates a path for storing images based on the current year and month.
-// It creates a directory structure like static/images/2023/Oct/ and returns the relative path to the image file.
-// The filename is generated using the current timestamp to ensure uniqueness.
-export function createImagePath(file: File): string {
-	const now = new Date();
-	const year = now.getFullYear();
-	const month = now.toLocaleDateString('en-US', { month: 'short' }); // jan, feb, etc.
-
-	const folderPath = path.join(process.cwd(), 'static', 'images', year.toString(), month);
-
-	// Create directory if it doesn't exist
-	if (!fs.existsSync(folderPath)) {
-		fs.mkdirSync(folderPath, { recursive: true });
-	}
-
-	// Generate unique filename
-	const timestamp = Date.now();
-	const extension = path.extname(file.name);
-	const filename = `${timestamp}${extension}`;
-
-	return path.join('images', year.toString(), month, filename);
-}
-
-/**  This function saves the file to the static/images directory with a unique name based on the current timestamp.
- * It uses the `arrayBuffer` method to read the file data and writes it to the specified path.
- * The `relativePath` should be the path relative to the static directory, e.g., 'images/2023/Oct/1234567890.jpg'.
- * The function creates the necessary directories if they do not exist.*/
-
-/**
- * Save an image file to the static directory
- * @param file File object to save
- * @param relativePath Relative path where the file should be saved
- */
-
-export async function saveImageFile(file: File, relativePath: string): Promise<void> {
-	const fullPath = path.join(process.cwd(), 'static', relativePath);
-	const buffer = Buffer.from(await file.arrayBuffer());
-	fs.writeFileSync(fullPath, buffer);
-}
-
-// This function checks if the file exists and deletes it if it does.
-
-/**
- * Delete an image file from the static directory
- * @param relativePath Relative path to the image file
- */
-export function deleteImageFile(relativePath: string): void {
-	try {
-		const fullPath = path.join(process.cwd(), 'static', relativePath);
-		if (fs.existsSync(fullPath)) {
-			fs.unlinkSync(fullPath);
-		}
-	} catch (error) {
-		console.error('Failed to delete image:', error);
-	}
 }
 
 // DATE HELPER FUNCTIONS

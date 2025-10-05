@@ -5,7 +5,7 @@
 		disabled = false,
 		onFileSelected,
 		onFileRemoved,
-		imagePath = $bindable() 
+		imagePath = $bindable()
 	}: {
 		selectedFile?: File | null;
 		disabled?: boolean;
@@ -160,9 +160,9 @@
 		align-items: center;
 		gap: 1rem;
 		width: 100%;
-		padding:12px;
+		padding: 12px;
 	}
-	
+
 	.preview-image {
 		/* width: 100%; */
 		height: auto;

@@ -13,7 +13,7 @@
 		<div class="icon"><Wrench size={48} /></div>
 		<h1>Records System Coming Soon</h1>
 		<p>The delivery records feature is being updated for the new multi-vehicle system.</p>
-		
+
 		<div class="info-box">
 			<h3>What's Coming in Phase 3:</h3>
 			<ul>

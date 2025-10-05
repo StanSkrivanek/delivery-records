@@ -51,10 +51,9 @@
 		border-radius: 0.4em;
 		border: none;
 		padding: 0;
-        @media screen and (max-width: 400px) {
-            width: 90vw;
-            
-        }
+		@media screen and (max-width: 400px) {
+			width: 90vw;
+		}
 	}
 	dialog::backdrop {
 		background: rgba(0, 0, 0, 0.3);
@@ -119,7 +118,7 @@
 		overflow-y: auto;
 	}
 	.dialog-footer {
-        padding-top: 1em;
+		padding-top: 1em;
 		border-top: 1px solid #ccc;
 	}
 	/* .modal-footer {

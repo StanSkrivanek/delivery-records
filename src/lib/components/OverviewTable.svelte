@@ -11,7 +11,7 @@
 	} from '$lib/utils';
 
 	let { records, selectedYear, selectedMonth } = $props();
-	
+
 	// Use utility function to calculate totals
 	let totals = $derived.by(() => calculateRecordTotals(records));
 
@@ -48,54 +48,52 @@
 			closeModal();
 		}
 	}
-// function calculateDailyDistances(records: DeliveryRecord[]): { date: string; distance: number }[] {
-// 	// Sort records by date if not already sorted
-// 	const sortedRecords = [...records].sort((a, b) => {
-// 		if (!a.entry_date || !b.entry_date) return 0;
-// 		return new Date(a.entry_date).getTime() - new Date(b.entry_date).getTime();
-// 	});
+	// function calculateDailyDistances(records: DeliveryRecord[]): { date: string; distance: number }[] {
+	// 	// Sort records by date if not already sorted
+	// 	const sortedRecords = [...records].sort((a, b) => {
+	// 		if (!a.entry_date || !b.entry_date) return 0;
+	// 		return new Date(a.entry_date).getTime() - new Date(b.entry_date).getTime();
+	// 	});
 
-// 	const dailyDistances = [];
-// 	let lastValidOdometer: number | null = null;
+	// 	const dailyDistances = [];
+	// 	let lastValidOdometer: number | null = null;
 
-// 	for (const record of sortedRecords) {
-// 		// Skip records without odometer readings
-// 		if (record.odometer === undefined || record.odometer === null) {
-// 			continue;
-// 		}
+	// 	for (const record of sortedRecords) {
+	// 		// Skip records without odometer readings
+	// 		if (record.odometer === undefined || record.odometer === null) {
+	// 			continue;
+	// 		}
 
-// 		if (lastValidOdometer !== null) {
-// 			// Calculate distance as current odometer minus previous odometer
-// 			const distance = record.odometer - lastValidOdometer;
+	// 		if (lastValidOdometer !== null) {
+	// 			// Calculate distance as current odometer minus previous odometer
+	// 			const distance = record.odometer - lastValidOdometer;
 
-// 			// Only add positive distances to avoid errors in data
-// 			if (distance >= 0) {
-// 				dailyDistances.push({
-// 					date: record.entry_date || new Date().toISOString().split('T')[0],
-// 					distance: distance
-// 				});
-// 			}
-// 		}
+	// 			// Only add positive distances to avoid errors in data
+	// 			if (distance >= 0) {
+	// 				dailyDistances.push({
+	// 					date: record.entry_date || new Date().toISOString().split('T')[0],
+	// 					distance: distance
+	// 				});
+	// 			}
+	// 		}
 
-// 		// Update last valid odometer for next calculation
-// 		lastValidOdometer = record.odometer;
-// 	}
+	// 		// Update last valid odometer for next calculation
+	// 		lastValidOdometer = record.odometer;
+	// 	}
 
-// 	return dailyDistances;
-// }
+	// 	return dailyDistances;
+	// }
 
-// function calculateTotalDistance(records: DeliveryRecord[]): number {
-// 	const dailyDistances = calculateDailyDistances(records);
-// 	return dailyDistances.reduce((total, record) => total + record.distance, 0);
-// }
-// function calculateAverageDailyDistance(records: DeliveryRecord[]): number {
-// 	const dailyDistances = calculateDailyDistances(records);
-// 	if (dailyDistances.length === 0) return 0;
-// 	const totalDistance = calculateTotalDistance(records);
-// 	return totalDistance / dailyDistances.length;
-// }
-
-
+	// function calculateTotalDistance(records: DeliveryRecord[]): number {
+	// 	const dailyDistances = calculateDailyDistances(records);
+	// 	return dailyDistances.reduce((total, record) => total + record.distance, 0);
+	// }
+	// function calculateAverageDailyDistance(records: DeliveryRecord[]): number {
+	// 	const dailyDistances = calculateDailyDistances(records);
+	// 	if (dailyDistances.length === 0) return 0;
+	// 	const totalDistance = calculateTotalDistance(records);
+	// 	return totalDistance / dailyDistances.length;
+	// }
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -243,9 +241,7 @@
 		<div class="modal-container" role="document" onclick={(event) => event.stopPropagation()}>
 			<div class="modal-header">
 				<h3>Image Preview</h3>
-				<button type="button" class="btn-x" onclick={closeModal} title="Close (Esc)">
-					✕
-				</button>
+				<button type="button" class="btn-x" onclick={closeModal} title="Close (Esc)"> ✕ </button>
 			</div>
 			<div class="modal-body">
 				<img src={modalImage} alt={modalAlt} class="modal-image" />

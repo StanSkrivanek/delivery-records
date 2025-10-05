@@ -59,7 +59,7 @@
 			<h2>📈 Monthly Sales by Product</h2>
 			<p>Simple categorical data with custom colors and labels</p>
 		</div>
-		
+
 		<div class="chart-wrapper">
 			<UniversalChart
 				data={salesData}
@@ -83,7 +83,8 @@
 		<div class="code-example">
 			<h4>Usage:</h4>
 			<pre>
-<code>&lt;UniversalChart
+<code
+					>&lt;UniversalChart
 	data=&#123;"salesData"&#125;
 	xKey="month"
 	yKeys=&#123;['product_a', 'product_b', 'product_c']&#125;
@@ -94,9 +95,10 @@
 	]}
 	title="Monthly Sales Performance"
 	valueFormatter={currencyFormatter}
-	/&gt;</code>
+	/&gt;</code
+				>
 </pre>
-		</div> 
+		</div>
 	</section>
 
 	<!-- Example 2: Traffic Data with Missing Dates -->
@@ -105,7 +107,7 @@
 			<h2>🌐 Website Traffic (with Missing Dates)</h2>
 			<p>Date-based data with automatic date filling for complete month view</p>
 		</div>
-		
+
 		<div class="chart-wrapper">
 			<UniversalChart
 				data={trafficData}
@@ -130,13 +132,15 @@
 
 		<div class="code-example">
 			<h4>Usage:</h4>
-			<pre><code>&lt;UniversalChart
+			<pre><code
+					>&lt;UniversalChart
   data=&#123;trafficData&#125;
   xKey="date"
   yKeys=&#123;['visits', 'pageviews', 'bounces']&#125;
   fillMissingDates=&#123;true&#125;
   valueFormatter=&#123;(v) => `$&#123;(v/1000).toFixed(1)&#125;k`&#125;
-/&gt;</code></pre>
+/&gt;</code
+				></pre>
 		</div>
 	</section>
 
@@ -146,7 +150,7 @@
 			<h2>⚡ Performance Metrics by Quarter</h2>
 			<p>Percentage-based data with custom formatting</p>
 		</div>
-		
+
 		<div class="chart-wrapper">
 			<UniversalChart
 				data={performanceData}
@@ -165,13 +169,15 @@
 
 		<div class="code-example">
 			<h4>Usage:</h4>
-			<pre><code>&lt;UniversalChart
+			<pre><code
+					>&lt;UniversalChart
   data=&#123;performanceData&#125;
   xKey="quarter"
   yKeys=&#123;['efficiency', 'quality', 'satisfaction']&#125;
   valueFormatter=&#123;(v) => `$&#123;v&#125;%`&#125;
   showValues=&#123;true&#125;
-/&gt;</code></pre>
+/&gt;</code
+				></pre>
 		</div>
 	</section>
 
@@ -181,7 +187,7 @@
 			<h2>🎯 Team Performance by Score Range</h2>
 			<p>Numeric x-axis with automatic sorting and color scheme</p>
 		</div>
-		
+
 		<div class="chart-wrapper">
 			<UniversalChart
 				data={numericData}
@@ -199,12 +205,14 @@
 
 		<div class="code-example">
 			<h4>Usage:</h4>
-			<pre><code>&lt;UniversalChart
+			<pre><code
+					>&lt;UniversalChart
   data=&#123;numericData&#125;
   xKey="score"
   yKeys=&#123;['teamA', 'teamB', 'teamC']&#125;
   title="Team Performance Across Score Ranges"
-/&gt;</code></pre>
+/&gt;</code
+				></pre>
 		</div>
 	</section>
 
@@ -214,7 +222,7 @@
 			<h2>📦 Delivery Statistics</h2>
 			<p>Your original delivery use case with the universal component</p>
 		</div>
-		
+
 		<div class="chart-wrapper">
 			<UniversalChart
 				data={[
@@ -249,20 +257,22 @@
 
 		<div class="code-example">
 			<h4>Usage:</h4>
-			<pre><code>&lt;UniversalChart
+			<pre><code
+					>&lt;UniversalChart
   data=&#123;deliveryData&#125;
   xKey="date"
   yKeys=&#123;['delivery', 'collections', 'fails']&#125;
   fillMissingDates=&#123;true&#125;
   title="Daily Delivery Statistics"
-/&gt;</code></pre>
+/&gt;</code
+				></pre>
 		</div>
 	</section>
 
 	<!-- Configuration Reference -->
 	<section class="reference-section">
 		<h2>📚 Configuration Reference</h2>
-		
+
 		<div class="reference-grid">
 			<div class="reference-card">
 				<h3>Core Props</h3>

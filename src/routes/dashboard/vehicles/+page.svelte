@@ -13,7 +13,7 @@
 		<div class="icon"><Truck size={48} /></div>
 		<h1>Vehicle Management</h1>
 		<p>Set up and manage your delivery fleet.</p>
-		
+
 		<div class="info-box warning">
 			<h3>⚠️ Admin Panel Coming in Phase 2</h3>
 			<p>Vehicle management UI is being developed. For now, you can add vehicles via SQL.</p>
@@ -21,7 +21,8 @@
 
 		<div class="sql-example">
 			<h3>Temporary: Add Vehicle via SQL</h3>
-			<pre><code>-- Via Supabase Studio (SQL) or psql
+			<pre><code
+					>-- Via Supabase Studio (SQL) or psql
 INSERT INTO public.vehicles (
   organization_id, 
   license_plate, 

@@ -13,9 +13,11 @@
 		<header class="app-header">
 			<div class="header-content">
 				<div class="logo">
-					<h1><Truck size={18} style="vertical-align: -2px; margin-right: 6px;" /> Fleet Manager</h1>
+					<h1>
+						<Truck size={18} style="vertical-align: -2px; margin-right: 6px;" /> Fleet Manager
+					</h1>
 				</div>
-				
+
 				<div class="user-menu">
 					<div class="user-info">
 						<span class="user-name">{data.user.first_name} {data.user.last_name}</span>
@@ -36,16 +38,16 @@
 	<!-- Public layout -->
 	<div class="public-container">
 		{#if !$page.url.pathname.startsWith('/auth')}
-		<header class="public-header">
-			<div class="public-inner">
-				<a class="brand" href="/">Fleet Manager</a>
-				<nav class="public-nav">
-					<a href="/blog" class="public-link">Blog</a>
-					<a href="/contact" class="public-link">Contact</a>
-					<a href="/auth/login" class="public-cta">Sign in</a>
-				</nav>
-			</div>
-		</header>
+			<header class="public-header">
+				<div class="public-inner">
+					<a class="brand" href="/">Fleet Manager</a>
+					<nav class="public-nav">
+						<a href="/blog" class="public-link">Blog</a>
+						<a href="/contact" class="public-link">Contact</a>
+						<a href="/auth/login" class="public-cta">Sign in</a>
+					</nav>
+				</div>
+			</header>
 		{/if}
 		<main class="public-main">
 			{@render children()}
@@ -152,13 +154,42 @@
 		align-items: center;
 		justify-content: space-between;
 	}
-	.brand { color: #111827; font-weight: 700; text-decoration: none; }
-	.public-nav { display: flex; gap: 0.75rem; align-items: center; }
-	.public-link { color: #4b5563; text-decoration: none; padding: 0.4rem 0.6rem; border-radius: 6px; }
-	.public-link:hover { background: #f3f4f6; color: #1f2937; }
-	.public-cta { color: white; background: #2563eb; padding: 0.45rem 0.8rem; border-radius: 6px; text-decoration: none; font-weight: 600; }
-	.public-cta:hover { background: #1d4ed8; }
-	.public-main { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+	.brand {
+		color: #111827;
+		font-weight: 700;
+		text-decoration: none;
+	}
+	.public-nav {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+	}
+	.public-link {
+		color: #4b5563;
+		text-decoration: none;
+		padding: 0.4rem 0.6rem;
+		border-radius: 6px;
+	}
+	.public-link:hover {
+		background: #f3f4f6;
+		color: #1f2937;
+	}
+	.public-cta {
+		color: white;
+		background: #2563eb;
+		padding: 0.45rem 0.8rem;
+		border-radius: 6px;
+		text-decoration: none;
+		font-weight: 600;
+	}
+	.public-cta:hover {
+		background: #1d4ed8;
+	}
+	.public-main {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 2rem 1rem;
+	}
 
 	@media (max-width: 768px) {
 		.header-content {
@@ -167,6 +198,8 @@
 			padding: 0.75rem 1rem;
 		}
 
-		.logo h1 { font-size: 1rem; }
+		.logo h1 {
+			font-size: 1rem;
+		}
 	}
 </style>
