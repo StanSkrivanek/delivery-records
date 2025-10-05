@@ -11,6 +11,18 @@ const auth = createBetterAuth(pgPool, { cookieName: 'session_id', sessionMaxAgeD
 const publicExact = ['/', '/health'];
 const publicPrefixes = ['/auth/', '/blog', '/contact'];
 
+// Optional soft deadline for auth lookups on public routes to avoid slow first paint
+const PUBLIC_AUTH_DEADLINE_MS = Number(process.env.PUBLIC_AUTH_DEADLINE_MS ?? '150');
+
+async function withTimeout<T>(p: Promise<T>, ms: number): Promise<{ ok: true; value: T } | { ok: false; reason: 'timeout' }>{
+	return await Promise.race([
+		p.then((value) => ({ ok: true as const, value })),
+		new Promise<{ ok: false; reason: 'timeout' }>((resolve) =>
+			setTimeout(() => resolve({ ok: false, reason: 'timeout' }), ms)
+		)
+	]);
+}
+
 const authHandle: Handle = async ({ event, resolve }) => {
 	// Public route fast-path: if no session cookie and public, skip any DB work
 	const pathname = event.url.pathname;
@@ -21,25 +33,64 @@ const authHandle: Handle = async ({ event, resolve }) => {
 		return resolve(event);
 	}
 
+	// Lightweight perf timings for auth pipeline (dev only)
+	let tSession = 0;
+	let tUser = 0;
+	let tUpdate = 0;
+
 	// If we have a session cookie, try to validate it
 	if (sessionId) {
 		try {
-			const session = await auth.getSession(sessionId);
+			const t0 = Date.now();
+			let session: any = null;
+			if (isPublicRoute && PUBLIC_AUTH_DEADLINE_MS > 0) {
+				const res = await withTimeout(auth.getSession(sessionId), PUBLIC_AUTH_DEADLINE_MS);
+				if (res.ok) session = res.value;
+				else {
+					// Timed out on public route: skip auth and render public quickly
+					if (process.env.NODE_ENV !== 'production') {
+						console.warn(`[perf-auth-timeout] getSession deadline ${PUBLIC_AUTH_DEADLINE_MS}ms on ${event.url.pathname}`);
+					}
+				}
+			} else {
+				session = await auth.getSession(sessionId);
+			}
+			tSession = Date.now() - t0;
 			if (session) {
-				const user = await auth.getUserById(session.user_id);
+				const t1 = Date.now();
+				let user: any = null;
+				if (isPublicRoute && PUBLIC_AUTH_DEADLINE_MS > 0) {
+					const res2 = await withTimeout(auth.getUserById(session.user_id), PUBLIC_AUTH_DEADLINE_MS);
+					if (res2.ok) user = res2.value;
+					else {
+						if (process.env.NODE_ENV !== 'production') {
+							console.warn(`[perf-auth-timeout] getUserById deadline ${PUBLIC_AUTH_DEADLINE_MS}ms on ${event.url.pathname}`);
+						}
+					}
+				} else {
+					user = await auth.getUserById(session.user_id);
+				}
+				tUser = Date.now() - t1;
 				if (user && user.is_active) {
-					// Sliding session: refresh expiry and last_seen, refresh cookie
-					await auth.updateSessionActivity(sessionId);
+					// Attach user/session to locals for downstream loads/layouts
 					event.locals.user = user;
 					event.locals.session = { id: sessionId, ...session };
-					// refresh cookie TTL
-					event.cookies.set('session_id', sessionId, {
-						path: '/',
-						httpOnly: true,
-						sameSite: 'strict',
-						secure: process.env.NODE_ENV === 'production',
-						maxAge: 60 * 60 * 24 * 30
-					});
+
+					// For public routes, avoid DB writes to reduce latency.
+					// Only refresh activity and cookie TTL on non-public requests.
+					if (!isPublicRoute) {
+						const t2 = Date.now();
+						// Sliding session: refresh expiry and last_seen, refresh cookie
+						await auth.updateSessionActivity(sessionId);
+						tUpdate = Date.now() - t2;
+						event.cookies.set('session_id', sessionId, {
+							path: '/',
+							httpOnly: true,
+							sameSite: 'strict',
+							secure: process.env.NODE_ENV === 'production',
+							maxAge: 60 * 60 * 24 * 30
+						});
+					}
 				} else {
 					// Invalid session, clear cookie
 					event.cookies.delete('session_id', { path: '/' });
@@ -47,6 +98,17 @@ const authHandle: Handle = async ({ event, resolve }) => {
 			} else {
 				// Expired session, clear cookie
 				event.cookies.delete('session_id', { path: '/' });
+			}
+
+			// Dev-only: log when any auth step is slow
+			if (
+				process.env.NODE_ENV !== 'production' &&
+				(Math.max(tSession, tUser, tUpdate) > 100 || (tSession + tUser + tUpdate) > 200)
+			) {
+				console.log(
+					`[perf-auth] ${event.request.method} ${pathname} public=${isPublicRoute} ` +
+					`t_session=${tSession}ms t_user=${tUser}ms t_update=${tUpdate}ms`
+				);
 			}
 		} catch {
 			// Fail open for public routes if DB hiccups
