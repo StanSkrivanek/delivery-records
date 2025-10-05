@@ -1,12 +1,12 @@
 <nav>
 	<a href="/">Home</a>
-	<a href="/records">AED Record</a>
-	<a href="/analytics">Overview</a>
-    <!-- <a href="/revenue">Revenue</a> -->
+	<a href="/dashboard/records">AED Record</a>
+	<a href="/dashboard/analytics">Overview</a>
+    <!-- <a href="/dashboard/revenue">Revenue</a> -->
 	<a href="https://squoosh.app/" target="_blank" rel="noopener noreferrer">Squoosh</a>
-    <a href="/odometer">Odometer</a>
-    <a href="/invoice">Invoice</a>
-    <a href="/revenue-returns">Revenue</a>
+    <a href="/dashboard/odometer">Odometer</a>
+    <a href="/dashboard/invoice">Invoice</a>
+    <a href="/dashboard/revenue-returns">Revenue</a>
     <a href="/demos">Demos</a>
 
 </nav>

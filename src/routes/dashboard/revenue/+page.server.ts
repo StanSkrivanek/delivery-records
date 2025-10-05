@@ -1,4 +1,4 @@
-// src/routes/revenue/+page.server.ts
+// src/routes/dashboard/revenue/+page.server.ts
 import { InvoiceService } from '$lib/invoice.server';
 import type { PageServerLoad } from './$types';
 

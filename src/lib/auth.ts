@@ -14,9 +14,7 @@ export interface BetterAuthConfig {
 export function createBetterAuth(pgPool: Pool, config: BetterAuthConfig = {}) {
   const cookieName = config.cookieName ?? 'ba_session';
   const sessionMaxAgeDays = config.sessionMaxAgeDays ?? 30;
-
-  const ttlInterval = `${sessionMaxAgeDays} days`;
-
+  
   return {
     // Create a new user with hashed password
     async registerUser(params: {

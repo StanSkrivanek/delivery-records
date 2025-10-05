@@ -39,7 +39,7 @@ INSERT INTO public.vehicles (
 		</div>
 
 		<div class="next-steps">
-			<a href="/" class="btn-secondary">Back to Dashboard</a>
+			<a href="/dashboard" class="btn-secondary">Back to Dashboard</a>
 		</div>
 	</div>
 </div>

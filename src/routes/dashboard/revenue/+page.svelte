@@ -1,4 +1,4 @@
-<!-- REVENUE CALCULATION -->
+<!-- src/routes/dashboard/revenue/+page.svelte -->
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { InvoiceData } from '$lib/invoice.server';
@@ -428,7 +428,6 @@
 	.yearly-totals td {
 		border-top: 2px solid #d1d5db;
 	}
-
 
 	.profit-value {
 		font-weight: 500;

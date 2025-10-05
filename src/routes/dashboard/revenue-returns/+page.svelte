@@ -1,3 +1,4 @@
+<!-- src/routes/dashboard/revenue-returns/+page.svelte -->
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { InvoiceData } from '$lib/invoice.server';

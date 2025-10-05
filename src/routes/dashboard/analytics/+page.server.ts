@@ -1,3 +1,4 @@
+// src/routes/dashboard/analytics/+page.server.ts
 import type { PageServerLoad } from './$types';
 import { RecordService } from '$lib/records.pg';
 
@@ -9,7 +10,7 @@ export const load: PageServerLoad = async () => {
 	const yearsSet = new Set<number>();
 	const monthsSet = new Set<number>();
 
-records.forEach((record: any) => {
+	records.forEach((record: any) => {
 		if (record.entry_date || record.entry_date === null) {
 			// Use entry_date if available, fallback to date_created for older records
 			const dateString = record.entry_date || record.created_at;

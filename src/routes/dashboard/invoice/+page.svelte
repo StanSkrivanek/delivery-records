@@ -1,4 +1,4 @@
-<!-- src/routes/invoice/+page.svelte -->
+<!-- src/routes/dashboard/invoice/+page.svelte -->
 <script lang="ts">
 	import Invoice from '$lib/components/Invoice.svelte';
 	import type { PageData } from './$types';

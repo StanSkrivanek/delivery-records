@@ -29,7 +29,7 @@
 		<div class="next-steps">
 			<p><strong>Next Step:</strong> Set up your vehicles first!</p>
 			<a href="/admin/vehicles" class="btn-primary">Go to Vehicle Management</a>
-			<a href="/" class="btn-secondary">Back to Dashboard</a>
+			<a href="/dashboard" class="btn-secondary">Back to Dashboard</a>
 		</div>
 	</div>
 </div>

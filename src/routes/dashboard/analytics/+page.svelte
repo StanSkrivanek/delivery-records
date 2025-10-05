@@ -31,7 +31,7 @@
     // Get available months for the selected year using $derived
     let availableMonthsForYear: number[] = $derived.by(() => {
         const monthsInYear = new Set<number>();
-data.records.forEach((record: any) => {
+        data.records.forEach((record: any) => {
             const dateString = record.entry_date || record.created_at;
             if (dateString) {
                 const recordDate = new Date(dateString);
@@ -45,7 +45,7 @@ data.records.forEach((record: any) => {
 
     // Filter records based on selected year and month using $derived
     let filteredRecords = $derived.by(() => {
-return data.records.filter((record: any) => {
+        return data.records.filter((record: any) => {
             const dateString = record.entry_date || record.created_at;
             if (!dateString) return false;
             const recordDate = new Date(dateString);
@@ -126,10 +126,6 @@ return data.records.filter((record: any) => {
 				</select>
 			</div>
 
-			<!-- <div class="filter-info">
-				<small>{filteredRecords.length} records found</small>
-			</div> -->
-
 			<button type="button" class="refresh-btn" onclick={refreshData} title="Refresh data">
 				Refresh
 			</button>
@@ -143,12 +139,6 @@ return data.records.filter((record: any) => {
 
 
 <style>
-	/* .main-container {
-		max-width: var(--max-w, 800px);
-		margin: 0 auto;
-		padding: 2rem;
-	} */
-
 	.header-section {
 		display: flex;
 		justify-content: space-between;
@@ -199,20 +189,6 @@ return data.records.filter((record: any) => {
 		border-color: #007bff;
 		box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 	}
-
-	/* .filter-info {
-		display: flex;
-		align-items: center;
-		padding: 0.5rem 1rem;
-		background: #f8f9fa;
-		border-radius: 20px;
-		border: 1px solid #dee2e6;
-	} */
-
-	/* .filter-info small {
-		color: #666;
-		font-weight: 500;
-	} */
 
 	.refresh-btn {
 		background: #17a2b8;

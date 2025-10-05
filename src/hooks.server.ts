@@ -7,7 +7,7 @@ import { createBetterAuth } from '$lib/auth';
 const auth = createBetterAuth(pgPool, { cookieName: 'session_id', sessionMaxAgeDays: 30 });
 
 // Public routes that don't require authentication
-const publicRoutes = ['/', '/health', '/auth/login', '/auth/register'];
+const publicRoutes = ['/', '/health', '/auth/login', '/auth/register', '/auth/forgot', '/auth/reset', '/blog', '/contact'];
 
 const authHandle: Handle = async ({ event, resolve }) => {
 	// Get session from cookie

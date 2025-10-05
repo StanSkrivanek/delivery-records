@@ -1,4 +1,4 @@
-// src/routes/invoice/+page.server.ts
+// src/routes/dashboard/invoice/+page.server.ts
 import { RecordService } from '$lib/records.pg';
 import type { PageServerLoad } from './$types';
 
