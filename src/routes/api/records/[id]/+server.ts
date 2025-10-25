@@ -75,13 +75,30 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 			}
 
 			try {
-				// Delete old image if it exists
+				// Delete old image(s) if they exist
 				if (existingRecord.image_path) {
-					deleteImageFile(existingRecord.image_path);
+					let oldImagePaths: string[] = [];
+					try {
+						oldImagePaths = JSON.parse(existingRecord.image_path);
+						if (!Array.isArray(oldImagePaths)) {
+							oldImagePaths = [existingRecord.image_path];
+						}
+					} catch {
+						oldImagePaths = [existingRecord.image_path];
+					}
+
+					// Delete all old images
+					for (const oldPath of oldImagePaths) {
+						try {
+							deleteImageFile(oldPath);
+						} catch (e) {
+							console.error(`Failed to delete old image ${oldPath}:`, e);
+						}
+					}
 				}
 
 				// Save new image
-				const newImagePath = createImagePath(imageFile);
+				const newImagePath = createImagePath(imageFile, 0);
 				await saveImageFile(imageFile, newImagePath);
 				finalImagePath = newImagePath;
 			} catch (imageError) {
@@ -94,7 +111,24 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		} else {
 			// No image provided and no existing image to keep
 			if (existingRecord.image_path) {
-				deleteImageFile(existingRecord.image_path);
+				let oldImagePaths: string[] = [];
+				try {
+					oldImagePaths = JSON.parse(existingRecord.image_path);
+					if (!Array.isArray(oldImagePaths)) {
+						oldImagePaths = [existingRecord.image_path];
+					}
+				} catch {
+					oldImagePaths = [existingRecord.image_path];
+				}
+
+				// Delete all old images
+				for (const oldPath of oldImagePaths) {
+					try {
+						deleteImageFile(oldPath);
+					} catch (e) {
+						console.error(`Failed to delete old image ${oldPath}:`, e);
+					}
+				}
 			}
 			finalImagePath = undefined;
 		}
@@ -152,12 +186,33 @@ export const DELETE: RequestHandler = async ({ params }) => {
 			throw error(404, 'Record not found');
 		}
 
-		// Delete the image file if it exists
+		// Delete the image file(s) if they exist
 		if (existingRecord.image_path) {
 			try {
-				deleteImageFile(existingRecord.image_path);
+				// Try to parse as JSON array (multiple images)
+				let imagePaths: string[] = [];
+				try {
+					imagePaths = JSON.parse(existingRecord.image_path);
+					if (!Array.isArray(imagePaths)) {
+						// If it's not an array, treat it as a single path
+						imagePaths = [existingRecord.image_path];
+					}
+				} catch {
+					// If JSON parse fails, it's a single path (old format)
+					imagePaths = [existingRecord.image_path];
+				}
+
+				// Delete all images
+				for (const imagePath of imagePaths) {
+					try {
+						deleteImageFile(imagePath);
+					} catch (imageError) {
+						console.error(`Failed to delete image file ${imagePath}:`, imageError);
+						// Continue with other images even if one fails
+					}
+				}
 			} catch (imageError) {
-				console.error('Failed to delete image file:', imageError);
+				console.error('Failed to delete image files:', imageError);
 				// Continue with record deletion even if image deletion fails
 			}
 		}
