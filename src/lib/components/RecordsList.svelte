@@ -252,7 +252,7 @@
 	// Helper function to parse image paths (handles both JSON array and plain string)
 	function getImagePaths(imagePath: string | undefined): string[] {
 		if (!imagePath) return [];
-		
+
 		try {
 			const parsed = JSON.parse(imagePath);
 			return Array.isArray(parsed) ? parsed : [imagePath];
