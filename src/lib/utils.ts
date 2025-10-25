@@ -44,7 +44,7 @@ export interface RecordTotals {
 
 // This function creates a path for storing images based on the current year and month.
 // It creates a directory structure like static/images/2023/Oct/ and returns the relative path to the image file.
-// The filename is generated using the current timestamp to ensure uniqueness.
+// The filename is generated using the current date in DD-MM-YYYY format, with a random suffix for uniqueness.
 export function createImagePath(file: File): string {
 	const now = new Date();
 	const year = now.getFullYear();
@@ -57,17 +57,20 @@ export function createImagePath(file: File): string {
 		fs.mkdirSync(folderPath, { recursive: true });
 	}
 
-	// Generate unique filename
-	const timestamp = Date.now();
+	// Generate filename using DD-MM-YYYY format with random suffix for uniqueness
+	const day = String(now.getDate()).padStart(2, '0');
+	const monthNum = String(now.getMonth() + 1).padStart(2, '0');
+	const dateStr = `${day}-${monthNum}-${year}`;
+	const randomSuffix = Math.random().toString(36).substring(2, 8);
 	const extension = path.extname(file.name);
-	const filename = `${timestamp}${extension}`;
+	const filename = `${dateStr}_${randomSuffix}${extension}`;
 
 	return path.join('images', year.toString(), month, filename);
 }
 
-/**  This function saves the file to the static/images directory with a unique name based on the current timestamp.
+/**  This function saves the file to the static/images directory with a unique name based on the current date in DD-MM-YYYY format.
  * It uses the `arrayBuffer` method to read the file data and writes it to the specified path.
- * The `relativePath` should be the path relative to the static directory, e.g., 'images/2023/Oct/1234567890.jpg'.
+ * The `relativePath` should be the path relative to the static directory, e.g., 'images/2023/Oct/25-10-2023_abc123.jpg'.
  * The function creates the necessary directories if they do not exist.*/
 
 /**
