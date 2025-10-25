@@ -1,6 +1,7 @@
-<script>
+<script lang="ts">
 	import BarGroups from '$lib/components/charts/BarGoups.svelte';
-	import { dlvPd, getMonthName, calculateAnalytics } from '$lib/utils.js';
+	import { calculateAnalytics, dlvPd, getMonthName } from '$lib/utils.js';
+	import { onMount } from 'svelte';
 	let { data } = $props();
 
 	// Map through each record in the array and process it, or process the entire array
@@ -14,17 +15,18 @@
 		};
 	});
 
-	const sum = calculateAnalytics(data.monthly)
-
+	const sum = calculateAnalytics(data.monthly);
 
 	const currentMonth = new Date().getMonth();
-	const successRate = Number(((sum.totalDelivered / (sum.totalDelivered + sum.returnedSum)) * 100).toFixed(2)) || 0;
+	const successRate =
+		Number(((sum.totalDelivered / (sum.totalDelivered + sum.returnedSum)) * 100).toFixed(2)) || 0;
 	const latestOdometer = data.getLatestOdometer ? data.getLatestOdometer : 0;
-	
+
 	// const deliverySum = monthly.reduce((acc, item) => acc + item.delivery, 0);
 	// const collectionSum = monthly.reduce((acc, item) => acc + item.collections, 0);
 	// const failsSum = monthly.reduce((acc, item) => acc + item.fails, 0);
-	
+
+	// get current computed CSS prpps and avlues paplied to <body> element
 </script>
 
 <svelte:head>
@@ -87,7 +89,7 @@
 			<h3>Odometer</h3>
 		</div>
 		<p class="card-value">{latestOdometer} km</p>
-		<p class="card-subtitle">Odometer in  km</p>
+		<p class="card-subtitle">Odometer in km</p>
 	</div>
 </div>
 
@@ -197,10 +199,10 @@
 		border-left-color: #ffc107;
 	} */
 
-	 .card.purple {
+	.card.purple {
 		border-left-color: #c686ff;
 		/* background: linear-gradient(90deg, #c686ff  0%, #fff 100%); */
-	} 
+	}
 
 	@media (max-width: 768px) {
 		.cards-grid {
