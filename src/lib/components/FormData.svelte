@@ -13,7 +13,7 @@
 	let expense = $state(0);
 	let expense_no_vat = $state(0);
 	let odometer = $state(0);
-	let selectedFile: File | null = $state(null);
+	let selectedFiles: File[] = $state([]);
 	let note = $state('');
 	let usage_mode = $state('standard');
 	let odometer_end = $state(0);
@@ -58,7 +58,7 @@
 			expense = 0;
 			expense_no_vat = 0;
 			odometer = 0;
-			selectedFile = null;
+			selectedFiles = [];
 			selectedDate = getCurrentDate(); // Reset to current date
 			usage_mode = 'standard';
 			distance_manual = 0;
@@ -68,12 +68,12 @@
 	});
 
 	// Callback functions for ImageUpload component
-	function handleFileSelected(file: File | null) {
-		selectedFile = file;
+	function handleFilesSelected(files: File[]) {
+		selectedFiles = files;
 	}
 
-	function handleFileRemoved() {
-		selectedFile = null;
+	function handleFileRemoved(index: number) {
+		selectedFiles = selectedFiles.filter((_, i) => i !== index);
 	}
 </script>
 
@@ -85,9 +85,11 @@
 		action="?/create"
 		enctype="multipart/form-data"
 		use:enhance={({ formData }) => {
-			// Add the image file to form data if selected
-			if (selectedFile) {
-				formData.append('image', selectedFile);
+			// Add the image files to form data if selected
+			if (selectedFiles && selectedFiles.length > 0) {
+				selectedFiles.forEach((file) => {
+					formData.append('images', file);
+				});
 			}
 
 			// Add the selected date to form data
@@ -322,9 +324,9 @@
 			<div class="form-column image-section">
 				<!-- Additional fields can be added here if needed -->
 				<ImageUpload
-					bind:selectedFile
+					bind:selectedFiles
 					disabled={loading}
-					onFileSelected={handleFileSelected}
+					onFilesSelected={handleFilesSelected}
 					onFileRemoved={handleFileRemoved}
 				/>
 			</div>

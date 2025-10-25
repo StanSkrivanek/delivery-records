@@ -1,5 +1,5 @@
 import { RecordService } from '$lib/db.server';
-import { createImagePath, saveImageFile } from '$lib/utils';
+import { createImagePaths, saveImageFile } from '$lib/utils';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -61,7 +61,7 @@ export const actions: Actions = {
 			const expense = Number(formData.get('expense')) || 0; // Default to 0 if not provided
 			const expense_no_vat = Number(formData.get('expense_no_vat')) || 0;
 			const selectedDate = formData.get('selectedDate') as string;
-			const imageFile = formData.get('image') as File | null;
+			const imageFiles = formData.getAll('images') as File[];
 			const odometer = Number(formData.get('odometer')) || 0;
 			const noteRaw = formData.get('note');
 			const note = typeof noteRaw === 'string' ? noteRaw : undefined;
@@ -106,29 +106,43 @@ export const actions: Actions = {
 				return fail(400, { error: 'Entry date cannot be more than one year ago' });
 			}
 
-			let imagePath: string | undefined;
+			let imagePaths: string[] = [];
 
-			// Handle image upload if provided
-			if (imageFile && imageFile.size > 0) {
-				if (!imageFile.type.startsWith('image/')) {
-					return fail(400, { error: 'Please upload a valid image file' });
-				}
+			// Handle image uploads if provided
+			if (imageFiles && imageFiles.length > 0) {
+				// Validate all files
+				for (const file of imageFiles) {
+					if (file.size === 0) continue; // Skip empty files
 
-				if (imageFile.size > 5 * 1024 * 1024) {
-					// 5MB limit
-					return fail(400, { error: 'Image file must be smaller than 5MB' });
+					if (!file.type.startsWith('image/')) {
+						return fail(400, { error: 'Please upload valid image files only' });
+					}
+
+					if (file.size > 5 * 1024 * 1024) {
+						// 5MB limit
+						return fail(400, { error: 'Each image file must be smaller than 5MB' });
+					}
 				}
 
 				try {
-					imagePath = createImagePath(imageFile);
-					await saveImageFile(imageFile, imagePath);
+					const validFiles = imageFiles.filter((file) => file.size > 0);
+					const paths = createImagePaths(validFiles);
+
+					// Save all files
+					for (let i = 0; i < validFiles.length; i++) {
+						await saveImageFile(validFiles[i], paths[i]);
+					}
+
+					imagePaths = paths;
 				} catch (error) {
-					console.error('Failed to save image:', error);
-					return fail(500, { error: 'Failed to save image' });
+					console.error('Failed to save images:', error);
+					return fail(500, { error: 'Failed to save images' });
 				}
 			}
 
 			// Save to database with custom date
+			// Store multiple image paths as JSON array
+			const imagePathJson = imagePaths.length > 0 ? JSON.stringify(imagePaths) : undefined;
 			const recordId = await RecordService.createRecord({
 				loaded,
 				collected,
@@ -138,7 +152,7 @@ export const actions: Actions = {
 				expense,
 				expense_no_vat,
 				odometer,
-				image_path: imagePath,
+				image_path: imagePathJson,
 				note,
 				entry_date: selectedDate
 			});

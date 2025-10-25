@@ -44,8 +44,8 @@ export interface RecordTotals {
 
 // This function creates a path for storing images based on the current year and month.
 // It creates a directory structure like static/images/2023/Oct/ and returns the relative path to the image file.
-// The filename is generated using the current date in DD-MM-YYYY format, with a random suffix for uniqueness.
-export function createImagePath(file: File): string {
+// The filename is generated using the current date in DD-MM-YYYY format, with sequential numbering for multiple images.
+export function createImagePath(file: File, index: number = 0): string {
 	const now = new Date();
 	const year = now.getFullYear();
 	const month = now.toLocaleDateString('en-US', { month: 'short' }); // jan, feb, etc.
@@ -57,15 +57,20 @@ export function createImagePath(file: File): string {
 		fs.mkdirSync(folderPath, { recursive: true });
 	}
 
-	// Generate filename using DD-MM-YYYY format with random suffix for uniqueness
+	// Generate filename using DD-MM-YYYY format with sequential numbering
 	const day = String(now.getDate()).padStart(2, '0');
 	const monthNum = String(now.getMonth() + 1).padStart(2, '0');
 	const dateStr = `${day}-${monthNum}-${year}`;
-	const randomSuffix = Math.random().toString(36).substring(2, 8);
+	const sequenceNum = String(index).padStart(3, '0');
 	const extension = path.extname(file.name);
-	const filename = `${dateStr}_${randomSuffix}${extension}`;
+	const filename = `${dateStr}_${sequenceNum}${extension}`;
 
 	return path.join('images', year.toString(), month, filename);
+}
+
+// Helper function to create paths for multiple images
+export function createImagePaths(files: File[]): string[] {
+	return files.map((file, index) => createImagePath(file, index));
 }
 
 /**  This function saves the file to the static/images directory with a unique name based on the current date in DD-MM-YYYY format.

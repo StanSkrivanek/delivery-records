@@ -1,17 +1,18 @@
 <script lang="ts">
 	// Modern Svelte 5 approach using callback props instead of createEventDispatcher
+	// Supports multiple image uploads with sequential numbering
 	let {
-		selectedFile = $bindable(),
+		selectedFiles = $bindable(),
 		disabled = false,
-		onFileSelected,
+		onFilesSelected,
 		onFileRemoved,
-		imagePath = $bindable() 
+		imagePaths = $bindable()
 	}: {
-		selectedFile?: File | null;
+		selectedFiles?: File[];
 		disabled?: boolean;
-		onFileSelected?: (file: File) => void;
-		onFileRemoved?: () => void;
-		imagePath?: string;
+		onFilesSelected?: (files: File[]) => void;
+		onFileRemoved?: (index: number) => void;
+		imagePaths?: string[];
 	} = $props();
 
 	let dragOver = $state(false);
@@ -37,10 +38,10 @@
 
 		const files = event.dataTransfer?.files;
 		if (files && files.length > 0) {
-			const file = files[0];
-			if (file.type.startsWith('image/')) {
-				selectedFile = file;
-				onFileSelected?.(file);
+			const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
+			if (imageFiles.length > 0) {
+				selectedFiles = [...(selectedFiles || []), ...imageFiles];
+				onFilesSelected?.(selectedFiles);
 			}
 		}
 	}
@@ -50,23 +51,18 @@
 		const files = target.files;
 		if (disabled) return;
 		if (files && files.length > 0) {
-			const file = files[0];
-			if (file.type.startsWith('image/')) {
-				selectedFile = file;
-				onFileSelected?.(file);
+			const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
+			if (imageFiles.length > 0) {
+				selectedFiles = [...(selectedFiles || []), ...imageFiles];
+				onFilesSelected?.(selectedFiles);
 			}
 		}
-		// if (files && files.length > 0) {
-		// 	selectedFile = files[0];
-		// 	onFileSelected?.(files[0]);
-		// 	// Do NOT reset target.value here; only reset on removeFile
-		// }
 	}
 
-	function removeFile() {
-		selectedFile = null;
+	function removeFile(index: number) {
+		selectedFiles = selectedFiles?.filter((_, i) => i !== index) || [];
 		if (fileInput) fileInput.value = '';
-		onFileRemoved?.();
+		onFileRemoved?.(index);
 	}
 
 	function openFileDialog() {
@@ -81,7 +77,7 @@
 		class="drop-zone"
 		class:drag-over={dragOver}
 		class:disabled
-		class:has-file={selectedFile}
+		class:has-files={selectedFiles && selectedFiles.length > 0}
 		ondragover={handleDragOver}
 		ondragleave={handleDragLeave}
 		ondrop={handleDrop}
@@ -90,19 +86,33 @@
 		tabindex="0"
 		onkeydown={(e) => e.key === 'Enter' && openFileDialog()}
 	>
-		{#if selectedFile}
-			<div class="file-preview">
-				<img src={URL.createObjectURL(selectedFile)} alt="Preview" class="preview-image" />
-				<div class="file-info">
-					<p class="file-name">{selectedFile.name}</p>
-					<p class="file-size">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
-				</div>
-				<button type="button" class="remove-btn" onclick={removeFile} {disabled}> ✕ </button>
+		{#if selectedFiles && selectedFiles.length > 0}
+			<div class="files-grid">
+				{#each selectedFiles as file, index}
+					<div class="file-preview">
+						<img src={URL.createObjectURL(file)} alt="Preview {index + 1}" class="preview-image" />
+						<div class="file-info">
+							<p class="file-name">{file.name}</p>
+							<p class="file-size">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+						</div>
+						<button
+							type="button"
+							class="remove-btn"
+							onclick={(e) => {
+								e.stopPropagation();
+								removeFile(index);
+							}}
+							{disabled}
+						>
+							✕
+						</button>
+					</div>
+				{/each}
 			</div>
 		{:else}
 			<div class="drop-prompt">
-				<p>Drag & drop an image here</p>
-				<p class="or-text">or click to select</p>
+				<p>Drag & drop images here</p>
+				<p class="or-text">or click to select (multiple files supported)</p>
 			</div>
 		{/if}
 	</div>
@@ -110,6 +120,7 @@
 	<input
 		type="file"
 		accept="image/*"
+		multiple
 		bind:this={fileInput}
 		onchange={handleFileSelect}
 		style="display: none;"
@@ -121,7 +132,6 @@
 	.image-upload {
 		width: auto;
 		max-width: 100%;
-		/* margin: 0 auto; */
 		height: 100%;
 	}
 
@@ -153,18 +163,29 @@
 		opacity: 0.6;
 	}
 
+	.files-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+		gap: 1rem;
+		width: 100%;
+		padding: 1rem;
+		max-height: 500px;
+		overflow-y: auto;
+	}
+
 	.file-preview {
 		position: relative;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 1rem;
-		width: 100%;
-		padding:12px;
+		gap: 0.5rem;
+		padding: 12px;
+		border: 1px solid #e0e0e0;
+		border-radius: 6px;
+		background: white;
 	}
-	
+
 	.preview-image {
-		/* width: 100%; */
 		height: auto;
 		max-width: 160px;
 		max-height: 160px;
@@ -175,16 +196,19 @@
 
 	.file-info {
 		text-align: center;
+		word-break: break-word;
+		width: 100%;
 	}
 
 	.file-name {
 		font-weight: 500;
 		margin: 0;
 		color: #333;
+		font-size: 0.875rem;
 	}
 
 	.file-size {
-		font-size: 0.875rem;
+		font-size: 0.75rem;
 		color: #666;
 		margin: 0.25rem 0 0 0;
 	}
@@ -192,7 +216,7 @@
 	.remove-btn {
 		position: absolute;
 		top: 8px;
-		right: 16px;
+		right: 8px;
 		background: #dc3545;
 		color: white;
 		border: none;
@@ -205,6 +229,7 @@
 		justify-content: center;
 		font-size: 14px;
 		line-height: 1;
+		z-index: 10;
 	}
 
 	.remove-btn:hover:not(:disabled) {
@@ -218,16 +243,15 @@
 
 	.drop-prompt {
 		color: #666;
+		padding: 2rem;
 	}
 
-	/* .upload-icon {
-		font-size: 3rem;
-		margin-bottom: 1rem;
-	} */
+	.drop-prompt p {
+		margin: 0.5rem 0;
+	}
 
 	.or-text {
 		font-size: 0.875rem;
 		color: #999;
-		margin: 0.5rem 0 0 0;
 	}
 </style>
