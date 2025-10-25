@@ -3,7 +3,7 @@
 // It includes PUT and DELETE methods to update and delete records respectively.
 
 import { RecordService } from '$lib/db.server';
-import { createImagePath, deleteImageFile, saveImageFile } from '$lib/utils';
+import { createImagePaths, deleteImageFile, saveImageFile } from '$lib/utils';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
@@ -33,7 +33,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		const odometer = Number(formData.get('odometer')) || 0;
 		const note = (formData.get('note') as string) || '';
 		const entryDate = formData.get('entry_date') as string;
-		const imageFile = formData.get('image') as File | null;
+		const imageFiles = formData.getAll('images') as File[];
 		const existingImagePath = formData.get('existing_image_path') as string | null;
 
 		// Vehicle usage data
@@ -62,16 +62,20 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 
 		let finalImagePath = existingRecord.image_path;
 
-		// Handle image upload
-		if (imageFile && imageFile.size > 0) {
-			// Validate image
-			if (!imageFile.type.startsWith('image/')) {
-				throw error(400, 'Please upload a valid image file');
-			}
+		// Handle image uploads
+		if (imageFiles && imageFiles.length > 0) {
+			// Validate all files
+			for (const file of imageFiles) {
+				if (file.size === 0) continue; // Skip empty files
 
-			if (imageFile.size > 5 * 1024 * 1024) {
-				// 5MB limit
-				throw error(400, 'Image file must be smaller than 5MB');
+				if (!file.type.startsWith('image/')) {
+					throw error(400, 'Please upload valid image files only');
+				}
+
+				if (file.size > 5 * 1024 * 1024) {
+					// 5MB limit
+					throw error(400, 'Each image file must be smaller than 5MB');
+				}
 			}
 
 			try {
@@ -97,13 +101,20 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 					}
 				}
 
-				// Save new image
-				const newImagePath = createImagePath(imageFile, 0);
-				await saveImageFile(imageFile, newImagePath);
-				finalImagePath = newImagePath;
+				// Save new images
+				const validFiles = imageFiles.filter((file) => file.size > 0);
+				const paths = createImagePaths(validFiles, entryDate);
+
+				// Save all files
+				for (let i = 0; i < validFiles.length; i++) {
+					await saveImageFile(validFiles[i], paths[i]);
+				}
+
+				// Store as JSON array
+				finalImagePath = JSON.stringify(paths);
 			} catch (imageError) {
-				console.error('Failed to save image:', imageError);
-				throw error(500, 'Failed to save image');
+				console.error('Failed to save images:', imageError);
+				throw error(500, 'Failed to save images');
 			}
 		} else if (existingImagePath) {
 			// Keep existing image

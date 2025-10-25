@@ -126,7 +126,7 @@ export const actions: Actions = {
 
 				try {
 					const validFiles = imageFiles.filter((file) => file.size > 0);
-					const paths = createImagePaths(validFiles);
+					const paths = createImagePaths(validFiles, selectedDate);
 
 					// Save all files
 					for (let i = 0; i < validFiles.length; i++) {

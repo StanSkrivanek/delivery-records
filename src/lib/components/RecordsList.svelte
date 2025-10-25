@@ -26,8 +26,8 @@
 		purpose: ''
 	});
 
-	// Separate state for the image file in edit modal
-	let editImageFile = $state<File | null>(null);
+	// Separate state for the image file(s) in edit modal
+	let editImageFiles = $state<File[]>([]);
 
 	// Delete dialog state
 	let recordIdToDelete = $state<number | null>(null);
@@ -180,13 +180,13 @@
 		}
 
 		console.log('Final editRecord:', editRecord);
-		editImageFile = null; // Reset image file
+		editImageFiles = []; // Reset image files
 		showEditModal = true;
 	}
 
 	function closeEditModal() {
 		showEditModal = false;
-		editImageFile = null;
+		editImageFiles = [];
 	}
 
 	async function saveEdit() {
@@ -213,13 +213,15 @@
 				formData.append('purpose', editRecord.purpose);
 			}
 
-			// Add image file if a new one was selected
-			if (editImageFile) {
-				formData.append('image', editImageFile);
+			// Add image files if new ones were selected
+			if (editImageFiles && editImageFiles.length > 0) {
+				editImageFiles.forEach((file) => {
+					formData.append('images', file);
+				});
 			}
 
-			// Add existing image path if no new image was selected
-			if (!editImageFile && editRecord.image_path) {
+			// Add existing image path if no new images were selected
+			if ((!editImageFiles || editImageFiles.length === 0) && editRecord.image_path) {
 				formData.append('existing_image_path', editRecord.image_path);
 			}
 
@@ -247,10 +249,31 @@
 		}
 	}
 
+	// Helper function to parse image paths (handles both JSON array and plain string)
+	function getImagePaths(imagePath: string | undefined): string[] {
+		if (!imagePath) return [];
+		
+		try {
+			const parsed = JSON.parse(imagePath);
+			return Array.isArray(parsed) ? parsed : [imagePath];
+		} catch {
+			// If JSON parse fails, it's a single path (old format)
+			return [imagePath];
+		}
+	}
+
+	// Helper function to check if record has images
+	function hasImages(imagePath: string | undefined): boolean {
+		return getImagePaths(imagePath).length > 0;
+	}
+
 	function openImageModal(imagePath: string, recordId: string | number) {
-		modalImage = `/${imagePath}`;
-		modalAlt = `Record #${recordId} image`;
-		showModal = true;
+		const paths = getImagePaths(imagePath);
+		if (paths.length > 0) {
+			modalImage = `/${paths[0]}`; // Show first image for now
+			modalAlt = `Record #${recordId} image`;
+			showModal = true;
+		}
 	}
 
 	function closeNoteModal() {
@@ -305,13 +328,16 @@
 	}
 
 	// Handle image file selection in edit modal
-	function handleEditImageSelected(file: File | null) {
-		editImageFile = file;
+	function handleEditImageSelected(files: File[]) {
+		editImageFiles = files;
 	}
 
-	function handleEditImageRemoved() {
-		editImageFile = null;
-		editRecord.image_path = ''; // Also clear the existing image path
+	function handleEditImageRemoved(index: number) {
+		editImageFiles = editImageFiles.filter((_, i) => i !== index);
+		// If no more files, clear the existing image path
+		if (editImageFiles.length === 0) {
+			editRecord.image_path = '';
+		}
 	}
 </script>
 
@@ -368,14 +394,15 @@
 								{/if}</td
 							>
 							<td class="info-cell">
-								{#if record.image_path}
+								{#if hasImages(record.image_path)}
+									{@const imagePaths = getImagePaths(record.image_path)}
 									<button
 										type="button"
 										class="btn blue"
 										onclick={() => openImageModal(record.image_path, record.id)}
 										title="View image"
 									>
-										show Image
+										{imagePaths.length > 1 ? `${imagePaths.length} Images` : 'Show Image'}
 									</button>
 								{:else}
 									<span class="no-data">No image</span>
@@ -533,33 +560,38 @@
 					<div>
 						<span>Image:</span>
 						<div class="image-upload-wrapper">
-							{#if editRecord.image_path && !editImageFile}
-								<div class="current-image">
-									<!-- svelte-ignore a11y_img_redundant_alt -->
-									<img
-										src="/{editRecord.image_path}"
-										alt="Current image"
-										class="current-image-preview"
-									/>
-									<p class="current-image-text">Current image</p>
-									<button
-										type="button"
-										class="btn-remove-current"
-										onclick={() => (editRecord.image_path = '')}
-									>
-										Remove current image
-									</button>
+							{#if hasImages(editRecord.image_path) && (!editImageFiles || editImageFiles.length === 0)}
+								{@const existingPaths = getImagePaths(editRecord.image_path)}
+								<div class="current-images-grid">
+									{#each existingPaths as imgPath, idx}
+										<div class="current-image">
+											<!-- svelte-ignore a11y_img_redundant_alt -->
+											<img
+												src="/{imgPath}"
+												alt="Current image {idx + 1}"
+												class="current-image-preview"
+											/>
+										</div>
+									{/each}
 								</div>
+								<p class="current-image-text">{existingPaths.length} current image(s)</p>
+								<button
+									type="button"
+									class="btn-remove-current"
+									onclick={() => (editRecord.image_path = '')}
+								>
+									Remove all current images
+								</button>
 							{:else}
 								<ImageUpload
-									bind:selectedFile={editImageFile}
-									onFileSelected={handleEditImageSelected}
+									bind:selectedFiles={editImageFiles}
+									onFilesSelected={handleEditImageSelected}
 									onFileRemoved={handleEditImageRemoved}
 								/>
 							{/if}
 						</div>
-						{#if editImageFile}
-							<p class="new-image-text">New image will replace current image</p>
+						{#if editImageFiles && editImageFiles.length > 0}
+							<p class="new-image-text">New image(s) will replace current image(s)</p>
 						{/if}
 					</div>
 				</div>
@@ -808,6 +840,14 @@
 		flex-direction: column;
 		gap: 1rem;
 		margin-top: 0.75rem;
+	}
+
+	.current-images-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+		gap: 1rem;
+		width: 100%;
+		margin-bottom: 0.5rem;
 	}
 
 	.current-image {

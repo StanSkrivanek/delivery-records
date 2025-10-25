@@ -42,13 +42,14 @@ export interface RecordTotals {
 }
 // IMAGE HELPER-fn-
 
-// This function creates a path for storing images based on the current year and month.
+// This function creates a path for storing images based on the specified date (or current date if not provided).
 // It creates a directory structure like static/images/2023/Oct/ and returns the relative path to the image file.
-// The filename is generated using the current date in DD-MM-YYYY format, with sequential numbering for multiple images.
-export function createImagePath(file: File, index: number = 0): string {
-	const now = new Date();
-	const year = now.getFullYear();
-	const month = now.toLocaleDateString('en-US', { month: 'short' }); // jan, feb, etc.
+// The filename is generated using the entry date in DD-MM-YYYY format, with sequential numbering for multiple images.
+export function createImagePath(file: File, index: number = 0, entryDate?: string | Date): string {
+	// Use provided date or current date
+	const date = entryDate ? new Date(entryDate) : new Date();
+	const year = date.getFullYear();
+	const month = date.toLocaleDateString('en-US', { month: 'short' }); // jan, feb, etc.
 
 	const folderPath = path.join(process.cwd(), 'static', 'images', year.toString(), month);
 
@@ -58,8 +59,8 @@ export function createImagePath(file: File, index: number = 0): string {
 	}
 
 	// Generate filename using DD-MM-YYYY format with sequential numbering
-	const day = String(now.getDate()).padStart(2, '0');
-	const monthNum = String(now.getMonth() + 1).padStart(2, '0');
+	const day = String(date.getDate()).padStart(2, '0');
+	const monthNum = String(date.getMonth() + 1).padStart(2, '0');
 	const dateStr = `${day}-${monthNum}-${year}`;
 	const sequenceNum = String(index).padStart(3, '0');
 	const extension = path.extname(file.name);
@@ -69,8 +70,8 @@ export function createImagePath(file: File, index: number = 0): string {
 }
 
 // Helper function to create paths for multiple images
-export function createImagePaths(files: File[]): string[] {
-	return files.map((file, index) => createImagePath(file, index));
+export function createImagePaths(files: File[], entryDate?: string | Date): string[] {
+	return files.map((file, index) => createImagePath(file, index, entryDate));
 }
 
 /**  This function saves the file to the static/images directory with a unique name based on the current date in DD-MM-YYYY format.
