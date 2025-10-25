@@ -34,7 +34,9 @@ function migrateImages() {
 	console.log('Starting image migration...\n');
 
 	// Get all records with image paths
-	const records = db.prepare('SELECT id, image_path FROM records WHERE image_path IS NOT NULL').all();
+	const records = db
+		.prepare('SELECT id, image_path FROM records WHERE image_path IS NOT NULL')
+		.all();
 
 	console.log(`Found ${records.length} records with images\n`);
 
