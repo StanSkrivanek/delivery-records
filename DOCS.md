@@ -116,7 +116,7 @@ CREATE TABLE records (
   returned INTEGER NOT NULL,          -- Parcels returned to depot
   missplaced INTEGER DEFAULT 0,       -- Lost/missing parcels
   expense REAL DEFAULT 0,             -- Daily expenses (VAT inclusive)
-  expense_no_vat REAL DEFAULT 0,      -- Expenses without VAT
+  expense_no_vat REAL DEFAULT 0,     -- Expenses without VAT
   odometer INTEGER DEFAULT 0,         -- End-of-day odometer reading
   image_path TEXT,                    -- JSON array of image paths
   note TEXT,                          -- Daily notes/comments
@@ -501,7 +501,7 @@ try {
    - Consider implementing cursor or offset pagination
 
 2. **No Search**
-   - Users can only filter by year/month dropdowns
+   - Users can only filter by year/month drop-downs
    - No text search across notes, dates, or values
 
 3. **No Database Backup**
