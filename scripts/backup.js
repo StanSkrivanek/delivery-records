@@ -21,7 +21,7 @@ const IMAGES_BACKUP_NAME = 'images_backup';
 function ensureBackupDirectory() {
 	if (!fs.existsSync(BACKUP_DIR)) {
 		fs.mkdirSync(BACKUP_DIR, { recursive: true });
-		console.log(`✅ Created backup directory: ${BACKUP_DIR}`);
+		console.log(`Created backup directory: ${BACKUP_DIR}`);
 	}
 }
 
@@ -64,7 +64,7 @@ function backupImages() {
 		const imagesBackupPath = path.join(BACKUP_DIR, IMAGES_BACKUP_NAME);
 
 		if (!fs.existsSync(IMAGES_DIR)) {
-			console.log('⚠️  Images directory not found, skipping images backup');
+			console.log('Images directory not found, skipping images backup');
 			return false;
 		}
 
@@ -82,12 +82,12 @@ function backupImages() {
 		const size = getDirectorySize(imagesBackupPath);
 		const sizeInMB = (size / (1024 * 1024)).toFixed(2);
 
-		console.log(`✅ Images backed up successfully!`);
+		console.log(`Images backed up successfully!`);
 		console.log(`   Size: ${sizeInMB} MB`);
 
 		return true;
 	} catch (error) {
-		console.error('❌ Images backup failed:', error.message);
+		console.error('Images backup failed:', error.message);
 		return false;
 	}
 }
@@ -108,7 +108,7 @@ function createBackup() {
 	try {
 		// Check if source database exists
 		if (!fs.existsSync(DB_PATH)) {
-			console.error('❌ Database file not found at:', DB_PATH);
+			console.error('Database file not found at:', DB_PATH);
 			process.exit(1);
 		}
 
@@ -120,12 +120,12 @@ function createBackup() {
 		const backupPath = path.join(BACKUP_DIR, backupFilename);
 
 		// Copy the database file
-		console.log('📦 Creating database backup...');
+		console.log('Creating database backup...');
 		fs.copyFileSync(DB_PATH, backupPath);
 
 		// Verify the backup was created
 		if (!fs.existsSync(backupPath)) {
-			console.error('❌ Backup file was not created');
+			console.error('Backup file was not created');
 			process.exit(1);
 		}
 
@@ -133,11 +133,11 @@ function createBackup() {
 		const stats = fs.statSync(backupPath);
 		const fileSizeInMB = (stats.size / (1024 * 1024)).toFixed(2);
 
-		console.log('✅ Database backup created successfully!');
-		console.log(`   Filename: ${backupFilename}`);
-		console.log(`   Location: ${BACKUP_DIR}`);
-		console.log(`   Size: ${fileSizeInMB} MB`);
-		console.log(`   Time: ${new Date().toLocaleString()}`);
+		console.log('Database backup created successfully!');
+		console.log(`Filename: ${backupFilename}`);
+		console.log(`Location: ${BACKUP_DIR}`);
+		console.log(`Size: ${fileSizeInMB} MB`);
+		console.log(`Time: ${new Date().toLocaleString()}`);
 
 		// Backup images
 		console.log('');
@@ -148,10 +148,10 @@ function createBackup() {
 			.readdirSync(BACKUP_DIR)
 			.filter((file) => file.startsWith('database_backup_') && file.endsWith('.db')).length;
 
-		console.log(`\n📊 Total database backups: ${backups}`);
-		console.log(`📊 Images backup: ${imagesBackedUp ? 'Up to date' : 'Not available'}`);
+		console.log(`\nTotal database backups: ${backups}`);
+		console.log(`Images backup: ${imagesBackedUp ? 'Up to date' : 'Not available'}`);
 	} catch (error) {
-		console.error('❌ Backup failed:', error.message);
+		console.error('Backup failed:', error.message);
 		process.exit(1);
 	}
 }

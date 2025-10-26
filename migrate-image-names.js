@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 /**
+ * ONE TIME SCRIPT
  * Migration script to rename existing images from timestamp format to DD-MM-YYYY format
  * and update the database references accordingly.
  */
@@ -51,7 +52,7 @@ function migrateImages() {
 		try {
 			// Check if file exists
 			if (!fs.existsSync(fullOldPath)) {
-				console.log(`⚠️  File not found: ${oldPath}`);
+				console.log(`File not found: ${oldPath}`);
 				errorCount++;
 				errors.push({ id: record.id, path: oldPath, error: 'File not found' });
 				continue;
@@ -66,7 +67,7 @@ function migrateImages() {
 			// Extract timestamp and extension
 			const match = filename.match(/^(\d+)(\.\w+)$/);
 			if (!match) {
-				console.log(`⚠️  Filename doesn't match timestamp pattern: ${filename}`);
+				console.log(`Filename doesn't match timestamp pattern: ${filename}`);
 				errorCount++;
 				errors.push({ id: record.id, path: oldPath, error: 'Invalid filename format' });
 				continue;
@@ -90,10 +91,10 @@ function migrateImages() {
 			// Update database
 			db.prepare('UPDATE records SET image_path = ? WHERE id = ?').run(newPath, record.id);
 
-			console.log(`✅ Migrated: ${filename} → ${newFilename}`);
+			console.log(`Migrated: ${filename} → ${newFilename}`);
 			successCount++;
 		} catch (error) {
-			console.error(`❌ Error processing record ${record.id}: ${error.message}`);
+			console.error(`Error processing record ${record.id}: ${error.message}`);
 			errorCount++;
 			errors.push({ id: record.id, path: oldPath, error: error.message });
 		}
@@ -106,7 +107,7 @@ function migrateImages() {
 	console.log(`  Errors: ${errorCount}`);
 
 	if (errors.length > 0) {
-		console.log('\nErrors encountered:');
+		console.log('Errors encountered:');
 		errors.forEach((err) => {
 			console.log(`  - Record ${err.id}: ${err.error} (${err.path})`);
 		});
@@ -119,10 +120,10 @@ function migrateImages() {
 try {
 	migrateImages();
 	db.close();
-	console.log('\n✅ Migration completed successfully!');
+	console.log('Migration completed successfully!');
 	process.exit(0);
 } catch (error) {
-	console.error('\n❌ Migration failed:', error);
+	console.error('Migration failed:', error);
 	db.close();
 	process.exit(1);
 }

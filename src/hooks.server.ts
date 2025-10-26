@@ -31,26 +31,26 @@ async function performBackupIfChanged() {
 
 	// Check if we already backed up today
 	if (lastBackupDate === today) {
-		console.log('⏭️  Backup already performed today');
+		console.log('Backup already performed today');
 		return;
 	}
 
 	// Check if there are changes
 	if (!checkForChanges()) {
-		console.log('ℹ️  No database changes detected, skipping backup');
+		console.log('No database changes detected, skipping backup');
 		lastBackupDate = today; // Mark as checked for today
 		return;
 	}
 
 	// Perform backup
 	try {
-		console.log('🔄 Database changes detected, starting backup...');
+		console.log('Database changes detected, starting backup...');
 		const result = await createBackup();
 		if (result.success) {
 			lastBackupDate = today;
-			console.log(`✅ Automatic backup completed: ${result.message}`);
+			console.log(`Automatic backup completed: ${result.message}`);
 		} else {
-			console.error(`❌ Automatic backup failed: ${result.message}`);
+			console.error(`Automatic backup failed: ${result.message}`);
 		}
 	} catch (error) {
 		console.error('Error during automatic backup:', error);
@@ -67,7 +67,7 @@ function scheduleMidnightBackup() {
 
 	const msUntilMidnight = getMillisecondsUntilMidnight();
 	console.log(
-		`⏰ Next backup check scheduled for midnight (in ${(msUntilMidnight / (1000 * 60 * 60)).toFixed(1)} hours)`
+		`Next backup check scheduled for midnight (in ${(msUntilMidnight / (1000 * 60 * 60)).toFixed(1)} hours)`
 	);
 
 	setTimeout(() => {

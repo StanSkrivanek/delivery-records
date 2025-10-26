@@ -11,6 +11,8 @@ node_modules
 # OS
 .DS_Store
 Thumbs.db
+Icon
+Icon?
 
 # Env
 .env
@@ -31,10 +33,12 @@ database.db
 static/fonts
 static/images
 static/UNUSED
+src/routes/demos
 # /static/js
 # /static/css
 
 # FIles
 TODO.md
+migrate-image-names.js
 CLAUDE.md
 WARP.md

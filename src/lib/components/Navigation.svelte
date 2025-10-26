@@ -8,7 +8,7 @@
 	<a href="/invoice">Invoice</a>
 	<a href="/revenue-returns">Revenue</a>
 	<a href="/backup">Backup</a>
-	<a href="/demos">Demos</a>
+	<!-- <a href="/demos">Demos</a> -->
 </nav>
 
 <style>
