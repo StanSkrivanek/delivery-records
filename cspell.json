@@ -1,21 +1,21 @@
 {
-    "version": "0.2",
-    "ignorePaths": [],
-    "dictionaryDefinitions": [],
-    "dictionaries": [],
-    "words": [
-        "esbuild",
-        "prettierplugin",
-        "sveltekit",
-        "tsconfig",
-        "typescripteslint",
-        "viteplugin"
-    ],
-    "ignoreWords": [
-        "dropdowns",
-        "misplaced",
-        "Squoosh",
-        "md"
-    ],
-    "import": []
+	"version": "0.2",
+	"ignorePaths": [],
+	"dictionaryDefinitions": [],
+	"dictionaries": [],
+	"words": [
+		"dropdowns",
+		"esbuild",
+		"missplaced",
+		"pnpm",
+		"prettierplugin",
+		"Squoosh",
+		"sveltekit",
+		"tsconfig",
+		"typescripteslint",
+		"Vite",
+		"viteplugin"
+	],
+	"ignoreWords": [],
+	"import": []
 }

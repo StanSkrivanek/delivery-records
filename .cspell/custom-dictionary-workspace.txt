@@ -1,0 +1,3 @@
+# Custom workspace dictionary for cSpell
+# Add words here that are specific to this project
+# One word per line
