@@ -39,6 +39,44 @@
 	let modalNote = $state('');
 
 	/**
+	 * Helper function to build editRecord object from record data
+	 */
+	function buildEditRecord(
+		record: any,
+		usage_mode: 'standard' | 'no_used' | 'other',
+		distance_manual: number,
+		purpose: string
+	) {
+		return {
+			id: record.id ?? undefined,
+			loaded: record.loaded,
+			collected: record.collected,
+			cutters: record.cutters,
+			returned: record.returned,
+			missplaced: record.missplaced ?? 0,
+			expense: record.expense ?? 0,
+			expense_no_vat: record.expense_no_vat ?? 0,
+			odometer: record.odometer ?? 0,
+			image_path: record.image_path ?? '',
+			note: record.note || '',
+			entry_date: record.entry_date,
+			usage_mode,
+			distance_manual,
+			purpose
+		};
+	}
+
+	/**
+	 * Helper function to determine usage mode from record data
+	 */
+	function determineUsageMode(record: any): 'standard' | 'no_used' | 'other' {
+		if (record.odometer && record.odometer > 0) {
+			return 'standard';
+		}
+		return 'no_used';
+	}
+
+	/**
 	 * @param {{ loaded: number; collected: number; cutters: number; returned: number; missplaced: number; expense: number; entry_date: string; image_path: string; }} record
 	 */
 	async function openEditModal(record: {
@@ -77,135 +115,60 @@
 						purpose = fullRecord.purpose || '';
 					} else {
 						// Fallback: determine usage mode based on record data if no vehicle usage log exists
-						if (fullRecord.odometer && fullRecord.odometer > 0) {
-							usage_mode = 'standard';
-						} else {
-							usage_mode = 'no_used';
-						}
+						usage_mode = determineUsageMode(fullRecord);
 					}
 					console.log('Loaded complete record data:', fullRecord);
-
-					// Set the editRecord with fresh data from database (both tables)
-					editRecord = {
-						id: fullRecord.id ?? undefined,
-						loaded: fullRecord.loaded,
-						collected: fullRecord.collected,
-						cutters: fullRecord.cutters,
-						returned: fullRecord.returned,
-						missplaced: fullRecord.missplaced ?? 0,
-						expense: fullRecord.expense ?? 0,
-						expense_no_vat: fullRecord.expense_no_vat ?? 0,
-						odometer: fullRecord.odometer ?? 0,
-						image_path: fullRecord.image_path ?? '',
-						note: fullRecord.note || '',
-						entry_date: fullRecord.entry_date,
-						usage_mode,
-						distance_manual,
-						purpose
-					};
 				} else {
 					console.log('No record data found');
-					// Use original record data as fallback
-					editRecord = {
-						id: record.id ?? undefined,
-						loaded: record.loaded,
-						collected: record.collected,
-						cutters: record.cutters,
-						returned: record.returned,
-						missplaced: record.missplaced ?? 0,
-						expense: record.expense ?? 0,
-						expense_no_vat: record.expense_no_vat ?? 0,
-						odometer: record.odometer ?? 0,
-						image_path: record.image_path ?? '',
-						note: record.note || '',
-						entry_date: record.entry_date,
-						usage_mode,
-						distance_manual,
-						purpose
-					};
 				}
 			} else {
 				console.log('API error when fetching record');
 				// Fallback: determine usage mode based on record data
-				if (record.odometer && record.odometer > 0) {
-					usage_mode = 'standard';
-				} else {
-					usage_mode = 'no_used';
-				}
-				// Use original record data as fallback
-				editRecord = {
-					id: record.id ?? undefined,
-					loaded: record.loaded,
-					collected: record.collected,
-					cutters: record.cutters,
-					returned: record.returned,
-					missplaced: record.missplaced ?? 0,
-					expense: record.expense ?? 0,
-					expense_no_vat: record.expense_no_vat ?? 0,
-					odometer: record.odometer ?? 0,
-					image_path: record.image_path ?? '',
-					note: record.note || '',
-					entry_date: record.entry_date,
-					usage_mode,
-					distance_manual,
-					purpose
-				};
+				usage_mode = determineUsageMode(record);
 			}
 		} catch (error) {
 			console.error('Failed to fetch complete record data:', error);
 			// Fallback: determine usage mode based on record data
-			if (record.odometer && record.odometer > 0) {
-				usage_mode = 'standard';
-			} else {
-				usage_mode = 'no_used';
-			}
-			// Use original record data as fallback
-			editRecord = {
-				id: record.id ?? undefined,
-				loaded: record.loaded,
-				collected: record.collected,
-				cutters: record.cutters,
-				returned: record.returned,
-				missplaced: record.missplaced ?? 0,
-				expense: record.expense ?? 0,
-				expense_no_vat: record.expense_no_vat ?? 0,
-				odometer: record.odometer ?? 0,
-				image_path: record.image_path ?? '',
-				note: record.note || '',
-				entry_date: record.entry_date,
-				usage_mode,
-				distance_manual,
-				purpose
-			};
+			usage_mode = determineUsageMode(record);
 		}
+
+		// Build editRecord once at the end with all the gathered data
+		editRecord = buildEditRecord(record, usage_mode, distance_manual, purpose);
 
 		console.log('Final editRecord:', editRecord);
 		editImageFiles = []; // Reset image files
 		showEditModal = true;
 	}
 
-	function closeEditModal() {
+	const closeEditModal = () => {
 		showEditModal = false;
 		editImageFiles = [];
-	}
+	};
 
 	async function saveEdit() {
 		try {
-			// Create FormData to handle both regular data and file upload
 			const formData = new FormData();
-			formData.append('loaded', editRecord.loaded.toString());
-			formData.append('collected', editRecord.collected.toString());
-			formData.append('cutters', editRecord.cutters.toString());
-			formData.append('returned', editRecord.returned.toString());
-			formData.append('missplaced', editRecord.missplaced.toString());
-			formData.append('expense', editRecord.expense.toString());
-			formData.append('expense_no_vat', editRecord.expense_no_vat.toString());
-			formData.append('odometer', editRecord.odometer.toString());
-			formData.append('note', editRecord.note || '');
-			formData.append('entry_date', editRecord.entry_date);
 
-			// Add vehicle usage data
-			formData.append('usage_mode', editRecord.usage_mode);
+			// Add base record fields
+			const baseFields = {
+				loaded: editRecord.loaded,
+				collected: editRecord.collected,
+				cutters: editRecord.cutters,
+				returned: editRecord.returned,
+				missplaced: editRecord.missplaced,
+				expense: editRecord.expense,
+				expense_no_vat: editRecord.expense_no_vat,
+				odometer: editRecord.odometer,
+				note: editRecord.note || '',
+				entry_date: editRecord.entry_date,
+				usage_mode: editRecord.usage_mode
+			};
+
+			Object.entries(baseFields).forEach(([key, value]) => {
+				formData.append(key, value.toString());
+			});
+
+			// Add conditional vehicle usage data
 			if (editRecord.usage_mode !== 'standard') {
 				formData.append('distance_manual', editRecord.distance_manual.toString());
 			}
@@ -213,21 +176,16 @@
 				formData.append('purpose', editRecord.purpose);
 			}
 
-			// Add image files if new ones were selected
-			if (editImageFiles && editImageFiles.length > 0) {
-				editImageFiles.forEach((file) => {
-					formData.append('images', file);
-				});
-			}
-
-			// Add existing image path if no new images were selected
-			if ((!editImageFiles || editImageFiles.length === 0) && editRecord.image_path) {
+			// Add image files or existing path
+			if (editImageFiles.length > 0) {
+				editImageFiles.forEach((file) => formData.append('images', file));
+			} else if (editRecord.image_path) {
 				formData.append('existing_image_path', editRecord.image_path);
 			}
 
 			const res = await fetch(`/api/records/${editRecord.id}`, {
 				method: 'PUT',
-				body: formData // Send FormData instead of JSON
+				body: formData
 			});
 
 			if (res.ok) {
@@ -236,7 +194,7 @@
 				if (idx !== -1) {
 					records[idx] = updatedRecord;
 				}
-				closeEditModal(); // Explicitly close modal
+				closeEditModal();
 				await invalidateAll();
 			} else {
 				const error = await res.text();
@@ -249,62 +207,47 @@
 		}
 	}
 
-	// Helper function to parse image paths (handles both JSON array and plain string)
-	function getImagePaths(imagePath: string | undefined): string[] {
+	// Helper to parse image paths (handles both JSON array and plain string)
+	const getImagePaths = (imagePath: string | undefined): string[] => {
 		if (!imagePath) return [];
-
 		try {
 			const parsed = JSON.parse(imagePath);
 			return Array.isArray(parsed) ? parsed : [imagePath];
 		} catch {
-			// If JSON parse fails, it's a single path (old format)
 			return [imagePath];
 		}
-	}
+	};
 
-	// Helper function to check if record has images
-	function hasImages(imagePath: string | undefined): boolean {
-		return getImagePaths(imagePath).length > 0;
-	}
+	// Helper to check if record has images
+	const hasImages = (imagePath: string | undefined): boolean => getImagePaths(imagePath).length > 0;
 
-	function openImageModal(imagePath: string, recordId: string | number) {
+	const openImageModal = (imagePath: string, recordId: string | number) => {
 		const paths = getImagePaths(imagePath);
 		if (paths.length > 0) {
-			modalImage = `/${paths[0]}`; // Show first image for now
+			modalImage = `/${paths[0]}`;
 			modalAlt = `Record #${recordId} image`;
 			showModal = true;
 		}
-	}
+	};
 
-	function closeNoteModal() {
-		showNoteModal = false;
-		modalNote = '';
-	}
-	function handleKeydown(event: { key: string }) {
-		// Keyboard navigation can be handled by the universal Modal component
-	}
-
-	function formatEntryDate(dateString: string | number | Date) {
+	const formatEntryDate = (dateString: string | number | Date) => {
 		const date = new Date(dateString);
 		return date.toLocaleDateString('en-US', {
 			month: 'short',
 			day: 'numeric',
 			weekday: 'short'
 		});
-	}
+	};
 
-	function openDeleteModal(recordId: number) {
+	const openDeleteModal = (recordId: number) => {
 		recordIdToDelete = recordId;
 		showDeleteModal = true;
-	}
-	function openNoteModal(note: string) {
+	};
+
+	const openNoteModal = (note: string) => {
 		modalNote = note;
 		showNoteModal = true;
-	}
-	function closeDeleteModal() {
-		showDeleteModal = false;
-		recordIdToDelete = null;
-	}
+	};
 
 	async function confirmDeleteRecord() {
 		if (recordIdToDelete !== null) {
@@ -312,7 +255,8 @@
 			records = records.filter((r: { id: number | undefined }) => r.id !== recordIdToDelete);
 
 			const recordToDelete = recordIdToDelete;
-			closeDeleteModal(); // Close modal immediately
+			recordIdToDelete = null; // Reset immediately
+			showDeleteModal = false; // Close modal immediately
 
 			try {
 				const res = await fetch(`/api/records/${recordToDelete}`, { method: 'DELETE' });
@@ -327,21 +271,18 @@
 		}
 	}
 
-	// Handle image file selection in edit modal
-	function handleEditImageSelected(files: File[]) {
+	// Simplified image handlers using arrow functions
+	const handleEditImageSelected = (files: File[]) => {
 		editImageFiles = files;
-	}
+	};
 
-	function handleEditImageRemoved(index: number) {
+	const handleEditImageRemoved = (index: number) => {
 		editImageFiles = editImageFiles.filter((_, i) => i !== index);
-		// If no more files, clear the existing image path
 		if (editImageFiles.length === 0) {
 			editRecord.image_path = '';
 		}
-	}
+	};
 </script>
-
-<svelte:window onkeydown={handleKeydown} />
 
 <div class="main-container">
 	<div class="header">
@@ -452,8 +393,17 @@
 	{/snippet}
 	{#snippet footer()}
 		<div class="delete-modal-actions">
-			<button type="button" class="btn red" onclick={() => closeDeleteModal()}>Cancel</button>
-			<button type="button" class="btn blue" onclick={() => confirmDeleteRecord()}>Delete</button>
+			<button
+				type="button"
+				class="btn red"
+				onclick={() => {
+					showDeleteModal = false;
+					recordIdToDelete = null;
+				}}
+			>
+				Cancel
+			</button>
+			<button type="button" class="btn blue" onclick={confirmDeleteRecord}>Delete</button>
 		</div>
 	{/snippet}
 </Modal>
@@ -590,7 +540,7 @@
 								/>
 							{/if}
 						</div>
-						{#if editImageFiles && editImageFiles.length > 0}
+						{#if editImageFiles.length > 0}
 							<p class="new-image-text">New image(s) will replace current image(s)</p>
 						{/if}
 					</div>
@@ -601,7 +551,7 @@
 	{#snippet footer()}
 		<div class="edit-modal-actions">
 			<button type="button" class="btn red" onclick={closeEditModal}>Cancel</button>
-			<button type="button" class="btn blue" onclick={() => saveEdit()}>Save Changes</button>
+			<button type="button" class="btn blue" onclick={saveEdit}>Save Changes</button>
 		</div>
 	{/snippet}
 </Modal>
