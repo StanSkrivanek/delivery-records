@@ -3,7 +3,14 @@
     "ignorePaths": [],
     "dictionaryDefinitions": [],
     "dictionaries": [],
-    "words": [],
+    "words": [
+        "esbuild",
+        "prettierplugin",
+        "sveltekit",
+        "tsconfig",
+        "typescripteslint",
+        "viteplugin"
+    ],
     "ignoreWords": [
         "dropdowns",
         "misplaced",
