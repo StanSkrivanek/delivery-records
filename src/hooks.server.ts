@@ -1,46 +1,93 @@
-import { createBackup } from '$lib/backup.server';
+import { checkForChanges, createBackup } from '$lib/backup.server';
 import type { Handle } from '@sveltejs/kit';
 
-// Track last backup time
-let lastBackupTime = 0;
-const BACKUP_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+// Track last backup check time
+let lastBackupDate: string | null = null;
+let midnightCheckScheduled = false;
 
 /**
- * Checks if a backup should be performed and creates one if needed
+ * Calculates milliseconds until next midnight
  */
-async function checkAndPerformBackup() {
-	const now = Date.now();
+function getMillisecondsUntilMidnight(): number {
+	const now = new Date();
+	const midnight = new Date(now);
+	midnight.setHours(24, 0, 0, 0); // Next midnight
+	return midnight.getTime() - now.getTime();
+}
 
-	// Only perform backup if enough time has passed
-	if (now - lastBackupTime >= BACKUP_INTERVAL) {
-		try {
-			const result = await createBackup();
-			if (result.success) {
-				lastBackupTime = now;
-				console.log(`✅ Automatic backup completed: ${result.message}`);
-			} else {
-				console.error(`❌ Automatic backup failed: ${result.message}`);
-			}
-		} catch (error) {
-			console.error('Error during automatic backup:', error);
+/**
+ * Gets the current date as a string (YYYY-MM-DD)
+ */
+function getCurrentDateString(): string {
+	const now = new Date();
+	return now.toISOString().split('T')[0];
+}
+
+/**
+ * Performs backup if database has changed
+ */
+async function performBackupIfChanged() {
+	const today = getCurrentDateString();
+
+	// Check if we already backed up today
+	if (lastBackupDate === today) {
+		console.log('⏭️  Backup already performed today');
+		return;
+	}
+
+	// Check if there are changes
+	if (!checkForChanges()) {
+		console.log('ℹ️  No database changes detected, skipping backup');
+		lastBackupDate = today; // Mark as checked for today
+		return;
+	}
+
+	// Perform backup
+	try {
+		console.log('🔄 Database changes detected, starting backup...');
+		const result = await createBackup();
+		if (result.success) {
+			lastBackupDate = today;
+			console.log(`✅ Automatic backup completed: ${result.message}`);
+		} else {
+			console.error(`❌ Automatic backup failed: ${result.message}`);
 		}
+	} catch (error) {
+		console.error('Error during automatic backup:', error);
 	}
 }
 
-// Perform initial backup on server start (after 1 minute delay)
-setTimeout(() => {
-	checkAndPerformBackup();
-}, 60 * 1000);
+/**
+ * Schedules the next midnight backup check
+ */
+function scheduleMidnightBackup() {
+	if (midnightCheckScheduled) {
+		return; // Already scheduled
+	}
 
-// Set up interval for daily backups
-setInterval(() => {
-	checkAndPerformBackup();
-}, BACKUP_INTERVAL);
+	const msUntilMidnight = getMillisecondsUntilMidnight();
+	console.log(
+		`⏰ Next backup check scheduled for midnight (in ${(msUntilMidnight / (1000 * 60 * 60)).toFixed(1)} hours)`
+	);
+
+	setTimeout(() => {
+		midnightCheckScheduled = false;
+		performBackupIfChanged();
+		scheduleMidnightBackup(); // Schedule next midnight
+	}, msUntilMidnight);
+
+	midnightCheckScheduled = true;
+}
+
+// Perform initial backup check on server start (after 2 minutes delay)
+setTimeout(() => {
+	console.log('🚀 Running initial backup check...');
+	performBackupIfChanged();
+}, 120 * 1000);
+
+// Schedule midnight backups
+scheduleMidnightBackup();
 
 export const handle: Handle = async ({ event, resolve }) => {
-	// Perform the backup check on each request (but it will only backup once per day)
-	// This ensures backups happen even if the server is idle
-	checkAndPerformBackup();
-
 	return resolve(event);
 };
