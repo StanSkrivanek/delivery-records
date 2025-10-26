@@ -15,18 +15,19 @@ The project has two server files in the records API that serve **different, comp
 **Purpose:** Handles mutations and basic operations on individual records
 
 **Methods:**
+
 - `PUT` - Updates a record with full data validation
   - Handles form data parsing (all numeric and text fields)
   - Manages image uploads/replacements/deletions
   - Updates vehicle usage log (deletes old, creates new)
   - Validates non-negative numbers and date formats
-  
 - `DELETE` - Removes a record and all associated data
   - Deletes image files (supports both single and multiple images)
   - Removes vehicle usage log entries
   - Cleans up all references
 
 **Key Features:**
+
 - Multi-part form data handling
 - Image file management with validation (5MB limit, image types only)
 - JSON array support for multiple images
@@ -38,12 +39,14 @@ The project has two server files in the records API that serve **different, comp
 **Purpose:** Provides enriched data by joining multiple tables
 
 **Methods:**
+
 - `GET` - Fetches complete record with vehicle usage data
   - Calls `RecordService.getRecordWithVehicleUsageById(recordId)`
   - Returns joined data from `records` + `vehicle_usage_log` tables
   - Single, focused responsibility
 
 **Used By:**
+
 - `RecordsList.svelte` when opening the edit modal (line 105)
 - Ensures edit form has complete data from both tables
 
@@ -52,10 +55,10 @@ The project has two server files in the records API that serve **different, comp
 ```typescript
 // In RecordsList.svelte:
 async function openEditModal(record) {
-  // Fetches joined data for accurate editing
-  const response = await fetch(`/api/records/${record.id}/full`);
-  const fullRecord = await response.json();
-  // Now has: record data + usage_mode + distance_manual + purpose
+	// Fetches joined data for accurate editing
+	const response = await fetch(`/api/records/${record.id}/full`);
+	const fullRecord = await response.json();
+	// Now has: record data + usage_mode + distance_manual + purpose
 }
 ```
 
@@ -66,7 +69,6 @@ async function openEditModal(record) {
 1. **Clear Responsibility**
    - Main endpoint: Mutations (PUT/DELETE)
    - `/full` endpoint: Read-only specialized query
-   
 2. **Performance**
    - Don't join tables when not needed
    - Update operations use `getRecordById()` (faster)
@@ -75,7 +77,6 @@ async function openEditModal(record) {
 3. **API Clarity**
    - RESTful design: `/api/records/{id}` for standard CRUD
    - Extended resource: `/api/records/{id}/full` for enriched data
-   
 4. **Maintainability**
    - Each file has a single, clear purpose
    - Easy to understand what each endpoint does
@@ -105,6 +106,7 @@ This is intentional, well-designed architecture following REST principles and se
 ### Tables & Relationships
 
 #### **records** (Main Transaction Table)
+
 ```sql
 CREATE TABLE records (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -124,6 +126,7 @@ CREATE TABLE records (
 ```
 
 #### **vehicle_usage_log** (Vehicle Tracking)
+
 ```sql
 CREATE TABLE vehicle_usage_log (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -140,8 +143,9 @@ CREATE TABLE vehicle_usage_log (
 ```
 
 **Index:**
+
 ```sql
-CREATE INDEX idx_vehicle_usage_log_record_id 
+CREATE INDEX idx_vehicle_usage_log_record_id
 ON vehicle_usage_log(record_id);
 ```
 
@@ -159,12 +163,10 @@ ON vehicle_usage_log(record_id);
    - Uses `odometer_end` from record
    - `distance_manual` = 0
    - Daily distance calculated from previous day's odometer
-   
 2. **`no_used`** - Vehicle not used
    - `odometer_end` = NULL
    - Must specify `distance_manual` (usually 0)
    - No odometer reading taken
-   
 3. **`other`** - Special usage
    - `odometer_end` = NULL
    - Must specify `distance_manual`
@@ -173,6 +175,7 @@ ON vehicle_usage_log(record_id);
 ### Image Storage
 
 **Format:** JSON array stored in `records.image_path`
+
 ```json
 ["images/2025/Oct/26-10-2025_abc123.avif", "images/2025/Oct/26-10-2025_def456.avif"]
 ```
@@ -180,6 +183,7 @@ ON vehicle_usage_log(record_id);
 **File Naming Convention:** `DD-MM-YYYY_<random>.avif`
 
 **Directory Structure:**
+
 ```
 static/
   images/
@@ -205,16 +209,18 @@ static/
 3. **Validation** → Check non-negative numbers, valid date, image types
 4. **Image processing** → `createImagePaths()`, `saveImageFile()` for each
 5. **Database writes:**
+
    ```typescript
    // 1. Create record
    const recordId = await RecordService.createRecord({...});
-   
+
    // 2. Create vehicle usage log with record_id
    await RecordService.createVehicleUsageLog({
      record_id: recordId,
      ...
    });
    ```
+
 6. **Response** → Return success/error to form
 
 ### Record Update Flow
@@ -226,18 +232,20 @@ static/
 4. **User submits changes** → `saveEdit()`
 5. **API call** → `PUT /api/records/{id}`
 6. **Server processing:**
+
    ```typescript
    // 1. Validate input
    // 2. Handle image changes (replace/keep/delete)
    // 3. Update record
    await RecordService.updateRecord(recordId, {...});
-   
+
    // 4. Delete old vehicle usage log
    await RecordService.deleteVehicleUsageLogByRecordId(recordId);
-   
+
    // 5. Create new vehicle usage log
    await RecordService.createVehicleUsageLog({...});
    ```
+
 7. **Refresh UI** → `invalidateAll()` to reload data
 
 ### Record Delete Flow
@@ -245,15 +253,17 @@ static/
 1. **User clicks Delete** → Confirmation modal
 2. **Confirm** → `DELETE /api/records/{id}`
 3. **Server cleanup:**
+
    ```typescript
    // 1. Parse image paths (JSON array or single string)
    // 2. Delete all image files from filesystem
    // 3. Delete vehicle usage log entries
    await RecordService.deleteVehicleUsageLogByRecordId(recordId);
-   
+
    // 4. Delete record
    await RecordService.deleteRecord(recordId);
    ```
+
 4. **Response** → Success/error
 5. **UI update** → Remove from list, `invalidateAll()`
 
@@ -264,6 +274,7 @@ static/
 ### Key Components
 
 #### **FormData.svelte** (Record Creation)
+
 - Form for adding new delivery records
 - Handles all input fields with validation
 - Uses `ImageUpload.svelte` for multi-image support
@@ -271,6 +282,7 @@ static/
 - **Note:** Single `note` field - mirrors to `vehicle_usage_log.comment`
 
 #### **RecordsList.svelte** (Record Display & Management)
+
 - Displays filtered records in a table
 - **Edit Modal:** Fetches `/full` endpoint for complete data
 - **Delete Modal:** Confirmation dialog before deletion
@@ -279,6 +291,7 @@ static/
 - Uses `Modal.svelte` for all dialogs
 
 #### **ImageUpload.svelte** (Multi-Image Upload)
+
 - Drag-and-drop support
 - Multiple file selection
 - Preview thumbnails
@@ -287,6 +300,7 @@ static/
 - Size validation (5MB per file)
 
 #### **Modal.svelte** (Reusable Dialog)
+
 - Generic modal wrapper
 - Close on overlay click
 - Keyboard support (ESC to close)
@@ -294,6 +308,7 @@ static/
 - Used for: edit, delete, image gallery, notes
 
 #### **BarGroups.svelte** (Data Visualization)
+
 - Multi-series bar chart
 - Date-based x-axis with auto-fill for missing dates
 - Configurable height and keys
@@ -305,27 +320,27 @@ static/
 routes/
   +layout.svelte              # Global layout with Navigation
   +page.svelte                # Homepage - Monthly dashboard
-  
+
   records/
     +page.server.ts           # Load records, handle create action
     +page.svelte              # Records list with FormData
-  
+
   analytics/
     +page.server.ts           # Load all records for filtering
     +page.svelte              # OverviewCards + OverviewTable
-  
+
   odometer/
     +page.server.ts           # Load odometer readings and stats
     +page.svelte              # Monthly distance tracking
-  
+
   invoice/
     +page.server.ts           # Load available periods
     +page.svelte              # Invoice generator UI
-  
+
   revenue-returns/
     +page.server.ts           # Load invoice summaries
     +page.svelte              # VAT and profit calculations
-  
+
   api/
     invoice/+server.ts        # GET/POST invoice generation
     odometer/+server.ts       # GET odometer data by month
@@ -343,16 +358,18 @@ routes/
 ## 💰 Business Logic & Calculations
 
 ### Pricing Constants
+
 ```typescript
 // From lib/utils.ts
-const PPU_DELIVERY = 4;      // €4 per parcel delivered
-const PPU_COLLECTION = 1;    // €1 per parcel collected
-const TAX_RATE = 0.23;       // 23% VAT (Ireland)
+const PPU_DELIVERY = 4; // €4 per parcel delivered
+const PPU_COLLECTION = 1; // €1 per parcel collected
+const TAX_RATE = 0.23; // 23% VAT (Ireland)
 ```
 
 ### Revenue Calculations
 
 **Delivery Revenue:**
+
 ```typescript
 const deliveredCount = loaded - returned - missplaced;
 const deliverySubtotal = deliveredCount * PPU_DELIVERY;
@@ -361,6 +378,7 @@ const deliveryTotal = deliverySubtotal + deliveryVAT;
 ```
 
 **Collection Revenue:**
+
 ```typescript
 const collectedCount = collected + cutters;
 const collectionSubtotal = collectedCount * PPU_COLLECTION;
@@ -369,6 +387,7 @@ const collectionTotal = collectionSubtotal + collectionVAT;
 ```
 
 **Grand Total:**
+
 ```typescript
 const grandTotal = deliveryTotal + collectionTotal;
 ```
@@ -376,6 +395,7 @@ const grandTotal = deliveryTotal + collectionTotal;
 ### Analytics Calculations
 
 **Success Rate:**
+
 ```typescript
 const totalDelivered = loaded - returned - missplaced;
 const totalAttempted = totalDelivered + returned;
@@ -383,6 +403,7 @@ const successRate = (totalDelivered / totalAttempted) * 100;
 ```
 
 **Average Per Day:**
+
 ```typescript
 const workingDays = records.length; // Days with records
 const averagePerDay = totalDelivered / workingDays;
@@ -391,19 +412,19 @@ const averagePerDay = totalDelivered / workingDays;
 ### Odometer Calculations
 
 **Daily Distance:**
+
 ```typescript
 const dailyDistance = currentOdometer - previousOdometer;
 ```
 
 **Monthly Total:**
+
 ```typescript
-const monthlyDistance = records.reduce(
-  (sum, record) => sum + (record.daily_difference || 0), 
-  0
-);
+const monthlyDistance = records.reduce((sum, record) => sum + (record.daily_difference || 0), 0);
 ```
 
 **Average Distance:**
+
 ```typescript
 const avgDistance = monthlyDistance / workingDays;
 ```
@@ -415,11 +436,13 @@ const avgDistance = monthlyDistance / workingDays;
 ### Input Validation
 
 **Numeric Fields:**
+
 - Must be non-negative integers
 - Default to 0 if not provided
 - Validated both client-side and server-side
 
 **Date Validation:**
+
 ```typescript
 // Must not be in the future
 const entryDateObj = new Date(entryDate);
@@ -427,11 +450,12 @@ const today = new Date();
 today.setHours(23, 59, 59, 999);
 
 if (entryDateObj > today) {
-  throw error(400, 'Entry date cannot be in the future');
+	throw error(400, 'Entry date cannot be in the future');
 }
 ```
 
 **Image Validation:**
+
 - Must be image MIME type (`image/*`)
 - Max size: 5MB per file
 - Multiple files supported
@@ -440,26 +464,28 @@ if (entryDateObj > today) {
 ### Error Handling Patterns
 
 **API Endpoints:**
+
 ```typescript
 try {
-  // Operation
-  return json(result);
+	// Operation
+	return json(result);
 } catch (err) {
-  console.error('Operation error:', err);
-  if (err && typeof err === 'object' && 'status' in err) {
-    throw err; // Re-throw SvelteKit errors (preserve status)
-  }
-  throw error(500, 'Generic error message');
+	console.error('Operation error:', err);
+	if (err && typeof err === 'object' && 'status' in err) {
+		throw err; // Re-throw SvelteKit errors (preserve status)
+	}
+	throw error(500, 'Generic error message');
 }
 ```
 
 **File Operations:**
+
 ```typescript
 try {
-  deleteImageFile(imagePath);
+	deleteImageFile(imagePath);
 } catch (imageError) {
-  console.error(`Failed to delete ${imagePath}:`, imageError);
-  // Continue execution - don't fail entire operation
+	console.error(`Failed to delete ${imagePath}:`, imageError);
+	// Continue execution - don't fail entire operation
 }
 ```
 
@@ -500,17 +526,20 @@ try {
 ### Performance Considerations
 
 **Image Storage:**
+
 - Images stored in `static/` directory
 - Served directly by web server
 - Consider CDN for production deployment
 - No image optimization on upload (manual Squoosh use recommended)
 
 **Database Queries:**
+
 - No indexes on `entry_date` (add for large datasets)
 - Join queries not optimized (acceptable for small datasets)
 - Consider pagination and lazy loading
 
 **Client-Side Filtering:**
+
 - All records loaded, filtered in browser
 - Works for ~500 records
 - Need server-side filtering for larger datasets
@@ -522,32 +551,34 @@ try {
 ### State Management (Svelte 5 Runes)
 
 **Reactive State:**
+
 ```typescript
 let selectedYear = $state(2025);
 let selectedMonth = $state(10);
 ```
 
 **Derived State:**
+
 ```typescript
 let filteredRecords = $derived.by(() => {
-  return records.filter(r => 
-    new Date(r.entry_date).getMonth() + 1 === selectedMonth
-  );
+	return records.filter((r) => new Date(r.entry_date).getMonth() + 1 === selectedMonth);
 });
 ```
 
 **Effects:**
+
 ```typescript
 $effect(() => {
-  if (!availableMonths.includes(selectedMonth)) {
-    selectedMonth = availableMonths[0];
-  }
+	if (!availableMonths.includes(selectedMonth)) {
+		selectedMonth = availableMonths[0];
+	}
 });
 ```
 
 ### Server-Only Code
 
 **Pattern:** Use `.server.ts` suffix for server-only modules
+
 ```typescript
 // ✅ lib/db.server.ts - Safe to import 'better-sqlite3'
 // ✅ lib/invoice.server.ts - Safe to import 'fs', 'path'
@@ -555,39 +586,43 @@ $effect(() => {
 ```
 
 **Imports:**
+
 ```typescript
 // Server route:
-import { RecordService } from '$lib/db.server';  // OK
+import { RecordService } from '$lib/db.server'; // OK
 
 // Component:
-import { formatCurrency } from '$lib/utils';     // OK
-import { RecordService } from '$lib/db.server';  // ERROR!
+import { formatCurrency } from '$lib/utils'; // OK
+import { RecordService } from '$lib/db.server'; // ERROR!
 ```
 
 ### Form Actions
 
 **Structure:**
+
 ```typescript
 // routes/records/+page.server.ts
 export const actions = {
-  create: async ({ request }) => {
-    const formData = await request.formData();
-    // Process, validate, save
-    return { success: true };
-  }
+	create: async ({ request }) => {
+		const formData = await request.formData();
+		// Process, validate, save
+		return { success: true };
+	}
 };
 ```
 
 **Usage in Component:**
+
 ```svelte
 <form method="POST" action="?/create" enctype="multipart/form-data">
-  <!-- form fields -->
+	<!-- form fields -->
 </form>
 ```
 
 ### API Endpoints
 
 **Naming Convention:**
+
 - GET `/api/resource` - List
 - GET `/api/resource/{id}` - Single item
 - GET `/api/resource/{id}/extended` - Enriched data
@@ -596,6 +631,7 @@ export const actions = {
 - DELETE `/api/resource/{id}` - Remove
 
 **Response Format:**
+
 ```typescript
 // Success
 return json({ data, success: true });

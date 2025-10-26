@@ -68,6 +68,7 @@ pnpm format           # Format code with Prettier
 **Database:** SQLite (`database.db` in project root)
 
 **Tables:**
+
 - `records` - Main delivery records
 - `vehicle_usage_log` - Vehicle usage tracking
 
@@ -115,7 +116,7 @@ static/
 
 ### Image Storage
 
-- Format: DD-MM-YYYY_<random>.avif
+- Format: DD-MM-YYYY\_<random>.avif
 - Location: `static/images/YYYY/Mon/`
 - Multiple images per record (JSON array)
 
@@ -173,4 +174,3 @@ Update `svelte.config.js` accordingly.
 
 **Last Updated:** 26 October 2025  
 **Current Branch:** 21-refactor-edit-record (merged to main as branch 22)
-
