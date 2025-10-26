@@ -11,33 +11,75 @@
 	} from '$lib/utils';
 
 	let { records, selectedYear, selectedMonth } = $props();
-	
+
 	// Use utility function to calculate totals
 	let totals = $derived.by(() => calculateRecordTotals(records));
 
 	let showModal = $state(false);
-	let modalImage = $state('');
-	let modalAlt = $state('');
+	let modalImages = $state<string[]>([]);
+	let currentImageIndex = $state(0);
+	let modalRecordId = $state<string | number>('');
 	let showNoteModal = $state(false);
 	let modalNote = $state('');
+
+	// Helper to parse image paths (handles both JSON array and plain string)
+	const getImagePaths = (imagePath: string | undefined): string[] => {
+		if (!imagePath) return [];
+		try {
+			const parsed = JSON.parse(imagePath);
+			return Array.isArray(parsed) ? parsed : [imagePath];
+		} catch {
+			return [imagePath];
+		}
+	};
+
+	// Helper to check if record has images
+	const hasImages = (imagePath: string | undefined): boolean => getImagePaths(imagePath).length > 0;
+
 	/**
 	 * @param {string} imagePath
 	 * @param {number|string} recordId
 	 */
 	function openImageModal(imagePath: string, recordId: number | string) {
-		modalImage = `/${imagePath}`;
-		modalAlt = `Record #${recordId} image`;
-		showModal = true;
+		const paths = getImagePaths(imagePath);
+		if (paths.length > 0) {
+			modalImages = paths;
+			currentImageIndex = 0;
+			modalRecordId = recordId;
+			showModal = true;
+		}
 	}
+
+	const nextImage = () => {
+		if (currentImageIndex < modalImages.length - 1) {
+			currentImageIndex++;
+		}
+	};
+
+	const prevImage = () => {
+		if (currentImageIndex > 0) {
+			currentImageIndex--;
+		}
+	};
+
+	const handleImageKeydown = (event: KeyboardEvent) => {
+		if (!showModal) return;
+		if (event.key === 'ArrowRight') nextImage();
+		if (event.key === 'ArrowLeft') prevImage();
+		if (event.key === 'Escape') closeModal();
+	};
+
 	function openNoteModal(note: string) {
 		modalNote = note;
 		showNoteModal = true;
 	}
+
 	function closeModal() {
 		showNoteModal = false;
 		showModal = false;
-		modalImage = '';
-		modalAlt = '';
+		modalImages = [];
+		currentImageIndex = 0;
+		modalRecordId = '';
 	}
 
 	/**
@@ -48,57 +90,55 @@
 			closeModal();
 		}
 	}
-// function calculateDailyDistances(records: DeliveryRecord[]): { date: string; distance: number }[] {
-// 	// Sort records by date if not already sorted
-// 	const sortedRecords = [...records].sort((a, b) => {
-// 		if (!a.entry_date || !b.entry_date) return 0;
-// 		return new Date(a.entry_date).getTime() - new Date(b.entry_date).getTime();
-// 	});
+	// function calculateDailyDistances(records: DeliveryRecord[]): { date: string; distance: number }[] {
+	// 	// Sort records by date if not already sorted
+	// 	const sortedRecords = [...records].sort((a, b) => {
+	// 		if (!a.entry_date || !b.entry_date) return 0;
+	// 		return new Date(a.entry_date).getTime() - new Date(b.entry_date).getTime();
+	// 	});
 
-// 	const dailyDistances = [];
-// 	let lastValidOdometer: number | null = null;
+	// 	const dailyDistances = [];
+	// 	let lastValidOdometer: number | null = null;
 
-// 	for (const record of sortedRecords) {
-// 		// Skip records without odometer readings
-// 		if (record.odometer === undefined || record.odometer === null) {
-// 			continue;
-// 		}
+	// 	for (const record of sortedRecords) {
+	// 		// Skip records without odometer readings
+	// 		if (record.odometer === undefined || record.odometer === null) {
+	// 			continue;
+	// 		}
 
-// 		if (lastValidOdometer !== null) {
-// 			// Calculate distance as current odometer minus previous odometer
-// 			const distance = record.odometer - lastValidOdometer;
+	// 		if (lastValidOdometer !== null) {
+	// 			// Calculate distance as current odometer minus previous odometer
+	// 			const distance = record.odometer - lastValidOdometer;
 
-// 			// Only add positive distances to avoid errors in data
-// 			if (distance >= 0) {
-// 				dailyDistances.push({
-// 					date: record.entry_date || new Date().toISOString().split('T')[0],
-// 					distance: distance
-// 				});
-// 			}
-// 		}
+	// 			// Only add positive distances to avoid errors in data
+	// 			if (distance >= 0) {
+	// 				dailyDistances.push({
+	// 					date: record.entry_date || new Date().toISOString().split('T')[0],
+	// 					distance: distance
+	// 				});
+	// 			}
+	// 		}
 
-// 		// Update last valid odometer for next calculation
-// 		lastValidOdometer = record.odometer;
-// 	}
+	// 		// Update last valid odometer for next calculation
+	// 		lastValidOdometer = record.odometer;
+	// 	}
 
-// 	return dailyDistances;
-// }
+	// 	return dailyDistances;
+	// }
 
-// function calculateTotalDistance(records: DeliveryRecord[]): number {
-// 	const dailyDistances = calculateDailyDistances(records);
-// 	return dailyDistances.reduce((total, record) => total + record.distance, 0);
-// }
-// function calculateAverageDailyDistance(records: DeliveryRecord[]): number {
-// 	const dailyDistances = calculateDailyDistances(records);
-// 	if (dailyDistances.length === 0) return 0;
-// 	const totalDistance = calculateTotalDistance(records);
-// 	return totalDistance / dailyDistances.length;
-// }
-
-
+	// function calculateTotalDistance(records: DeliveryRecord[]): number {
+	// 	const dailyDistances = calculateDailyDistances(records);
+	// 	return dailyDistances.reduce((total, record) => total + record.distance, 0);
+	// }
+	// function calculateAverageDailyDistance(records: DeliveryRecord[]): number {
+	// 	const dailyDistances = calculateDailyDistances(records);
+	// 	if (dailyDistances.length === 0) return 0;
+	// 	const totalDistance = calculateTotalDistance(records);
+	// 	return totalDistance / dailyDistances.length;
+	// }
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
+<svelte:window onkeydown={handleImageKeydown} />
 
 <div class="table-section">
 	<div class="table-header">
@@ -176,13 +216,14 @@
 
 							<td class="image-cell">
 								{#if record.image_path}
+									{@const imagePaths = getImagePaths(record.image_path)}
 									<button
 										type="button"
 										class="btn blue"
 										onclick={() => openImageModal(record.image_path, record.id)}
 										title="Preview image"
 									>
-										Preview image
+										{imagePaths.length > 1 ? `${imagePaths.length} Images` : 'Preview image'}
 									</button>
 								{:else}
 									<span class="no-data">No image</span>
@@ -242,13 +283,45 @@
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<div class="modal-container" role="document" onclick={(event) => event.stopPropagation()}>
 			<div class="modal-header">
-				<h3>Image Preview</h3>
-				<button type="button" class="btn-x" onclick={closeModal} title="Close (Esc)">
-					✕
-				</button>
+				<h3>
+					Image Preview - Record #{modalRecordId}
+					{#if modalImages.length > 1}
+						<span class="image-counter">({currentImageIndex + 1} / {modalImages.length})</span>
+					{/if}
+				</h3>
+				<button type="button" class="btn-x" onclick={closeModal} title="Close (Esc)"> ✕ </button>
 			</div>
 			<div class="modal-body">
-				<img src={modalImage} alt={modalAlt} class="modal-image" />
+				{#if modalImages.length > 0}
+					<img
+						src="/{modalImages[currentImageIndex]}"
+						alt="Record #{modalRecordId} image {currentImageIndex + 1}"
+						class="modal-image"
+					/>
+				{/if}
+
+				{#if modalImages.length > 1}
+					<div class="image-navigation">
+						<button
+							type="button"
+							class="nav-btn prev-btn"
+							onclick={prevImage}
+							disabled={currentImageIndex === 0}
+							title="Previous image (←)"
+						>
+							← Previous
+						</button>
+						<button
+							type="button"
+							class="nav-btn next-btn"
+							onclick={nextImage}
+							disabled={currentImageIndex === modalImages.length - 1}
+							title="Next image (→)"
+						>
+							Next →
+						</button>
+					</div>
+				{/if}
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn" onclick={closeModal}> Close </button>
@@ -582,10 +655,12 @@
 	.modal-body {
 		padding: 1rem;
 		display: flex;
+		flex-direction: column;
 		justify-content: center;
 		align-items: center;
 		flex: 1;
 		overflow: hidden;
+		gap: 1rem;
 	}
 
 	.modal-image {
@@ -594,6 +669,50 @@
 		object-fit: contain;
 		border-radius: 4px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	}
+
+	.image-counter {
+		font-size: 0.9rem;
+		font-weight: normal;
+		color: var(--color-slate-600);
+		margin-left: 0.5rem;
+	}
+
+	.image-navigation {
+		display: flex;
+		gap: 1rem;
+		margin-top: 1rem;
+	}
+
+	.nav-btn {
+		background: var(--color-blue-500);
+		color: white;
+		border: none;
+		border-radius: 4px;
+		padding: 0.75rem 1.5rem;
+		font-size: 0.9rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.nav-btn:hover:not(:disabled) {
+		background: var(--color-blue-600);
+		transform: translateY(-1px);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	}
+
+	.nav-btn:disabled {
+		background: var(--color-slate-300);
+		cursor: not-allowed;
+		opacity: 0.6;
+	}
+
+	.nav-btn:active:not(:disabled) {
+		transform: translateY(0);
 	}
 
 	.modal-footer {

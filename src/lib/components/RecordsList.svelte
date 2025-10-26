@@ -5,8 +5,9 @@
 
 	let { records } = $props();
 
-	let modalImage = $state('');
-	let modalAlt = $state('');
+	let modalImages = $state<string[]>([]);
+	let currentImageIndex = $state(0);
+	let modalRecordId = $state<string | number>('');
 
 	let editRecord = $state({
 		id: undefined as number | undefined,
@@ -224,10 +225,29 @@
 	const openImageModal = (imagePath: string, recordId: string | number) => {
 		const paths = getImagePaths(imagePath);
 		if (paths.length > 0) {
-			modalImage = `/${paths[0]}`;
-			modalAlt = `Record #${recordId} image`;
+			modalImages = paths;
+			currentImageIndex = 0;
+			modalRecordId = recordId;
 			showModal = true;
 		}
+	};
+
+	const nextImage = () => {
+		if (currentImageIndex < modalImages.length - 1) {
+			currentImageIndex++;
+		}
+	};
+
+	const prevImage = () => {
+		if (currentImageIndex > 0) {
+			currentImageIndex--;
+		}
+	};
+
+	const handleImageKeydown = (event: KeyboardEvent) => {
+		if (!showModal) return;
+		if (event.key === 'ArrowRight') nextImage();
+		if (event.key === 'ArrowLeft') prevImage();
 	};
 
 	const formatEntryDate = (dateString: string | number | Date) => {
@@ -283,6 +303,8 @@
 		}
 	};
 </script>
+
+<svelte:window onkeydown={handleImageKeydown} />
 
 <div class="main-container">
 	<div class="header">
@@ -372,11 +394,45 @@
 <!-- Image Modal using universal Modal -->
 <Modal bind:showModal>
 	{#snippet header()}
-		<h2>Image Preview</h2>
+		<h2>
+			Image Preview - Record #{modalRecordId}
+			{#if modalImages.length > 1}
+				<span class="image-counter">({currentImageIndex + 1} / {modalImages.length})</span>
+			{/if}
+		</h2>
 	{/snippet}
 	{#snippet children()}
 		<div class="image-modal-content">
-			<img src={modalImage} alt={modalAlt} class="modal-image" />
+			{#if modalImages.length > 0}
+				<img
+					src="/{modalImages[currentImageIndex]}"
+					alt="Record #{modalRecordId} image {currentImageIndex + 1}"
+					class="modal-image"
+				/>
+			{/if}
+
+			{#if modalImages.length > 1}
+				<div class="image-navigation">
+					<button
+						type="button"
+						class="nav-btn prev-btn"
+						onclick={prevImage}
+						disabled={currentImageIndex === 0}
+						title="Previous image (←)"
+					>
+						← Previous
+					</button>
+					<button
+						type="button"
+						class="nav-btn next-btn"
+						onclick={nextImage}
+						disabled={currentImageIndex === modalImages.length - 1}
+						title="Next image (→)"
+					>
+						Next →
+					</button>
+				</div>
+			{/if}
 		</div>
 	{/snippet}
 </Modal>
@@ -868,9 +924,11 @@
 	/* Modal content styles */
 	.image-modal-content {
 		display: flex;
+		flex-direction: column;
 		justify-content: center;
 		align-items: center;
 		padding: 1rem;
+		gap: 1rem;
 	}
 
 	.modal-image {
@@ -879,6 +937,50 @@
 		object-fit: contain;
 		border-radius: 4px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	}
+
+	.image-counter {
+		font-size: 0.9rem;
+		font-weight: normal;
+		color: var(--color-slate-600);
+		margin-left: 0.5rem;
+	}
+
+	.image-navigation {
+		display: flex;
+		gap: 1rem;
+		margin-top: 1rem;
+	}
+
+	.nav-btn {
+		background: var(--color-blue-500);
+		color: white;
+		border: none;
+		border-radius: 4px;
+		padding: 0.75rem 1.5rem;
+		font-size: 0.9rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.nav-btn:hover:not(:disabled) {
+		background: var(--color-blue-600);
+		transform: translateY(-1px);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	}
+
+	.nav-btn:disabled {
+		background: var(--color-slate-300);
+		cursor: not-allowed;
+		opacity: 0.6;
+	}
+
+	.nav-btn:active:not(:disabled) {
+		transform: translateY(0);
 	}
 
 	.delete-modal-content {
