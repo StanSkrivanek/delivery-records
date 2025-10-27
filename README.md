@@ -1,6 +1,6 @@
 # Delivery Records Management System
 
-A comprehensive web application for tracking and managing daily delivery operations, vehicle usage, expenses, and invoice generation for courier and logistics companies.
+A comprehensive web application for tracking and managing daily delivery operations, vehicle usage, expenses, and invoice generation for courier and logistics sole traders.
 
 **Tech Stack:** SvelteKit + TypeScript + SQLite (better-sqlite3) + Vite
 
