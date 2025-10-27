@@ -1,5 +1,5 @@
 <script lang="ts">
-	import BarGroups from '../../static/UNUSED/demos/components/charts/BarGoups.svelte';
+	import BarGroups from '$lib/components/charts/BarGoups.svelte';
 	import { calculateAnalytics, dlvPd, getMonthName } from '$lib/utils.js';
 	import { onMount } from 'svelte';
 	let { data } = $props();
