@@ -111,7 +111,7 @@
 				{#each monthlyRows as row}
 					{@const hasData = row.vatRevenue > 0 || row.vatExpenses > 0}
 					<tr class={hasData ? '' : 'empty-month'}>
-						<td>{getMonthName(row.month)}</td>
+						<td>{getMonthName(row.month - 1)}</td>
 						<td>{formatCurrency(row.vatRevenue)}</td>
 						<td>{formatCurrency(row.vatExpenses)}</td>
 						<td class={row.vatBalance >= 0 ? 'positive' : 'negative'}>

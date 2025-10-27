@@ -33,7 +33,7 @@
 		if (monthRecords.length === 0) {
 			return {
 				month: i,
-				monthName: getMonthName(i + 1),
+				monthName: getMonthName(i),
 				hasData: false,
 				totalDelivered: 0,
 				totalCollected: 0,
@@ -58,7 +58,7 @@
 
 		return {
 			month: i,
-			monthName: getMonthName(i + 1),
+			monthName: getMonthName(i),
 			hasData: true,
 			totalDelivered: analytics.totalDelivered,
 			totalCollected: analytics.totalCollected,

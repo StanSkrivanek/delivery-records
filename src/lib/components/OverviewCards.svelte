@@ -7,7 +7,7 @@
 
 <div class="cards-section">
 	<div class="period-teal">
-		<h2>{getMonthName(selectedMonth)} {selectedYear}</h2>
+		<h2>{getMonthName(selectedMonth - 1)} {selectedYear}</h2>
 	</div>
 
 	<div class="cards-grid">
@@ -18,7 +18,7 @@
 					<h3>Delivered</h3>
 				</div>
 				<p class="card-value">{analytics.totalDelivered} pcs</p>
-				<!-- <p class="label">Total delivered ({getMonthName(selectedMonth)} {selectedYear})</p> -->
+				<!-- <p class="label">Total delivered ({getMonthName(selectedMonth - 1)} {selectedYear})</p> -->
 				<p class="card-subtitle">Delivered parcels</p>
 			</div>
 			<!-- Delivery Sum Money -->
@@ -64,8 +64,7 @@
 			<div class="card purple">
 				<div class="card-header">
 					<h3>Earned</h3>
-					<span>VAT: {
-					formatCurrency(calculateVAT(analytics.toInvoice))}</span>
+					<span>VAT: {formatCurrency(calculateVAT(analytics.toInvoice))}</span>
 				</div>
 				<p class="card-value">{formatCurrency(analytics.toInvoice)}</p>
 				<p class="card-subtitle">Total earnings (no VAT)</p>

@@ -369,7 +369,7 @@ export function generateInvoiceHTML(
 		<div class="invoice-meta">
 			<div class="meta-row">
 				<span class="meta-label">Billing Period:</span>
-				<span class="meta-value">${getMonthName(month)} ${year}</span>
+				<span class="meta-value">${getMonthName(month - 1)} ${year}</span>
 			</div>
 			<div class="meta-row">
 				<span class="meta-label">Service Type:</span>
@@ -396,7 +396,7 @@ export function generateInvoiceHTML(
 				<tr>
 					<td>
 						<strong>Parcel Delivery Services</strong><br>
-						<small>Monthly parcel delivery services for ${getMonthName(month)} ${year}</small>
+						<small>Monthly parcel delivery services for ${getMonthName(month - 1)} ${year}</small>
 					</td>
 					<td class="text-right">${totalDeliveries.toLocaleString()}</td>
 					<td class="text-right">${formatCurrency(4.0)}</td>
@@ -407,7 +407,7 @@ export function generateInvoiceHTML(
 				<tr>
 					<td>
 						<strong>Parcel Collection Services</strong><br>
-						<small>Monthly parcel collection services for ${getMonthName(month)} ${year}</small>
+						<small>Monthly parcel collection services for ${getMonthName(month - 1)} ${year}</small>
 					</td>
 					<td class="text-right">${totalCollections.toLocaleString()}</td>
 					<td class="text-right">${formatCurrency(1.0)}</td>

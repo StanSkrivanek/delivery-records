@@ -142,7 +142,7 @@
 
 <div class="table-section">
 	<div class="table-header">
-		<h3>Records for {getMonthName(selectedMonth)} {selectedYear}</h3>
+		<h3>Records for {getMonthName(selectedMonth - 1)} {selectedYear}</h3>
 		<div class="record-count">
 			{records.length} record{records.length !== 1 ? 's' : ''} found
 		</div>

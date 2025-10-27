@@ -235,7 +235,7 @@ export function formatNumberWithCommas(value: string | number | bigint) {
 }
 /**
  * Get month name from month number
- * @param month Month number (1-12)
+ * @param month Month number (0-11, where 0 = January, 11 = December)
  * @returns Month name
  */
 export function getMonthName(month: number) {
@@ -253,7 +253,7 @@ export function getMonthName(month: number) {
 		'November',
 		'December'
 	];
-	return monthNames[month - 1];
+	return monthNames[month];
 }
 
 /**
