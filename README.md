@@ -110,13 +110,13 @@ static/
 
 ### Pricing Model
 
-- **Deliveries:** €4 per parcel + 23% VAT
-- **Collections:** €1 per parcel + 23% VAT
+- **Deliveries:** €X per parcel + 23% VAT
+- **Collections:** €X per parcel + 23% VAT
 - **Expenses:** Tracked with VAT-inclusive and VAT-exclusive amounts
 
 ### Image Storage
 
-- Format: DD-MM-YYYY\_<random>.avif
+- Format: DD-MM-YYYY\_<random>.webp
 - Location: `static/images/YYYY/Mon/`
 - Multiple images per record (JSON array)
 
