@@ -190,6 +190,34 @@
 	</div>
 </section>
 
+<footer class="site-footer">
+	<div class="footer-content">
+		<div class="footer-section">
+			<h4>Delivery Records</h4>
+			<p class="footer-description">Professional delivery tracking and analytics system</p>
+		</div>
+		<div class="footer-section">
+			<h4>Quick Links</h4>
+			<ul class="footer-links">
+				<li><a href="/records">Records</a></li>
+				<li><a href="/analytics">Analytics</a></li>
+				<li><a href="/revenue">Revenue</a></li>
+				<li><a href="/odometer">Odometer</a></li>
+			</ul>
+		</div>
+		<div class="footer-section">
+			<h4>Information</h4>
+			<ul class="footer-links">
+				<li><a href="/invoice">Invoice Generator</a></li>
+				<li><a href="/backup">Backup</a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="footer-bottom">
+		<p>&copy; {currentYear} Delivery Records. All rights reserved.</p>
+	</div>
+</footer>
+
 <!-- 	yLabels={['Delivery', 'Collections', 'Fails']}
 	xLabel="Date"
 	xType="time"
@@ -250,7 +278,7 @@
 		border-radius: 0.25rem;
 		padding: 1.25rem;
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-		border-left: 6px solid #3c9aff;
+		border-top: 6px solid #ff733c;
 		transition:
 			transform 0.2s ease,
 			box-shadow 0.2s ease;
@@ -279,7 +307,7 @@
 		margin: 0;
 		font-family: 'regular', sans-serif;
 		font-size: 1.25rem;
-		color: #374151;
+		color: #ff733c;
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.05rem;
@@ -337,6 +365,78 @@
 		color: #9ca3af;
 		font-style: italic;
 		margin: 1rem 0;
+	}
+
+	/* Footer Styles */
+	.site-footer {
+		margin-top: 6rem;
+		/* background: linear-gradient(135deg, #374151 0%, #1f2937 100%); */
+		color: hsl(0, 0%, 30%);
+		padding: 3rem 0 1rem;
+		border-top: 4px solid #3c9aff;
+	}
+
+	.footer-content {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		gap: 2rem;
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 0 2rem 2rem;
+	}
+
+	.footer-section h4 {
+		font-family: 'semibold', sans-serif;
+		font-size: 1.1rem;
+		margin-bottom: 1rem;
+		color: hsl(0, 0%, 30%);
+		text-transform: uppercase;
+		letter-spacing: 0.05rem;
+	}
+
+	.footer-description {
+		color: hsl(0, 0%, 30%);
+		max-width: 24ch;
+		font-size: 0.95rem;
+		line-height: 1.6;
+		margin: 0;
+	}
+
+	.footer-links {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.footer-links li {
+		margin-bottom: 0.5rem;
+	}
+
+	.footer-links a {
+		color: hsl(0, 0%, 30%);
+		text-decoration: none;
+		font-size: 0.95rem;
+		transition: color 0.2s ease;
+		display: inline-block;
+	}
+
+	.footer-links a:hover {
+		color: #3c9aff;
+		transform: translateX(3px);
+	}
+
+	.footer-bottom {
+		text-align: center;
+		padding: 1.5rem 2rem 0;
+		border-top: 1px solid #4b5563;
+		max-width: 1200px;
+		margin: 0 auto;
+	}
+
+	.footer-bottom p {
+		margin: 0;
+		font-size: 0.85rem;
+		color: #9ca3af;
 	}
 
 	.cards-grid {
@@ -436,6 +536,20 @@
 		.card-value {
 			font-size: 1.75rem;
 		}
+
+		.site-footer {
+			margin-top: 4rem;
+			padding: 2rem 0 1rem;
+		}
+
+		.footer-content {
+			gap: 1.5rem;
+			padding: 0 1.5rem 1.5rem;
+		}
+
+		.footer-bottom {
+			padding: 1rem 1.5rem 0;
+		}
 	}
 
 	@media (max-width: 480px) {
@@ -449,6 +563,24 @@
 
 		.card-header h3 {
 			font-size: 0.9rem;
+		}
+
+		.footer-content {
+			grid-template-columns: 1fr;
+			gap: 1.5rem;
+			padding: 0 1rem 1rem;
+		}
+
+		.footer-section h4 {
+			font-size: 1rem;
+		}
+
+		.footer-bottom {
+			padding: 1rem 1rem 0;
+		}
+
+		.footer-bottom p {
+			font-size: 0.8rem;
 		}
 	}
 </style>
