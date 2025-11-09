@@ -1,13 +1,18 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 
-	export let data: PageData;
-	export let form: {
-		error?: string;
-		intent?: string;
-		id?: number;
-		values?: Record<string, unknown>;
-	} | null = null;
+	let {
+		data,
+		form = null
+	}: {
+		data: PageData;
+		form?: {
+			error?: string;
+			intent?: string;
+			id?: number;
+			values?: Record<string, unknown>;
+		} | null;
+	} = $props();
 
 	const defaultDate = () => data.filters.startDate || new Date().toISOString().slice(0, 10);
 
@@ -15,7 +20,7 @@
 		entry_date: defaultDate(),
 		driver: '',
 		vehicle: '',
-		start_time: '',
+		start_time: '05:00',
 		end_time: '',
 		start_odometer: '',
 		end_odometer: '',
@@ -54,29 +59,31 @@
 		formValues = defaultValues();
 	};
 
-	$: if (form?.values) {
-		formValues = {
-			entry_date: toInputString(form.values.entry_date, defaultDate()),
-			driver: toInputString(form.values.driver, formValues.driver),
-			vehicle: toInputString(form.values.vehicle, formValues.vehicle),
-			start_time: toInputString(form.values.start_time, formValues.start_time),
-			end_time: toInputString(form.values.end_time, formValues.end_time),
-			start_odometer: toInputString(form.values.start_odometer, formValues.start_odometer),
-			end_odometer: toInputString(form.values.end_odometer, formValues.end_odometer),
-			total_driving_hours: toInputString(
-				form.values.total_driving_hours,
-				formValues.total_driving_hours
-			),
-			total_working_hours: toInputString(
-				form.values.total_working_hours,
-				formValues.total_working_hours
-			),
-			break_minutes: toInputString(form.values.break_minutes, formValues.break_minutes)
-		};
+	$effect(() => {
+		if (form?.values) {
+			formValues = {
+				entry_date: toInputString(form.values.entry_date, defaultDate()),
+				driver: toInputString(form.values.driver, formValues.driver),
+				vehicle: toInputString(form.values.vehicle, formValues.vehicle),
+				start_time: toInputString(form.values.start_time, formValues.start_time),
+				end_time: toInputString(form.values.end_time, formValues.end_time),
+				start_odometer: toInputString(form.values.start_odometer, formValues.start_odometer),
+				end_odometer: toInputString(form.values.end_odometer, formValues.end_odometer),
+				total_driving_hours: toInputString(
+					form.values.total_driving_hours,
+					formValues.total_driving_hours
+				),
+				total_working_hours: toInputString(
+					form.values.total_working_hours,
+					formValues.total_working_hours
+				),
+				break_minutes: toInputString(form.values.break_minutes, formValues.break_minutes)
+			};
 
-		mode = form.intent === 'update' ? 'update' : 'create';
-		editingId = form.intent === 'update' ? (form.id ?? editingId) : editingId;
-	}
+			mode = form.intent === 'update' ? 'update' : 'create';
+			editingId = form.intent === 'update' ? (form.id ?? editingId) : editingId;
+		}
+	});
 
 	const formatHours = (value: number | null | undefined) => Number(value ?? 0).toFixed(2);
 
@@ -95,6 +102,21 @@
 		const diff = (end ?? 0) - (start ?? 0);
 		return diff > 0 ? diff : 0;
 	};
+
+	// Auto-calculate driving hours: working hours minus 3 hours depot time
+	const calculatedDrivingHours = $derived.by(() => {
+		const workingHours = formValues.total_working_hours;
+		if (!workingHours) return '';
+		const working = typeof workingHours === 'string' ? parseFloat(workingHours) : workingHours;
+		if (isNaN(working) || working <= 0) return '';
+		const driving = working - 3;
+		return driving > 0 ? driving.toFixed(2) : '0.00';
+	});
+
+	// Sync calculated value back to formValues for form submission
+	$effect(() => {
+		formValues.total_driving_hours = calculatedDrivingHours;
+	});
 </script>
 
 <svelte:head>
@@ -216,16 +238,6 @@
 			/>
 		</label>
 		<label>
-			<span>Total driving hours</span>
-			<input
-				type="number"
-				name="total_driving_hours"
-				bind:value={formValues.total_driving_hours}
-				min="0"
-				step="0.1"
-			/>
-		</label>
-		<label>
 			<span>Total working hours</span>
 			<input
 				type="number"
@@ -233,6 +245,17 @@
 				bind:value={formValues.total_working_hours}
 				min="0"
 				step="0.1"
+			/>
+		</label>
+		<label>
+			<span>Total driving hours (auto: working hrs - 3 depot hrs)</span>
+			<input
+				type="number"
+				name="total_driving_hours"
+				bind:value={formValues.total_driving_hours}
+				min="0"
+				step="0.1"
+				readonly
 			/>
 		</label>
 		<label>
