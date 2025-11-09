@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import type { Driver, Vehicle } from '$lib/types';
+	import type { PageData } from './$types';
 
 	let {
 		data,
