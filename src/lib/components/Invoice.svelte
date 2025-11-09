@@ -55,6 +55,12 @@
 		{ value: 12, label: 'December' }
 	];
 
+	const filteredMonthOptions = $derived(
+		availableMonths.length > 0
+			? monthOptions.filter((option) => availableMonths.includes(option.value))
+			: monthOptions
+	);
+
 	async function generateInvoice() {
 		loading = true;
 		error = null;
@@ -174,7 +180,7 @@
 			<div class="control-group">
 				<label for="year-select">Year:</label>
 				<select id="year-select" bind:value={selectedYear} disabled={loading}>
-					{#each availableYears as year}
+					{#each availableYears as year (year)}
 						<option value={year}>{year}</option>
 					{/each}
 				</select>
@@ -183,7 +189,7 @@
 			<div class="control-group">
 				<label for="month-select">Month:</label>
 				<select id="month-select" bind:value={selectedMonth} disabled={loading}>
-					{#each monthOptions as month}
+					{#each filteredMonthOptions as month (month.value)}
 						<option value={month.value}>{month.label}</option>
 					{/each}
 				</select>

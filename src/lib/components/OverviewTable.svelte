@@ -33,9 +33,6 @@
 		}
 	};
 
-	// Helper to check if record has images
-	const hasImages = (imagePath: string | undefined): boolean => getImagePaths(imagePath).length > 0;
-
 	/**
 	 * @param {string} imagePath
 	 * @param {number|string} recordId
@@ -82,14 +79,6 @@
 		modalRecordId = '';
 	}
 
-	/**
-	 * @param {{ key: string; }} event
-	 */
-	function handleKeydown(event: { key: string }) {
-		if (event.key === 'Escape' && showModal) {
-			closeModal();
-		}
-	}
 	// function calculateDailyDistances(records: DeliveryRecord[]): { date: string; distance: number }[] {
 	// 	// Sort records by date if not already sorted
 	// 	const sortedRecords = [...records].sort((a, b) => {

@@ -3,14 +3,53 @@
 	import ImageUpload from '$lib/components/ImageUpload.svelte';
 	import Modal from '$lib/components/popups/Modal.svelte';
 
-	let { records } = $props();
+	type UsageMode = 'standard' | 'no_used' | 'other';
+
+	type RecordWithUsage = {
+		id?: number;
+		loaded: number;
+		collected: number;
+		cutters: number;
+		returned: number;
+		missplaced?: number | null;
+		expense?: number | null;
+		expense_no_vat?: number | null;
+		odometer?: number | null;
+		image_path?: string | null;
+		note?: string | null;
+		entry_date: string;
+		created_at?: string | null;
+		usage_mode?: UsageMode | null;
+		distance_manual?: number | null;
+		purpose?: string | null;
+	};
+
+	type EditableRecord = {
+		id: number | undefined;
+		loaded: number;
+		collected: number;
+		cutters: number;
+		returned: number;
+		missplaced: number;
+		expense: number;
+		expense_no_vat: number;
+		odometer: number;
+		note: string;
+		entry_date: string;
+		image_path: string;
+		usage_mode: UsageMode;
+		distance_manual: number;
+		purpose: string;
+	};
+
+	let { records }: { records: RecordWithUsage[] } = $props();
 
 	let modalImages = $state<string[]>([]);
 	let currentImageIndex = $state(0);
 	let modalRecordId = $state<string | number>('');
 
-	let editRecord = $state({
-		id: undefined as number | undefined,
+	let editRecord = $state<EditableRecord>({
+		id: undefined,
 		loaded: 0,
 		collected: 0,
 		cutters: 0,
@@ -22,7 +61,7 @@
 		note: '',
 		entry_date: '',
 		image_path: '',
-		usage_mode: 'standard' as 'standard' | 'no_used' | 'other',
+		usage_mode: 'standard',
 		distance_manual: 0,
 		purpose: ''
 	});
@@ -32,6 +71,7 @@
 
 	// Delete dialog state
 	let recordIdToDelete = $state<number | null>(null);
+	let deleteRecordDate = $state<string>('');
 
 	let showModal = $state(false);
 	let showEditModal = $state(false);
@@ -43,11 +83,11 @@
 	 * Helper function to build editRecord object from record data
 	 */
 	function buildEditRecord(
-		record: any,
-		usage_mode: 'standard' | 'no_used' | 'other',
+		record: RecordWithUsage,
+		usage_mode: UsageMode,
 		distance_manual: number,
 		purpose: string
-	) {
+	): EditableRecord {
 		return {
 			id: record.id ?? undefined,
 			loaded: record.loaded,
@@ -59,7 +99,7 @@
 			expense_no_vat: record.expense_no_vat ?? 0,
 			odometer: record.odometer ?? 0,
 			image_path: record.image_path ?? '',
-			note: record.note || '',
+			note: record.note ?? '',
 			entry_date: record.entry_date,
 			usage_mode,
 			distance_manual,
@@ -70,33 +110,22 @@
 	/**
 	 * Helper function to determine usage mode from record data
 	 */
-	function determineUsageMode(record: any): 'standard' | 'no_used' | 'other' {
-		if (record.odometer && record.odometer > 0) {
+	function determineUsageMode(record: RecordWithUsage): UsageMode {
+		if (record.usage_mode) {
+			return record.usage_mode;
+		}
+		if (record.purpose && (record.distance_manual ?? 0) > 0) {
+			return 'other';
+		}
+		if ((record.odometer ?? 0) > 0) {
 			return 'standard';
 		}
 		return 'no_used';
 	}
 
-	/**
-	 * @param {{ loaded: number; collected: number; cutters: number; returned: number; missplaced: number; expense: number; entry_date: string; image_path: string; }} record
-	 */
-	async function openEditModal(record: {
-		id?: number;
-		loaded: number;
-		collected: number;
-		cutters: number;
-		returned: number;
-		missplaced?: number;
-		expense?: number;
-		expense_no_vat?: number;
-		odometer?: number;
-		image_path?: string;
-		note?: string;
-		entry_date: string;
-		created_at?: string;
-	}) {
+	async function openEditModal(record: RecordWithUsage) {
 		// Set default values
-		let usage_mode: 'standard' | 'no_used' | 'other' = 'standard';
+		let usage_mode: UsageMode = 'standard';
 		let distance_manual = 0;
 		let purpose = '';
 
@@ -104,7 +133,7 @@
 			// Fetch complete record data including vehicle usage from both tables
 			const response = await fetch(`/api/records/${record.id}/full`);
 			if (response.ok) {
-				const fullRecord = await response.json();
+				const fullRecord = (await response.json()) as RecordWithUsage;
 				if (fullRecord) {
 					// Use data from both tables
 					record = fullRecord; // Update record with fresh data from database
@@ -190,8 +219,8 @@
 			});
 
 			if (res.ok) {
-				const updatedRecord = await res.json();
-				const idx = records.findIndex((r: { id: number | undefined }) => r.id === editRecord.id);
+				const updatedRecord = (await res.json()) as RecordWithUsage;
+				const idx = records.findIndex((r) => r.id === editRecord.id);
 				if (idx !== -1) {
 					records[idx] = updatedRecord;
 				}
@@ -209,7 +238,7 @@
 	}
 
 	// Helper to parse image paths (handles both JSON array and plain string)
-	const getImagePaths = (imagePath: string | undefined): string[] => {
+	const getImagePaths = (imagePath: string | null | undefined): string[] => {
 		if (!imagePath) return [];
 		try {
 			const parsed = JSON.parse(imagePath);
@@ -220,9 +249,14 @@
 	};
 
 	// Helper to check if record has images
-	const hasImages = (imagePath: string | undefined): boolean => getImagePaths(imagePath).length > 0;
+	const hasImages = (imagePath: string | null | undefined): boolean =>
+		getImagePaths(imagePath).length > 0;
 
-	const openImageModal = (imagePath: string, recordId: string | number) => {
+	const openImageModal = (
+		imagePath: string | null | undefined,
+		recordId: string | number | undefined
+	) => {
+		if (!recordId) return;
 		const paths = getImagePaths(imagePath);
 		if (paths.length > 0) {
 			modalImages = paths;
@@ -259,20 +293,21 @@
 		});
 	};
 
-	const openDeleteModal = (recordId: number) => {
+	const openDeleteModal = (recordId: number, entryDate: string) => {
 		recordIdToDelete = recordId;
+		deleteRecordDate = entryDate;
 		showDeleteModal = true;
 	};
 
-	const openNoteModal = (note: string) => {
-		modalNote = note;
+	const openNoteModal = (note: string | null | undefined) => {
+		modalNote = note || '';
 		showNoteModal = true;
 	};
 
-	async function confirmDeleteRecord() {
+	async function confirmDelete() {
 		if (recordIdToDelete !== null) {
 			// Optimistically remove from local array for instant feedback
-			records = records.filter((r: { id: number | undefined }) => r.id !== recordIdToDelete);
+			records = records.filter((r) => r.id !== recordIdToDelete);
 
 			const recordToDelete = recordIdToDelete;
 			recordIdToDelete = null; // Reset immediately
@@ -338,7 +373,7 @@
 					{#each records as record (record.id)}
 						<tr>
 							<td class="date-cell">
-								{formatEntryDate(record.entry_date || record.date_created)}
+								{formatEntryDate(record.entry_date || record.created_at || '')}
 							</td>
 							<td class="number-cell">{record.loaded}</td>
 							<td class="number-cell">{record.collected}</td>
@@ -377,7 +412,8 @@
 							<td>
 								<button
 									class="btn red"
-									onclick={() => record.id !== undefined && openDeleteModal(record.id)}
+									onclick={() =>
+										record.id !== undefined && openDeleteModal(record.id, record.entry_date)}
 									title="Delete record"
 								>
 									Delete
@@ -401,6 +437,7 @@
 			{/if}
 		</h2>
 	{/snippet}
+
 	{#snippet children()}
 		<div class="image-modal-content">
 			{#if modalImages.length > 0}
@@ -438,28 +475,23 @@
 </Modal>
 
 <!-- Delete Confirmation Modal using universal Modal -->
+<!-- Delete Confirmation Modal -->
 <Modal bind:showModal={showDeleteModal}>
 	{#snippet header()}
 		<h2>Confirm Delete</h2>
 	{/snippet}
+
 	{#snippet children()}
-		<div class="delete-modal-content">
-			<p>Are you sure you want to delete this record?</p>
-		</div>
+		<p>Are you sure you want to delete this record from {formatEntryDate(deleteRecordDate)}?</p>
+		<p>This action cannot be undone.</p>
 	{/snippet}
+
 	{#snippet footer()}
 		<div class="delete-modal-actions">
-			<button
-				type="button"
-				class="btn red"
-				onclick={() => {
-					showDeleteModal = false;
-					recordIdToDelete = null;
-				}}
+			<button type="button" class="cancel-button" onclick={() => (showDeleteModal = false)}
+				>Cancel</button
 			>
-				Cancel
-			</button>
-			<button type="button" class="btn blue" onclick={confirmDeleteRecord}>Delete</button>
+			<button type="button" class="delete-button" onclick={confirmDelete}>Delete</button>
 		</div>
 	{/snippet}
 </Modal>
@@ -469,8 +501,15 @@
 	{#snippet header()}
 		<h2>Edit Record | {formatEntryDate(editRecord.entry_date)}</h2>
 	{/snippet}
+
 	{#snippet children()}
-		<form class="edit-form">
+		<form
+			class="edit-form"
+			onsubmit={(e) => {
+				e.preventDefault();
+				saveEdit();
+			}}
+		>
 			<!-- Vehicle Usage Mode Selection -->
 			<div class="usage-mode-section">
 				<label>
@@ -569,12 +608,11 @@
 							{#if hasImages(editRecord.image_path) && (!editImageFiles || editImageFiles.length === 0)}
 								{@const existingPaths = getImagePaths(editRecord.image_path)}
 								<div class="current-images-grid">
-									{#each existingPaths as imgPath, idx}
+									{#each existingPaths as imgPath, idx (imgPath + '-' + idx)}
 										<div class="current-image">
-											<!-- svelte-ignore a11y_img_redundant_alt -->
 											<img
 												src="/{imgPath}"
-												alt="Current image {idx + 1}"
+												alt={`Existing image ${idx + 1} for record ${editRecord.id ?? ''}`}
 												class="current-image-preview"
 											/>
 										</div>
@@ -604,6 +642,7 @@
 			</div>
 		</form>
 	{/snippet}
+
 	{#snippet footer()}
 		<div class="edit-modal-actions">
 			<button type="button" class="btn red" onclick={closeEditModal}>Cancel</button>
@@ -616,6 +655,7 @@
 	{#snippet header()}
 		<h2>Note Preview</h2>
 	{/snippet}
+
 	{#snippet children()}
 		<div class="note-modal-content">
 			<p>{modalNote}</p>
@@ -981,11 +1021,6 @@
 
 	.nav-btn:active:not(:disabled) {
 		transform: translateY(0);
-	}
-
-	.delete-modal-content {
-		text-align: center;
-		padding: 1rem;
 	}
 
 	.delete-modal-actions {

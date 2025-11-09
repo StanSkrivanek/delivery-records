@@ -16,7 +16,6 @@
 	let selectedFiles: File[] = $state([]);
 	let note = $state('');
 	let usage_mode = $state('standard');
-	let odometer_end = $state(0);
 	let distance_manual = $state(0);
 	let purpose = $state('');
 	// Date picker functionality - simplified
@@ -29,22 +28,6 @@
 		const month = String(now.getMonth() + 1).padStart(2, '0');
 		const day = String(now.getDate()).padStart(2, '0');
 		return `${year}-${month}-${day}`;
-	}
-
-	function formatDateForDisplay(dateString: string) {
-		const date = new Date(dateString);
-		return date.toLocaleDateString('en-US', {
-			weekday: 'long',
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
-		});
-	}
-
-	function isToday(dateString: string) {
-		const selected = new Date(dateString);
-		const today = new Date();
-		return selected.toDateString() === today.toDateString();
 	}
 
 	// Reset form after successful submission

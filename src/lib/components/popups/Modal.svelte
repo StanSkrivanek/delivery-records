@@ -1,7 +1,19 @@
-<script>
-	let { showModal = $bindable(), header, children, footer = null } = $props();
+<script lang="ts">
+	import type { Snippet } from 'svelte';
 
-	let dialog = $state(); // HTMLDialogElement
+	let {
+		showModal = $bindable(false),
+		header,
+		footer,
+		children
+	}: {
+		showModal?: boolean;
+		header?: Snippet;
+		footer?: Snippet;
+		children?: Snippet;
+	} = $props();
+
+	let dialog = $state<HTMLDialogElement>();
 
 	$effect(() => {
 		if (showModal && dialog) {
@@ -17,18 +29,27 @@
 	// }
 </script>
 
-<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
 <dialog
 	bind:this={dialog}
 	onclose={() => (showModal = false)}
-	onclick={(e) => {
-		if (e.target === dialog) dialog.close();
+	onclick={(event) => {
+		if (event.target === dialog) {
+			dialog.close();
+		}
+	}}
+	onkeydown={(event) => {
+		if ((event.key === 'Enter' || event.key === ' ') && event.target === dialog) {
+			event.preventDefault();
+			dialog.close();
+		}
 	}}
 >
 	<div class="dialog">
-		<div class="dialog-header">
-			{@render header?.()}
-		</div>
+		{#if header}
+			<div class="dialog-header">
+				{@render header()}
+			</div>
+		{/if}
 
 		<div class="dialog-content">
 			{@render children?.()}
@@ -38,8 +59,7 @@
 			{#if footer}
 				{@render footer()}
 			{:else}
-				<!-- svelte-ignore a11y_autofocus -->
-				<button autofocus onclick={() => dialog.close()}>Close</button>
+				<button type="button" onclick={() => dialog?.close()}>Close</button>
 			{/if}
 		</div>
 	</div>
@@ -51,10 +71,9 @@
 		border-radius: 0.4em;
 		border: none;
 		padding: 0;
-        @media screen and (max-width: 400px) {
-            width: 90vw;
-            
-        }
+		@media screen and (max-width: 400px) {
+			width: 90vw;
+		}
 	}
 	dialog::backdrop {
 		background: rgba(0, 0, 0, 0.3);
@@ -119,7 +138,7 @@
 		overflow-y: auto;
 	}
 	.dialog-footer {
-        padding-top: 1em;
+		padding-top: 1em;
 		border-top: 1px solid #ccc;
 	}
 	/* .modal-footer {

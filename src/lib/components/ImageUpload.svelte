@@ -88,7 +88,7 @@
 	>
 		{#if selectedFiles && selectedFiles.length > 0}
 			<div class="files-grid">
-				{#each selectedFiles as file, index}
+				{#each selectedFiles as file, index (file.name + '-' + index)}
 					<div class="file-preview">
 						<img src={URL.createObjectURL(file)} alt="Preview {index + 1}" class="preview-image" />
 						<div class="file-info">

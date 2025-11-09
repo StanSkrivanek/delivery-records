@@ -46,6 +46,32 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_vehicle_usage_log_record_id ON vehicle_usage_log(record_id);
 `);
 
+db.exec(`
+	CREATE TABLE IF NOT EXISTS driving_log_entries (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		entry_date DATE NOT NULL,
+		driver TEXT NOT NULL,
+		vehicle TEXT NOT NULL,
+		start_time TEXT NOT NULL,
+		end_time TEXT NOT NULL,
+		start_odometer INTEGER NOT NULL,
+		end_odometer INTEGER NOT NULL,
+		total_driving_hours REAL DEFAULT 0,
+		total_working_hours REAL DEFAULT 0,
+		break_minutes INTEGER DEFAULT 0,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	)
+`);
+
+db.exec(`
+	CREATE INDEX IF NOT EXISTS idx_driving_log_entries_entry_date ON driving_log_entries(entry_date);
+`);
+
+db.exec(`
+	CREATE INDEX IF NOT EXISTS idx_driving_log_entries_driver ON driving_log_entries(driver);
+`);
+
 export interface Record {
 	id?: number;
 	loaded: number;
@@ -69,6 +95,22 @@ export interface OdometerReading {
 	daily_difference: number | null;
 	days_between: number | null;
 	created_at?: string;
+}
+
+export interface DrivingLogEntry {
+	id?: number;
+	entry_date: string;
+	driver: string;
+	vehicle: string;
+	start_time: string;
+	end_time: string;
+	start_odometer: number;
+	end_odometer: number;
+	total_driving_hours: number;
+	total_working_hours: number;
+	break_minutes: number;
+	created_at?: string;
+	updated_at?: string;
 }
 
 export class RecordService {
@@ -319,6 +361,185 @@ export class RecordService {
 					created_at: string;
 				})
 			: null;
+	}
+
+	//----------------------------------------------------------------------------------- DRIVING LOG METHODS
+	static async createDrivingLogEntry(
+		entry: Omit<DrivingLogEntry, 'id' | 'created_at' | 'updated_at'>
+	): Promise<number> {
+		const stmt = db.prepare(`
+			INSERT INTO driving_log_entries (
+				entry_date,
+				driver,
+				vehicle,
+				start_time,
+				end_time,
+				start_odometer,
+				end_odometer,
+				total_driving_hours,
+				total_working_hours,
+				break_minutes
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		`);
+
+		const result = stmt.run(
+			entry.entry_date,
+			entry.driver,
+			entry.vehicle,
+			entry.start_time,
+			entry.end_time,
+			entry.start_odometer,
+			entry.end_odometer,
+			entry.total_driving_hours ?? 0,
+			entry.total_working_hours ?? 0,
+			entry.break_minutes ?? 0
+		);
+
+		return result.lastInsertRowid as number;
+	}
+
+	static async updateDrivingLogEntry(
+		id: number,
+		entry: Omit<DrivingLogEntry, 'id' | 'created_at' | 'updated_at'>
+	): Promise<DrivingLogEntry> {
+		const stmt = db.prepare(`
+			UPDATE driving_log_entries
+			SET entry_date = ?,
+				driver = ?,
+				vehicle = ?,
+				start_time = ?,
+				end_time = ?,
+				start_odometer = ?,
+				end_odometer = ?,
+				total_driving_hours = ?,
+				total_working_hours = ?,
+				break_minutes = ?,
+				updated_at = CURRENT_TIMESTAMP
+			WHERE id = ?
+		`);
+
+		const result = stmt.run(
+			entry.entry_date,
+			entry.driver,
+			entry.vehicle,
+			entry.start_time,
+			entry.end_time,
+			entry.start_odometer,
+			entry.end_odometer,
+			entry.total_driving_hours ?? 0,
+			entry.total_working_hours ?? 0,
+			entry.break_minutes ?? 0,
+			id
+		);
+
+		if (result.changes === 0) {
+			throw new Error('Driving log entry not found');
+		}
+
+		const updatedEntry = await this.getDrivingLogEntryById(id);
+		if (!updatedEntry) {
+			throw new Error('Failed to retrieve updated driving log entry');
+		}
+
+		return updatedEntry;
+	}
+
+	static async deleteDrivingLogEntry(id: number): Promise<boolean> {
+		const stmt = db.prepare('DELETE FROM driving_log_entries WHERE id = ?');
+		const result = stmt.run(id);
+		return result.changes > 0;
+	}
+
+	static async getDrivingLogEntryById(id: number): Promise<DrivingLogEntry | null> {
+		const stmt = db.prepare('SELECT * FROM driving_log_entries WHERE id = ?');
+		const entry = stmt.get(id);
+		return entry ? (entry as DrivingLogEntry) : null;
+	}
+
+	static async getDrivingLogEntries(filters?: {
+		startDate?: string;
+		endDate?: string;
+		driver?: string;
+		vehicle?: string;
+	}): Promise<DrivingLogEntry[]> {
+		let query = 'SELECT * FROM driving_log_entries WHERE 1=1';
+		const params: (string | number)[] = [];
+
+		if (filters?.startDate) {
+			query += ' AND entry_date >= ?';
+			params.push(filters.startDate);
+		}
+
+		if (filters?.endDate) {
+			query += ' AND entry_date <= ?';
+			params.push(filters.endDate);
+		}
+
+		if (filters?.driver) {
+			query += ' AND driver = ?';
+			params.push(filters.driver);
+		}
+
+		if (filters?.vehicle) {
+			query += ' AND vehicle = ?';
+			params.push(filters.vehicle);
+		}
+
+		query += ' ORDER BY entry_date DESC, start_time ASC';
+		const stmt = db.prepare(query);
+		return stmt.all(...params) as DrivingLogEntry[];
+	}
+
+	static async getDrivingLogDistinctValues(): Promise<{
+		drivers: string[];
+		vehicles: string[];
+	}> {
+		const driverRows = db
+			.prepare(
+				`
+				SELECT DISTINCT driver
+				FROM driving_log_entries
+				WHERE driver IS NOT NULL AND TRIM(driver) != ''
+				ORDER BY driver COLLATE NOCASE
+			`
+			)
+			.all() as { driver: string }[];
+
+		const vehicleRows = db
+			.prepare(
+				`
+				SELECT DISTINCT vehicle
+				FROM driving_log_entries
+				WHERE vehicle IS NOT NULL AND TRIM(vehicle) != ''
+				ORDER BY vehicle COLLATE NOCASE
+			`
+			)
+			.all() as { vehicle: string }[];
+
+		return {
+			drivers: driverRows.map((row) => row.driver),
+			vehicles: vehicleRows.map((row) => row.vehicle)
+		};
+	}
+
+	static calculateDrivingLogSummary(entries: DrivingLogEntry[]): {
+		totalDrivingHours: number;
+		totalWorkingHours: number;
+		totalBreakMinutes: number;
+		totalDistance: number;
+	} {
+		return entries.reduce(
+			(acc, entry) => {
+				const distance = (entry.end_odometer ?? 0) - (entry.start_odometer ?? 0);
+				return {
+					totalDrivingHours: acc.totalDrivingHours + (entry.total_driving_hours ?? 0),
+					totalWorkingHours: acc.totalWorkingHours + (entry.total_working_hours ?? 0),
+					totalBreakMinutes: acc.totalBreakMinutes + (entry.break_minutes ?? 0),
+					totalDistance: acc.totalDistance + Math.max(distance, 0)
+				};
+			},
+			{ totalDrivingHours: 0, totalWorkingHours: 0, totalBreakMinutes: 0, totalDistance: 0 }
+		);
 	}
 	//----------------------------------------------------------------------------------- ODOMETER METHODS
 
@@ -702,6 +923,35 @@ export class RecordService {
     );
   `);
 				console.log('Created vehicle_usage_log table');
+			}
+
+			const drivingLogTable = db
+				.prepare(
+					`
+	  SELECT name FROM sqlite_master WHERE type='table' AND name='driving_log_entries'
+	`
+				)
+				.get();
+
+			if (!drivingLogTable) {
+				db.exec(`
+			CREATE TABLE driving_log_entries (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				entry_date DATE NOT NULL,
+				driver TEXT NOT NULL,
+				vehicle TEXT NOT NULL,
+				start_time TEXT NOT NULL,
+				end_time TEXT NOT NULL,
+				start_odometer INTEGER NOT NULL,
+				end_odometer INTEGER NOT NULL,
+				total_driving_hours REAL DEFAULT 0,
+				total_working_hours REAL DEFAULT 0,
+				break_minutes INTEGER DEFAULT 0,
+				created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+				updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+			);
+		`);
+				console.log('Created driving_log_entries table');
 			}
 		} catch (error) {
 			console.error('Migration error:', error);
