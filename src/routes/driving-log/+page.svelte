@@ -26,12 +26,13 @@
 		end_odometer: '',
 		total_driving_hours: '',
 		total_working_hours: '',
-		break_minutes: ''
+		break_minutes: '0'
 	});
 
-	let mode: 'create' | 'update' = 'create';
-	let editingId: number | null = null;
-	let formValues = defaultValues();
+	let mode: 'create' | 'update' = $state('create');
+	let editingId: number | null = $state(null);
+	let formValues = $state(defaultValues());
+	let skipAutoCalc = $state(false);
 
 	const toInputString = (value: unknown, fallback = '') =>
 		value === undefined || value === null || value === '' ? fallback : String(value);
@@ -39,21 +40,29 @@
 	const handleEdit = (entry: PageData['entries'][number]) => {
 		mode = 'update';
 		editingId = entry.id ?? null;
-		formValues = {
-			entry_date: entry.entry_date,
-			driver: entry.driver,
-			vehicle: entry.vehicle,
-			start_time: entry.start_time,
-			end_time: entry.end_time,
-			start_odometer: toInputString(entry.start_odometer),
-			end_odometer: toInputString(entry.end_odometer),
-			total_driving_hours: toInputString(entry.total_driving_hours),
-			total_working_hours: toInputString(entry.total_working_hours),
-			break_minutes: toInputString(entry.break_minutes)
-		};
+
+		// Directly set values without triggering auto-calc
+		skipAutoCalc = true;
+
+		formValues.entry_date = entry.entry_date;
+		formValues.driver = entry.driver;
+		formValues.vehicle = entry.vehicle;
+		formValues.start_time = entry.start_time;
+		formValues.end_time = entry.end_time;
+		formValues.start_odometer = toInputString(entry.start_odometer);
+		formValues.end_odometer = toInputString(entry.end_odometer);
+		formValues.break_minutes = toInputString(entry.break_minutes, '0');
+		formValues.total_working_hours = toInputString(entry.total_working_hours);
+		formValues.total_driving_hours = toInputString(entry.total_driving_hours);
+
+		// Re-enable auto-calc for future changes
+		queueMicrotask(() => {
+			skipAutoCalc = false;
+		});
 	};
 
 	const cancelEdit = () => {
+		skipAutoCalc = false;
 		mode = 'create';
 		editingId = null;
 		formValues = defaultValues();
@@ -103,19 +112,64 @@
 		return diff > 0 ? diff : 0;
 	};
 
-	// Auto-calculate driving hours: working hours minus 3 hours depot time
+	// Helper to calculate hours between two time strings (HH:MM format)
+	const calculateHoursBetweenTimes = (startTime: string, endTime: string): number => {
+		if (!startTime || !endTime) return 0;
+
+		const [startHour, startMin] = startTime.split(':').map(Number);
+		const [endHour, endMin] = endTime.split(':').map(Number);
+
+		const startTotalMinutes = startHour * 60 + startMin;
+		let endTotalMinutes = endHour * 60 + endMin;
+
+		// Handle next-day end time (e.g., start 22:00, end 02:00)
+		if (endTotalMinutes < startTotalMinutes) {
+			endTotalMinutes += 24 * 60;
+		}
+
+		const diffMinutes = endTotalMinutes - startTotalMinutes;
+		return diffMinutes / 60;
+	};
+
+	// Auto-calculate total working hours from start_time to end_time
+	const calculatedWorkingHours = $derived.by(() => {
+		if (!formValues.start_time || !formValues.end_time) return '';
+		const hours = calculateHoursBetweenTimes(formValues.start_time, formValues.end_time);
+		return hours > 0 ? hours.toFixed(2) : '';
+	});
+
+	// Auto-calculate driving hours: working hours - 3 depot hours - break time
 	const calculatedDrivingHours = $derived.by(() => {
-		const workingHours = formValues.total_working_hours;
-		if (!workingHours) return '';
-		const working = typeof workingHours === 'string' ? parseFloat(workingHours) : workingHours;
-		if (isNaN(working) || working <= 0) return '';
-		const driving = working - 3;
+		const workingHours =
+			typeof calculatedWorkingHours === 'string'
+				? parseFloat(calculatedWorkingHours)
+				: calculatedWorkingHours;
+		if (!workingHours || isNaN(workingHours) || workingHours <= 0) return '';
+
+		const breakMinutes =
+			typeof formValues.break_minutes === 'string'
+				? parseFloat(formValues.break_minutes)
+				: (formValues.break_minutes ?? 0);
+		const breakHours = (breakMinutes || 0) / 60;
+
+		const driving = workingHours - 3 - breakHours;
 		return driving > 0 ? driving.toFixed(2) : '0.00';
 	});
 
-	// Sync calculated value back to formValues for form submission
+	// Sync calculated values back to formValues for form submission
 	$effect(() => {
-		formValues.total_driving_hours = calculatedDrivingHours;
+		if (!skipAutoCalc && formValues.start_time && formValues.end_time) {
+			const newWorking = calculatedWorkingHours;
+			const newDriving = calculatedDrivingHours;
+
+			// Only update if values actually changed
+			if (formValues.total_working_hours !== newWorking) {
+				formValues.total_working_hours = newWorking;
+			}
+			if (formValues.total_driving_hours !== newDriving) {
+				formValues.total_driving_hours = newDriving;
+			}
+		}
 	});
 </script>
 
@@ -238,29 +292,34 @@
 			/>
 		</label>
 		<label>
-			<span>Total working hours</span>
-			<input
-				type="number"
-				name="total_working_hours"
-				bind:value={formValues.total_working_hours}
-				min="0"
-				step="0.1"
-			/>
-		</label>
-		<label>
-			<span>Total driving hours (auto: working hrs - 3 depot hrs)</span>
-			<input
-				type="number"
-				name="total_driving_hours"
-				bind:value={formValues.total_driving_hours}
-				min="0"
-				step="0.1"
-				readonly
-			/>
-		</label>
-		<label>
 			<span>Break (minutes)</span>
-			<input type="number" name="break_minutes" bind:value={formValues.break_minutes} min="0" />
+			<input
+				type="number"
+				name="break_minutes"
+				bind:value={formValues.break_minutes}
+				min="0"
+				placeholder="0"
+			/>
+		</label>
+		<label>
+			<span>Total working hour</span>
+			<input
+				type="text"
+				value={formValues.total_working_hours}
+				readonly
+				style="background: #f3f4f6; cursor: not-allowed;"
+			/>
+			<input type="hidden" name="total_working_hours" value={formValues.total_working_hours} />
+		</label>
+		<label>
+			<span>Total driving hours</span>
+			<input
+				type="text"
+				value={formValues.total_driving_hours}
+				readonly
+				style="background: #f3f4f6; cursor: not-allowed;"
+			/>
+			<input type="hidden" name="total_driving_hours" value={formValues.total_driving_hours} />
 		</label>
 		<div class="form-actions">
 			<button type="submit" class="primary"
