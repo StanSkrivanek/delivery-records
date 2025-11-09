@@ -241,7 +241,7 @@
 	<div class="form-header">
 		<h2>{mode === 'create' ? 'Add New Entry' : 'Edit Entry'}</h2>
 		{#if mode === 'update'}
-			<button type="button" class="link" on:click={cancelEdit}>Cancel edit</button>
+			<button type="button" class="link" onclick={cancelEdit}>Cancel edit</button>
 		{/if}
 	</div>
 	{#if form?.error}
@@ -369,12 +369,12 @@
 							<td>{formatHours(entry.total_working_hours)}</td>
 							<td>{formatBreak(entry.break_minutes)}</td>
 							<td class="row-actions">
-								<button type="button" class="link" on:click={() => handleEdit(entry)}>Edit</button>
+								<button type="button" class="link" onclick={() => handleEdit(entry)}>Edit</button>
 								<form
 									method="post"
 									action="?/delete"
 									class="inline-form"
-									on:submit={(event) => {
+									onsubmit={(event) => {
 										if (!confirm('Delete this entry?')) event.preventDefault();
 									}}
 								>
