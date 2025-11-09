@@ -226,12 +226,21 @@
 		</div>
 	</form>
 	<datalist id="drivers">
-		{#each data.drivers as driverOption}
+		{#each data.drivers as driver (driver.id)}
+			<option value={driver.full_name}>{driver.full_name}</option>
+		{/each}
+		{#each data.existingDrivers as driverOption (driverOption)}
 			<option value={driverOption}>{driverOption}</option>
 		{/each}
 	</datalist>
 	<datalist id="vehicles">
-		{#each data.vehicles as vehicleOption}
+		{#each data.vehicles as vehicle (vehicle.id)}
+			<option value="{vehicle.make} {vehicle.model} ({vehicle.registration_number})">
+				{vehicle.make}
+				{vehicle.model} ({vehicle.registration_number})
+			</option>
+		{/each}
+		{#each data.existingVehicles as vehicleOption (vehicleOption)}
 			<option value={vehicleOption}>{vehicleOption}</option>
 		{/each}
 	</datalist>
@@ -257,11 +266,24 @@
 		</label>
 		<label>
 			<span>Driver</span>
-			<input type="text" name="driver" bind:value={formValues.driver} list="drivers" required />
+			<select name="driver" bind:value={formValues.driver} required>
+				<option value="">-- Select a driver --</option>
+				{#each data.drivers as driver (driver.id)}
+					<option value={driver.full_name}>{driver.full_name}</option>
+				{/each}
+			</select>
 		</label>
 		<label>
 			<span>Vehicle</span>
-			<input type="text" name="vehicle" bind:value={formValues.vehicle} list="vehicles" required />
+			<select name="vehicle" bind:value={formValues.vehicle} required>
+				<option value="">-- Select a vehicle --</option>
+				{#each data.vehicles as vehicle (vehicle.id)}
+					<option value="{vehicle.make} {vehicle.model} ({vehicle.registration_number})">
+						{vehicle.make}
+						{vehicle.model} ({vehicle.registration_number})
+					</option>
+				{/each}
+			</select>
 		</label>
 		<label>
 			<span>Start time</span>

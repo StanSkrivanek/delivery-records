@@ -36,14 +36,24 @@ export const load: PageServerLoad = async ({ url }) => {
 		vehicle: vehicle || undefined
 	});
 
-	const { drivers, vehicles } = await RecordService.getDrivingLogDistinctValues();
+	// Load drivers and vehicles from database
+	const allDrivers = await RecordService.getAllDrivers();
+	const allVehicles = await RecordService.getAllVehicles();
+
+	// Get distinct values from existing log entries for backward compatibility
+	const { drivers: existingDrivers, vehicles: existingVehicles } =
+		await RecordService.getDrivingLogDistinctValues();
+
 	const summary = RecordService.calculateDrivingLogSummary(entries);
 
 	return {
 		entries,
 		filters,
-		drivers,
-		vehicles,
+		drivers: allDrivers,
+		vehicles: allVehicles,
+		// Include existing values for filtering
+		existingDrivers,
+		existingVehicles,
 		summary
 	};
 };

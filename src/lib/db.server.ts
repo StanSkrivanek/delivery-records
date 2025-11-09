@@ -72,6 +72,67 @@ db.exec(`
 	CREATE INDEX IF NOT EXISTS idx_driving_log_entries_driver ON driving_log_entries(driver);
 `);
 
+// Table for drivers
+db.exec(`
+	CREATE TABLE IF NOT EXISTS drivers (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		full_name TEXT NOT NULL,
+		date_of_birth DATE NOT NULL,
+		address TEXT NOT NULL,
+		driver_license_number TEXT NOT NULL UNIQUE,
+		driver_license_image_path TEXT,
+		email TEXT,
+		phone TEXT,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	)
+`);
+
+db.exec(`
+	CREATE INDEX IF NOT EXISTS idx_drivers_full_name ON drivers(full_name);
+`);
+
+// Table for vehicles
+db.exec(`
+	CREATE TABLE IF NOT EXISTS vehicles (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		make TEXT NOT NULL,
+		model TEXT NOT NULL,
+		type TEXT NOT NULL,
+		registration_number TEXT NOT NULL UNIQUE,
+		color TEXT NOT NULL,
+		initial_mileage INTEGER NOT NULL DEFAULT 0,
+		current_mileage INTEGER NOT NULL DEFAULT 0,
+		year INTEGER,
+		vin TEXT,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	)
+`);
+
+db.exec(`
+	CREATE INDEX IF NOT EXISTS idx_vehicles_registration ON vehicles(registration_number);
+`);
+
+// Table to link drivers to vehicles (many-to-many relationship)
+db.exec(`
+	CREATE TABLE IF NOT EXISTS driver_vehicle_assignments (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		driver_id INTEGER NOT NULL REFERENCES drivers(id) ON DELETE CASCADE,
+		vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+		assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		UNIQUE(driver_id, vehicle_id)
+	)
+`);
+
+db.exec(`
+	CREATE INDEX IF NOT EXISTS idx_driver_vehicle_driver ON driver_vehicle_assignments(driver_id);
+`);
+
+db.exec(`
+	CREATE INDEX IF NOT EXISTS idx_driver_vehicle_vehicle ON driver_vehicle_assignments(vehicle_id);
+`);
+
 export interface Record {
 	id?: number;
 	loaded: number;
@@ -111,6 +172,41 @@ export interface DrivingLogEntry {
 	break_minutes: number;
 	created_at?: string;
 	updated_at?: string;
+}
+
+export interface Driver {
+	id?: number;
+	full_name: string;
+	date_of_birth: string;
+	address: string;
+	driver_license_number: string;
+	driver_license_image_path?: string;
+	email?: string;
+	phone?: string;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface Vehicle {
+	id?: number;
+	make: string;
+	model: string;
+	type: string;
+	registration_number: string;
+	color: string;
+	initial_mileage: number;
+	current_mileage: number;
+	year?: number;
+	vin?: string;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface DriverVehicleAssignment {
+	id?: number;
+	driver_id: number;
+	vehicle_id: number;
+	assigned_at?: string;
 }
 
 export class RecordService {
@@ -956,6 +1052,226 @@ export class RecordService {
 		} catch (error) {
 			console.error('Migration error:', error);
 		}
+	}
+
+	//----------------------------------------------------------------------------------- DRIVER METHODS
+	static async getAllDrivers(): Promise<Driver[]> {
+		const stmt = db.prepare('SELECT * FROM drivers ORDER BY full_name ASC');
+		return stmt.all() as Driver[];
+	}
+
+	static async getDriverById(id: number): Promise<Driver | null> {
+		const stmt = db.prepare('SELECT * FROM drivers WHERE id = ?');
+		return (stmt.get(id) as Driver) || null;
+	}
+
+	static async createDriver(
+		driver: Omit<Driver, 'id' | 'created_at' | 'updated_at'>
+	): Promise<number> {
+		const stmt = db.prepare(`
+			INSERT INTO drivers (full_name, date_of_birth, address, driver_license_number, driver_license_image_path, email, phone)
+			VALUES (?, ?, ?, ?, ?, ?, ?)
+		`);
+
+		const result = stmt.run(
+			driver.full_name,
+			driver.date_of_birth,
+			driver.address,
+			driver.driver_license_number,
+			driver.driver_license_image_path || null,
+			driver.email || null,
+			driver.phone || null
+		);
+
+		return result.lastInsertRowid as number;
+	}
+
+	static async updateDriver(
+		id: number,
+		driver: Partial<Omit<Driver, 'id' | 'created_at' | 'updated_at'>>
+	): Promise<boolean> {
+		const updates: string[] = [];
+		const values: unknown[] = [];
+
+		if (driver.full_name !== undefined) {
+			updates.push('full_name = ?');
+			values.push(driver.full_name);
+		}
+		if (driver.date_of_birth !== undefined) {
+			updates.push('date_of_birth = ?');
+			values.push(driver.date_of_birth);
+		}
+		if (driver.address !== undefined) {
+			updates.push('address = ?');
+			values.push(driver.address);
+		}
+		if (driver.driver_license_number !== undefined) {
+			updates.push('driver_license_number = ?');
+			values.push(driver.driver_license_number);
+		}
+		if (driver.driver_license_image_path !== undefined) {
+			updates.push('driver_license_image_path = ?');
+			values.push(driver.driver_license_image_path);
+		}
+		if (driver.email !== undefined) {
+			updates.push('email = ?');
+			values.push(driver.email);
+		}
+		if (driver.phone !== undefined) {
+			updates.push('phone = ?');
+			values.push(driver.phone);
+		}
+
+		if (updates.length === 0) return false;
+
+		updates.push('updated_at = CURRENT_TIMESTAMP');
+		values.push(id);
+
+		const stmt = db.prepare(`UPDATE drivers SET ${updates.join(', ')} WHERE id = ?`);
+		const result = stmt.run(...values);
+
+		return result.changes > 0;
+	}
+
+	static async deleteDriver(id: number): Promise<boolean> {
+		const stmt = db.prepare('DELETE FROM drivers WHERE id = ?');
+		const result = stmt.run(id);
+		return result.changes > 0;
+	}
+
+	//----------------------------------------------------------------------------------- VEHICLE METHODS
+	static async getAllVehicles(): Promise<Vehicle[]> {
+		const stmt = db.prepare('SELECT * FROM vehicles ORDER BY make, model ASC');
+		return stmt.all() as Vehicle[];
+	}
+
+	static async getVehicleById(id: number): Promise<Vehicle | null> {
+		const stmt = db.prepare('SELECT * FROM vehicles WHERE id = ?');
+		return (stmt.get(id) as Vehicle) || null;
+	}
+
+	static async createVehicle(
+		vehicle: Omit<Vehicle, 'id' | 'created_at' | 'updated_at'>
+	): Promise<number> {
+		const stmt = db.prepare(`
+			INSERT INTO vehicles (make, model, type, registration_number, color, initial_mileage, current_mileage, year, vin)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		`);
+
+		const result = stmt.run(
+			vehicle.make,
+			vehicle.model,
+			vehicle.type,
+			vehicle.registration_number,
+			vehicle.color,
+			vehicle.initial_mileage,
+			vehicle.current_mileage,
+			vehicle.year || null,
+			vehicle.vin || null
+		);
+
+		return result.lastInsertRowid as number;
+	}
+
+	static async updateVehicle(
+		id: number,
+		vehicle: Partial<Omit<Vehicle, 'id' | 'created_at' | 'updated_at'>>
+	): Promise<boolean> {
+		const updates: string[] = [];
+		const values: unknown[] = [];
+
+		if (vehicle.make !== undefined) {
+			updates.push('make = ?');
+			values.push(vehicle.make);
+		}
+		if (vehicle.model !== undefined) {
+			updates.push('model = ?');
+			values.push(vehicle.model);
+		}
+		if (vehicle.type !== undefined) {
+			updates.push('type = ?');
+			values.push(vehicle.type);
+		}
+		if (vehicle.registration_number !== undefined) {
+			updates.push('registration_number = ?');
+			values.push(vehicle.registration_number);
+		}
+		if (vehicle.color !== undefined) {
+			updates.push('color = ?');
+			values.push(vehicle.color);
+		}
+		if (vehicle.initial_mileage !== undefined) {
+			updates.push('initial_mileage = ?');
+			values.push(vehicle.initial_mileage);
+		}
+		if (vehicle.current_mileage !== undefined) {
+			updates.push('current_mileage = ?');
+			values.push(vehicle.current_mileage);
+		}
+		if (vehicle.year !== undefined) {
+			updates.push('year = ?');
+			values.push(vehicle.year);
+		}
+		if (vehicle.vin !== undefined) {
+			updates.push('vin = ?');
+			values.push(vehicle.vin);
+		}
+
+		if (updates.length === 0) return false;
+
+		updates.push('updated_at = CURRENT_TIMESTAMP');
+		values.push(id);
+
+		const stmt = db.prepare(`UPDATE vehicles SET ${updates.join(', ')} WHERE id = ?`);
+		const result = stmt.run(...values);
+
+		return result.changes > 0;
+	}
+
+	static async deleteVehicle(id: number): Promise<boolean> {
+		const stmt = db.prepare('DELETE FROM vehicles WHERE id = ?');
+		const result = stmt.run(id);
+		return result.changes > 0;
+	}
+
+	//----------------------------------------------------------------------------------- DRIVER-VEHICLE ASSIGNMENT METHODS
+	static async assignDriverToVehicle(driverId: number, vehicleId: number): Promise<number> {
+		const stmt = db.prepare(`
+			INSERT INTO driver_vehicle_assignments (driver_id, vehicle_id)
+			VALUES (?, ?)
+			ON CONFLICT(driver_id, vehicle_id) DO NOTHING
+		`);
+
+		const result = stmt.run(driverId, vehicleId);
+		return result.lastInsertRowid as number;
+	}
+
+	static async unassignDriverFromVehicle(driverId: number, vehicleId: number): Promise<boolean> {
+		const stmt = db.prepare(
+			'DELETE FROM driver_vehicle_assignments WHERE driver_id = ? AND vehicle_id = ?'
+		);
+		const result = stmt.run(driverId, vehicleId);
+		return result.changes > 0;
+	}
+
+	static async getVehiclesForDriver(driverId: number): Promise<Vehicle[]> {
+		const stmt = db.prepare(`
+			SELECT v.* FROM vehicles v
+			INNER JOIN driver_vehicle_assignments dva ON v.id = dva.vehicle_id
+			WHERE dva.driver_id = ?
+			ORDER BY v.make, v.model ASC
+		`);
+		return stmt.all(driverId) as Vehicle[];
+	}
+
+	static async getDriversForVehicle(vehicleId: number): Promise<Driver[]> {
+		const stmt = db.prepare(`
+			SELECT d.* FROM drivers d
+			INNER JOIN driver_vehicle_assignments dva ON d.id = dva.driver_id
+			WHERE dva.vehicle_id = ?
+			ORDER BY d.full_name ASC
+		`);
+		return stmt.all(vehicleId) as Driver[];
 	}
 
 	static async deleteAllRecords(): Promise<number> {
