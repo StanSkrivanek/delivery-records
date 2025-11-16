@@ -80,27 +80,31 @@
 <svelte:head>
 	<title>Monthly Overview</title>
 </svelte:head>
+<div class="page-content">
+
 
 <header>
 	<div class="header-content">
-		<h1>{getMonthName(currentMonth)} {new Date().getFullYear()}</h1>
-		<a href="/records" class="add-record-btn">
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="20"
-				height="20"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			>
-				<line x1="12" y1="5" x2="12" y2="19"></line>
-				<line x1="5" y1="12" x2="19" y2="12"></line>
-			</svg>
-			Add New Record
-		</a>
+		<div>
+			<h1>{getMonthName(currentMonth)} {new Date().getFullYear()}</h1>
+			<a href="/records" class="add-record-btn">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="20"
+					height="20"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<line x1="12" y1="5" x2="12" y2="19"></line>
+					<line x1="5" y1="12" x2="19" y2="12"></line>
+				</svg>
+				Add/Edit Record
+			</a>
+		</div>
 	</div>
 </header>
 <BarGroups
@@ -242,7 +246,7 @@
 		<p>&copy; {currentYear} Delivery Records. All rights reserved.</p>
 	</div>
 </footer>
-
+</div>
 <!-- 	yLabels={['Delivery', 'Collections', 'Fails']}
 	xLabel="Date"
 	xType="time"
@@ -289,19 +293,19 @@
 		align-items: center;
 		gap: 0.5rem;
 		padding: 0.75rem 1.5rem;
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-		color: white;
+		background: var(--brand-mint);
+		color: rgb(38, 38, 38);
 		text-decoration: none;
 		border-radius: 0.5rem;
 		font-weight: 600;
 		font-size: 1rem;
 		transition: all 0.3s ease;
-		box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+		box-shadow: 0 4px 6px rgba(6, 6, 7, 0.1);
 	}
 
 	.add-record-btn:hover {
 		transform: translateY(-2px);
-		box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+		box-shadow: 0 6px 12px rgba(6, 6, 7, 0.1);
 	}
 
 	.add-record-btn:active {
@@ -459,7 +463,7 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 		gap: 2rem;
-		max-width: 1200px;
+		/* max-width: 1200px; */
 		margin: 0 auto;
 		padding: 0 2rem 2rem;
 	}
@@ -508,7 +512,7 @@
 		text-align: center;
 		padding: 1.5rem 2rem 0;
 		border-top: 1px solid #4b5563;
-		max-width: 1200px;
+		/* max-width: 1200px; */
 		margin: 0 auto;
 	}
 

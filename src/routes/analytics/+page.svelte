@@ -110,8 +110,8 @@
 <svelte:head>
 	<title>Overview - Data Analytics</title>
 </svelte:head>
-
-<div class="main-container">
+<div class="page-content">
+<!-- <div class="main-container"> -->
 	<div class="header-section">
 		<h1>Overview & Analytics</h1>
 
@@ -147,8 +147,8 @@
 	<OverviewCards {analytics} {selectedYear} {selectedMonth} />
 
 	<OverviewTable records={filteredRecords} {selectedYear} {selectedMonth} />
+<!-- </div> -->
 </div>
-
 <style>
 	/* .main-container {
 		max-width: var(--max-w, 800px);

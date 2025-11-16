@@ -586,10 +586,14 @@
 
 	main,
 	.main {
-		/* max-width: var(--max-w); */
 		margin: 0 auto;
 		padding: var(--space-4);
 		/* background: var(--bg-dark); */
+		.page-content {
+			max-width: var(--max-w);
+			margin: 0 auto;
+			/* min-height: 100vh; */
+		}
 	}
 }
 @layer utilities {

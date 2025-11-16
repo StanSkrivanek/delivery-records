@@ -176,7 +176,7 @@
 <svelte:head>
 	<title>Driving Log Book</title>
 </svelte:head>
-
+<div class="page-content">
 <section class="page-header">
 	<h1>Driving Log Book</h1>
 	<p>Track vehicle usage for revenue reporting with detailed driver logs.</p>
@@ -411,7 +411,7 @@
 		</div>
 	{/if}
 </section>
-
+</div>
 <style>
 	.page-header {
 		margin: 2rem 0;
