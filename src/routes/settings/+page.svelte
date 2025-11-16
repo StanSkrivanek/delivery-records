@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Toast from '$lib/components/Toast.svelte';
 	import type { Driver, Vehicle } from '$lib/types';
 	import type { PageData } from './$types';
 
@@ -25,6 +26,24 @@
 	let showAssignModal = $state(false);
 	let selectedDriverForAssign: (typeof data.drivers)[number] | null = $state(null);
 	let sidebarCollapsed = $state(false);
+
+	// Toast state
+	let toastMessage = $state('');
+	let toastType: 'success' | 'error' | 'info' | 'warning' = $state('success');
+	let showToast = $state(false);
+
+	// Watch for form messages and show toast
+	$effect(() => {
+		if (form?.error) {
+			toastMessage = form.error;
+			toastType = 'error';
+			showToast = true;
+		} else if (form?.success && form?.message) {
+			toastMessage = form.message;
+			toastType = 'success';
+			showToast = true;
+		}
+	});
 
 	// Advanced Squoosh settings state
 	let advancedTab: 'webp' | 'avif' | 'jpeg' | 'png' = $state('webp');
@@ -215,22 +234,16 @@
 			</h1>
 		</div>
 
-		{#if form?.error}
-			<div class="error-message">{form.error}</div>
-		{/if}
-
-		{#if form?.success && form?.message}
-			<div class="success-message">{form.message}</div>
-		{/if}
-
 		{#if activeTab === 'squoosh'}
 			<div class="section">
 				<div class="section-header">
-					<h2>Squoosh Image Optimization</h2>
-					<p class="section-description">
-						Automatically optimize images before uploading to reduce file size and improve
-						performance.
-					</p>
+					<div>
+						<h2>Squoosh Image Optimization</h2>
+						<p class="section-description">
+							Automatically optimize images before uploading to reduce file size and improve
+							performance.
+						</p>
+					</div>
 				</div>
 
 				<form method="POST" action="?/updateSquooshSettings" class="form-card squoosh-form">
@@ -1606,6 +1619,16 @@
 	</main>
 </div>
 
+<!-- Toast Notifications -->
+{#if showToast}
+	<Toast
+		message={toastMessage}
+		type={toastType}
+		duration={5000}
+		onClose={() => (showToast = false)}
+	/>
+{/if}
+
 {#if showAssignModal && selectedDriverForAssign}
 	<div
 		class="modal-overlay"
@@ -2039,24 +2062,6 @@
 
 	.btn-danger:hover {
 		filter: brightness(1.2);
-	}
-
-	.error-message {
-		background: #fef2f2;
-		color: #991b1b;
-		padding: 1rem;
-		border-radius: 0.5rem;
-		margin-bottom: 1rem;
-		border-left: 4px solid #dc2626;
-	}
-
-	.success-message {
-		background: #f0fdf4;
-		color: #166534;
-		padding: 1rem;
-		border-radius: 0.5rem;
-		margin-bottom: 1rem;
-		border-left: 4px solid #16a34a;
 	}
 
 	.modal-overlay {
