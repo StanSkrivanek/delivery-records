@@ -6,6 +6,7 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async () => {
 	const drivers = await RecordService.getAllDrivers();
 	const vehicles = await RecordService.getAllVehicles();
+	const squooshSettings = await RecordService.getSquooshSettings();
 
 	// Get vehicle assignments for each driver
 	const driversWithVehicles = await Promise.all(
@@ -20,7 +21,8 @@ export const load: PageServerLoad = async () => {
 
 	return {
 		drivers: driversWithVehicles,
-		vehicles
+		vehicles,
+		squooshSettings
 	};
 };
 
@@ -302,6 +304,61 @@ export const actions: Actions = {
 		} catch (error) {
 			console.error('Error unassigning vehicle:', error);
 			return fail(500, { error: 'Failed to unassign vehicle' });
+		}
+	},
+
+	updateSquooshSettings: async ({ request }) => {
+		const formData = await request.formData();
+
+		const enabled = formData.get('enabled') === 'on';
+		const format = formData.get('format')?.toString();
+		const quality = parseInt(formData.get('quality')?.toString() || '80');
+		const resize_enabled = formData.get('resize_enabled') === 'on';
+		const max_width = parseInt(formData.get('max_width')?.toString() || '1920');
+		const max_height = parseInt(formData.get('max_height')?.toString() || '1080');
+		const advanced_settings_str = formData.get('advanced_settings')?.toString();
+
+		// Validate format
+		if (format && !['webp', 'avif', 'jpeg', 'png', 'original'].includes(format)) {
+			return fail(400, { error: 'Invalid format' });
+		}
+
+		// Validate quality
+		if (quality < 1 || quality > 100) {
+			return fail(400, { error: 'Quality must be between 1 and 100' });
+		}
+
+		// Validate dimensions
+		if (max_width < 100 || max_width > 4096 || max_height < 100 || max_height > 4096) {
+			return fail(400, { error: 'Dimensions must be between 100 and 4096 pixels' });
+		}
+
+		// Parse advanced settings
+		let advanced_settings;
+		if (advanced_settings_str) {
+			try {
+				advanced_settings = JSON.parse(advanced_settings_str);
+			} catch (e) {
+				console.error('Failed to parse advanced settings:', e);
+				advanced_settings = undefined;
+			}
+		}
+
+		try {
+			await RecordService.updateSquooshSettings({
+				enabled,
+				format: format as 'webp' | 'avif' | 'jpeg' | 'png' | 'original',
+				quality,
+				resize_enabled,
+				max_width,
+				max_height,
+				advanced_settings
+			});
+
+			return { success: true, message: 'Image optimization settings updated successfully' };
+		} catch (error) {
+			console.error('Error updating Squoosh settings:', error);
+			return fail(500, { error: 'Failed to update settings' });
 		}
 	}
 };

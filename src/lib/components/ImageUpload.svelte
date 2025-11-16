@@ -1,6 +1,9 @@
 <script lang="ts">
 	// Modern Svelte 5 approach using callback props instead of createEventDispatcher
 	// Supports multiple image uploads with sequential numbering
+	import { optimizeImages, type SquooshOptions } from '$lib/squoosh';
+	import { onMount } from 'svelte';
+
 	let {
 		selectedFiles = $bindable(),
 		disabled = false,
@@ -17,6 +20,37 @@
 
 	let dragOver = $state(false);
 	let fileInput: HTMLInputElement;
+	let squooshSettings: SquooshOptions | null = $state(null);
+	let isOptimizing = $state(false);
+
+	// Fetch Squoosh settings on mount
+	onMount(async () => {
+		try {
+			const response = await fetch('/api/squoosh-settings');
+			if (response.ok) {
+				squooshSettings = await response.json();
+			}
+		} catch (error) {
+			console.error('Failed to fetch Squoosh settings:', error);
+		}
+	});
+
+	async function processFiles(files: File[]): Promise<File[]> {
+		if (!squooshSettings || !squooshSettings.enabled) {
+			return files;
+		}
+
+		isOptimizing = true;
+		try {
+			const optimizedFiles = await optimizeImages(files, squooshSettings);
+			return optimizedFiles;
+		} catch (error) {
+			console.error('Error optimizing images:', error);
+			return files; // Return original files if optimization fails
+		} finally {
+			isOptimizing = false;
+		}
+	}
 
 	function handleDragOver(event: DragEvent) {
 		event.preventDefault();
@@ -30,7 +64,7 @@
 		dragOver = false;
 	}
 
-	function handleDrop(event: DragEvent) {
+	async function handleDrop(event: DragEvent) {
 		event.preventDefault();
 		dragOver = false;
 
@@ -40,20 +74,22 @@
 		if (files && files.length > 0) {
 			const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
 			if (imageFiles.length > 0) {
-				selectedFiles = [...(selectedFiles || []), ...imageFiles];
+				const processed = await processFiles(imageFiles);
+				selectedFiles = [...(selectedFiles || []), ...processed];
 				onFilesSelected?.(selectedFiles);
 			}
 		}
 	}
 
-	function handleFileSelect(event: Event) {
+	async function handleFileSelect(event: Event) {
 		const target = event.target as HTMLInputElement;
 		const files = target.files;
 		if (disabled) return;
 		if (files && files.length > 0) {
 			const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
 			if (imageFiles.length > 0) {
-				selectedFiles = [...(selectedFiles || []), ...imageFiles];
+				const processed = await processFiles(imageFiles);
+				selectedFiles = [...(selectedFiles || []), ...processed];
 				onFilesSelected?.(selectedFiles);
 			}
 		}
@@ -73,6 +109,13 @@
 </script>
 
 <div class="image-upload">
+	{#if isOptimizing}
+		<div class="optimizing-overlay">
+			<div class="spinner"></div>
+			<p>Optimizing images...</p>
+		</div>
+	{/if}
+
 	<div
 		class="drop-zone"
 		class:drag-over={dragOver}
@@ -133,6 +176,47 @@
 		width: auto;
 		max-width: 100%;
 		height: 100%;
+		position: relative;
+	}
+
+	.optimizing-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(255, 255, 255, 0.9);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		z-index: 1000;
+		border-radius: 8px;
+	}
+
+	.spinner {
+		width: 40px;
+		height: 40px;
+		border: 4px solid #f3f3f3;
+		border-top: 4px solid #007bff;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
+	}
+
+	.optimizing-overlay p {
+		margin: 0;
+		font-weight: 500;
+		color: #333;
 	}
 
 	.drop-zone {

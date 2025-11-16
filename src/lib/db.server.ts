@@ -133,6 +133,28 @@ db.exec(`
 	CREATE INDEX IF NOT EXISTS idx_driver_vehicle_vehicle ON driver_vehicle_assignments(vehicle_id);
 `);
 
+// Table for Squoosh image optimization settings
+db.exec(`
+	CREATE TABLE IF NOT EXISTS squoosh_settings (
+		id INTEGER PRIMARY KEY CHECK (id = 1),
+		enabled INTEGER NOT NULL DEFAULT 1,
+		format TEXT NOT NULL DEFAULT 'webp' CHECK (format IN ('webp', 'avif', 'jpeg', 'png', 'original')),
+		quality INTEGER NOT NULL DEFAULT 80 CHECK (quality >= 1 AND quality <= 100),
+		resize_enabled INTEGER NOT NULL DEFAULT 0,
+		max_width INTEGER DEFAULT 1920,
+		max_height INTEGER DEFAULT 1080,
+		advanced_settings TEXT,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	)
+`);
+
+// Insert default settings if not exists
+db.exec(`
+	INSERT OR IGNORE INTO squoosh_settings (id, enabled, format, quality, resize_enabled, max_width, max_height)
+	VALUES (1, 1, 'webp', 80, 0, 1920, 1080)
+`);
+
 export interface Record {
 	id?: number;
 	loaded: number;
@@ -207,6 +229,90 @@ export interface DriverVehicleAssignment {
 	driver_id: number;
 	vehicle_id: number;
 	assigned_at?: string;
+}
+
+export interface AdvancedSquooshSettings {
+	webp?: {
+		target_size?: number;
+		target_PSNR?: number;
+		method?: number; // 0-6
+		sns_strength?: number; // 0-100
+		filter_strength?: number; // 0-100
+		filter_sharpness?: number; // 0-7
+		filter_type?: number; // 0-1
+		partitions?: number; // 0-3
+		segments?: number; // 1-4
+		pass?: number; // 1-10
+		show_compressed?: number; // 0-1
+		preprocessing?: number; // 0-7
+		autofilter?: number; // 0-1
+		partition_limit?: number; // 0-100
+		alpha_compression?: number; // 0-1
+		alpha_filtering?: number; // 0-2
+		alpha_quality?: number; // 0-100
+		lossless?: number; // 0-1
+		exact?: number; // 0-1
+		image_hint?: number; // 0-3
+		emulate_jpeg_size?: number; // 0-1
+		thread_level?: number; // 0-1
+		low_memory?: number; // 0-1
+		near_lossless?: number; // 0-100
+		use_delta_palette?: number; // 0-1
+		use_sharp_yuv?: number; // 0-1
+	};
+	avif?: {
+		qualityAlpha?: number; // 0-100
+		denoiseLevel?: number; // 0-50
+		tileRowsLog2?: number; // 0-6
+		tileColsLog2?: number; // 0-6
+		speed?: number; // 0-10
+		subsample?: number; // 1-3
+		chromaDeltaQ?: boolean;
+		sharpness?: number; // 0-7
+		enableSharpYUV?: boolean;
+		tune?: 0 | 1 | 2; // auto=0, psnr=1, ssim=2
+		lossless?: boolean;
+	};
+	jpeg?: {
+		baseline?: boolean;
+		arithmetic?: boolean;
+		progressive?: boolean;
+		optimize_coding?: boolean;
+		smoothing?: number; // 0-100
+		color_space?: 1 | 2 | 3; // GRAYSCALE=1, RGB=2, YCbCr=3
+		quant_table?: number; // 0-8
+		trellis_multipass?: boolean;
+		trellis_opt_zero?: boolean;
+		trellis_opt_table?: boolean;
+		trellis_loops?: number; // 1-50
+		auto_subsample?: boolean;
+		chroma_subsample?: number; // 0-2
+		separate_chroma_quality?: boolean;
+		chroma_quality?: number; // 0-100
+	};
+	png?: {
+		// PNG in @jsquash only supports bitDepth, no compression level
+		bitDepth?: 8;
+	};
+	resize?: {
+		method?: 'triangle' | 'catrom' | 'mitchell' | 'lanczos3';
+		fitMethod?: 'stretch' | 'contain';
+		premultiply?: boolean;
+		linearRGB?: boolean;
+	};
+}
+
+export interface SquooshSettings {
+	id?: number;
+	enabled: boolean;
+	format: 'webp' | 'avif' | 'jpeg' | 'png' | 'original';
+	quality: number;
+	resize_enabled: boolean;
+	max_width: number;
+	max_height: number;
+	advanced_settings?: AdvancedSquooshSettings;
+	created_at?: string;
+	updated_at?: string;
 }
 
 export class RecordService {
@@ -1287,6 +1393,63 @@ export class RecordService {
 	static async clearAllData(): Promise<void> {
 		await this.deleteAllRecords();
 		await this.resetAutoIncrement();
+	}
+
+	// Squoosh settings methods
+	static async getSquooshSettings(): Promise<SquooshSettings> {
+		const stmt = db.prepare('SELECT * FROM squoosh_settings WHERE id = 1');
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const row = stmt.get() as any;
+		return {
+			...row,
+			enabled: row.enabled === 1,
+			resize_enabled: row.resize_enabled === 1,
+			advanced_settings: row.advanced_settings ? JSON.parse(row.advanced_settings) : undefined
+		} as SquooshSettings;
+	}
+
+	static async updateSquooshSettings(
+		settings: Partial<Omit<SquooshSettings, 'id' | 'created_at'>>
+	): Promise<boolean> {
+		const updates: string[] = [];
+		const values: (string | number | boolean)[] = [];
+
+		if (settings.enabled !== undefined) {
+			updates.push('enabled = ?');
+			values.push(settings.enabled ? 1 : 0);
+		}
+		if (settings.format !== undefined) {
+			updates.push('format = ?');
+			values.push(settings.format);
+		}
+		if (settings.quality !== undefined) {
+			updates.push('quality = ?');
+			values.push(settings.quality);
+		}
+		if (settings.resize_enabled !== undefined) {
+			updates.push('resize_enabled = ?');
+			values.push(settings.resize_enabled ? 1 : 0);
+		}
+		if (settings.max_width !== undefined) {
+			updates.push('max_width = ?');
+			values.push(settings.max_width);
+		}
+		if (settings.max_height !== undefined) {
+			updates.push('max_height = ?');
+			values.push(settings.max_height);
+		}
+		if (settings.advanced_settings !== undefined) {
+			updates.push('advanced_settings = ?');
+			values.push(JSON.stringify(settings.advanced_settings));
+		}
+
+		if (updates.length === 0) return false;
+
+		updates.push('updated_at = CURRENT_TIMESTAMP');
+
+		const stmt = db.prepare(`UPDATE squoosh_settings SET ${updates.join(', ')} WHERE id = 1`);
+		const result = stmt.run(...values);
+		return result.changes > 0;
 	}
 }
 
