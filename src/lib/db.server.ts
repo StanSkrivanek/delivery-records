@@ -1101,6 +1101,18 @@ export class RecordService {
 				db.exec('ALTER TABLE records ADD COLUMN note TEXT');
 				console.log('Added note column');
 			}
+
+			// Ensure squoosh_settings has advanced_settings column
+			const squooshColumns = db.prepare('PRAGMA table_info(squoosh_settings)').all() as {
+				name: string;
+			}[];
+			const hasAdvancedSettings = squooshColumns.some((col) => col.name === 'advanced_settings');
+
+			if (!hasAdvancedSettings) {
+				db.exec('ALTER TABLE squoosh_settings ADD COLUMN advanced_settings TEXT');
+				console.log('Added advanced_settings column to squoosh_settings table');
+			}
+
 			// Ensure vehicle_usage_log table exists
 			const vehicleLogTable = db
 				.prepare(
