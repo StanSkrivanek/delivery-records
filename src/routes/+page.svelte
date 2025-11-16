@@ -82,7 +82,26 @@
 </svelte:head>
 
 <header>
-	<h1>{getMonthName(currentMonth)} {new Date().getFullYear()}</h1>
+	<div class="header-content">
+		<h1>{getMonthName(currentMonth)} {new Date().getFullYear()}</h1>
+		<a href="/records" class="add-record-btn">
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="20"
+				height="20"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<line x1="12" y1="5" x2="12" y2="19"></line>
+				<line x1="5" y1="12" x2="19" y2="12"></line>
+			</svg>
+			Add New Record
+		</a>
+	</div>
 </header>
 <BarGroups
 	title="Delivery"
@@ -148,14 +167,15 @@
 	</header>
 	<div class="monthly-cards-grid">
 		{#each monthlyData as monthData}
-			<div class="month-card {monthData.hasData ? '' : 'no-data'}">
-				<div class="month-card-header">
-					<h3>{monthData.monthName}</h3>
-					{#if monthData.hasData}
+			{#if monthData.hasData}
+				<a
+					href="/analytics?year={currentYear}&month={monthData.month + 1}"
+					class="month-card clickable"
+				>
+					<div class="month-card-header">
+						<h3>{monthData.monthName}</h3>
 						<span class="record-count">{monthData.recordCount} days</span>
-					{/if}
-				</div>
-				{#if monthData.hasData}
+					</div>
 					<div class="month-stats">
 						<div class="stat-row">
 							<span class="stat-label">Delivered:</span>
@@ -182,10 +202,15 @@
 							<span class="stat-value">{monthData.totalDistance.toLocaleString()} km</span>
 						</div>
 					</div>
-				{:else}
+				</a>
+			{:else}
+				<div class="month-card no-data">
+					<div class="month-card-header">
+						<h3>{monthData.monthName}</h3>
+					</div>
 					<p class="no-data-message">No data</p>
-				{/if}
-			</div>
+				</div>
+			{/if}
 		{/each}
 	</div>
 </section>
@@ -251,6 +276,42 @@
 		font-family: 'regular', sans-serif;
 	}
 
+	.header-content {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 2rem;
+		flex-wrap: wrap;
+	}
+
+	.add-record-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.75rem 1.5rem;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white;
+		text-decoration: none;
+		border-radius: 0.5rem;
+		font-weight: 600;
+		font-size: 1rem;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+	}
+
+	.add-record-btn:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+	}
+
+	.add-record-btn:active {
+		transform: translateY(0);
+	}
+
+	.add-record-btn svg {
+		flex-shrink: 0;
+	}
+
 	.yearly-section {
 		margin-top: 4rem;
 		padding-top: 3rem;
@@ -282,6 +343,18 @@
 		transition:
 			transform 0.2s ease,
 			box-shadow 0.2s ease;
+		display: block;
+	}
+
+	.month-card.clickable {
+		text-decoration: none;
+		color: inherit;
+		cursor: pointer;
+	}
+
+	.month-card.clickable:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 	}
 
 	.month-card:hover {
@@ -291,7 +364,13 @@
 
 	.month-card.no-data {
 		opacity: 0.4;
-		border-left-color: #d1d5db;
+		border-top-color: #d1d5db;
+		cursor: default;
+	}
+
+	.month-card.no-data:hover {
+		transform: none;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 
 	.month-card-header {

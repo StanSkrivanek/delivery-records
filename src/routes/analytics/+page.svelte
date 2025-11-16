@@ -1,15 +1,25 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import OverviewCards from '$lib/components/OverviewCards.svelte';
 	import OverviewTable from '$lib/components/OverviewTable.svelte';
-	import { onMount } from 'svelte';
 	import { calculateAnalytics } from '$lib/utils';
+	import { onMount } from 'svelte';
 
 	let { data } = $props();
 
 	let selectedYear = $state(data.defaultYear);
 	let selectedMonth = $state(data.defaultMonth);
+
+	// Update URL when year or month changes
+	$effect(() => {
+		if (browser) {
+			const url = new URL(window.location.href);
+			url.searchParams.set('year', selectedYear.toString());
+			url.searchParams.set('month', selectedMonth.toString());
+			goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
+		}
+	});
 
 	// Month options with names
 	const monthOptions = [

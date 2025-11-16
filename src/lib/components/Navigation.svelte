@@ -1,16 +1,10 @@
 <nav>
 	<a href="/">Home</a>
-	<a href="/records">AED Record</a>
-	<a href="/analytics">Overview</a>
-	<!-- <a href="/revenue">Revenue</a> -->
-	<a href="https://squoosh.app/" target="_blank" rel="noopener noreferrer">Squoosh</a>
-	<a href="/odometer">Odometer</a>
-	<a href="/invoice">Invoice</a>
-	<a href="/revenue-returns">Revenue</a>
-	<a href="/backup">Backup</a>
+	<!-- <a href="/records">AED Record</a> -->
+	<!-- <a href="/analytics">Overview</a> -->
 	<a href="/driving-log">Driving Log</a>
+	<a href="/tools">Tools</a>
 	<a href="/settings">Settings</a>
-	<!-- <a href="/demos">Demos</a> -->
 </nav>
 
 <style>

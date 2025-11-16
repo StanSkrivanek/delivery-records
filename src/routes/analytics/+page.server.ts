@@ -1,7 +1,7 @@
-import type { PageServerLoad } from './$types';
 import { RecordService } from '$lib/db.server';
+import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ url }) => {
 	// Get all records from database
 	const records = await RecordService.getAllRecords();
 
@@ -29,13 +29,21 @@ export const load: PageServerLoad = async () => {
 	const currentYear = now.getFullYear();
 	const currentMonth = now.getMonth() + 1;
 
-	// Set default year and month
-	const defaultYear = availableYears.includes(currentYear)
-		? currentYear
-		: availableYears[0] || currentYear;
-	const defaultMonth = availableMonths.includes(currentMonth)
-		? currentMonth
-		: availableMonths[0] || currentMonth;
+	// Check URL parameters for year and month
+	const urlYear = url.searchParams.get('year');
+	const urlMonth = url.searchParams.get('month');
+
+	// Set default year and month (prioritize URL params, then current date, then available data)
+	const defaultYear = urlYear
+		? parseInt(urlYear)
+		: availableYears.includes(currentYear)
+			? currentYear
+			: availableYears[0] || currentYear;
+	const defaultMonth = urlMonth
+		? parseInt(urlMonth)
+		: availableMonths.includes(currentMonth)
+			? currentMonth
+			: availableMonths[0] || currentMonth;
 
 	return {
 		records,
