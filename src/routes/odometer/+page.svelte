@@ -2,6 +2,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+	import MonthYearSelector from '$lib/components/MonthYearSelector.svelte';
 	import {
 		formatDate,
 		formatDistance,
@@ -17,54 +18,7 @@
 	let selectedYear = $state(data.defaultYear);
 	let selectedMonth = $state(data.defaultMonth);
 
-	const monthOptions = [
-		{ value: 1, label: 'January' },
-		{ value: 2, label: 'February' },
-		{ value: 3, label: 'March' },
-		{ value: 4, label: 'April' },
-		{ value: 5, label: 'May' },
-		{ value: 6, label: 'June' },
-		{ value: 7, label: 'July' },
-		{ value: 8, label: 'August' },
-		{ value: 9, label: 'September' },
-		{ value: 10, label: 'October' },
-		{ value: 11, label: 'November' },
-		{ value: 12, label: 'December' }
-	];
-
-	const monthsByYearMap: Map<number, number[]> = (() => {
-		const map = new Map<number, Set<number>>();
-		for (const record of data.records) {
-			const dateString = record.entry_date || record.created_at;
-			if (!dateString) {
-				continue;
-			}
-			const date = new Date(dateString);
-			const year = date.getFullYear();
-			const month = date.getMonth() + 1;
-			if (!map.has(year)) {
-				map.set(year, new Set());
-			}
-			map.get(year)!.add(month);
-		}
-		const sortedMap = new Map<number, number[]>();
-		for (const [year, months] of map) {
-			sortedMap.set(
-				year,
-				Array.from(months).sort((a, b) => a - b)
-			);
-		}
-		return sortedMap;
-	})();
-
-	let availableMonthsForYear = $derived.by(() => monthsByYearMap.get(selectedYear) ?? []);
-	let monthSelectOptions = $derived.by(() => {
-		const allowed = availableMonthsForYear;
-		return allowed.length > 0
-			? monthOptions.filter((option) => allowed.includes(option.value))
-			: monthOptions;
-	});
-	let monthLabel = $derived.by(() => getMonthName(selectedMonth - 1));
+	let monthLabel = $derived.by(() => getMonthName(Math.max(0, selectedMonth - 1)));
 
 	function monthlyDistance() {
 		return data.odoByMonth.reduce((acc, reading) => acc + (reading.daily_difference ?? 0), 0);
@@ -85,27 +39,7 @@
 		}
 	}
 
-	function handleYearChange(event: Event) {
-		const select = event.currentTarget as HTMLSelectElement;
-		const year = Number(select.value);
-		if (Number.isNaN(year) || year === selectedYear) {
-			return;
-		}
-		selectedYear = year;
-		const monthsForYear = monthsByYearMap.get(year) ?? data.availableMonths;
-		if (monthsForYear.length > 0 && !monthsForYear.includes(selectedMonth)) {
-			selectedMonth = monthsForYear[0];
-		}
-		updateSelection();
-	}
-
-	function handleMonthChange(event: Event) {
-		const select = event.currentTarget as HTMLSelectElement;
-		const month = Number(select.value);
-		if (Number.isNaN(month) || month === selectedMonth) {
-			return;
-		}
-		selectedMonth = month;
+	function handleSelectorChange() {
 		updateSelection();
 	}
 </script>
@@ -124,18 +58,16 @@
 			{/if}
 		</div>
 		<div class="date-selector">
-			<select onchange={handleMonthChange} disabled={loading || monthSelectOptions.length === 0}>
-				{#each monthSelectOptions as option}
-					<option value={option.value} selected={option.value === selectedMonth}>
-						{option.label}
-					</option>
-				{/each}
-			</select>
-			<select onchange={handleYearChange} disabled={loading}>
-				{#each data.availableYears as year}
-					<option value={year} selected={year === selectedYear}>{year}</option>
-				{/each}
-			</select>
+			<MonthYearSelector
+				bind:year={selectedYear}
+				bind:month={selectedMonth}
+				records={data.records}
+				availableYears={data.availableYears}
+				fallbackMonths={data.availableMonths}
+				disabled={loading}
+				showLabels={false}
+				onSelectionChange={handleSelectorChange}
+			/>
 		</div>
 		{#if data.odoByMonth.length > 0}
 			<div class="stats">

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto, invalidateAll } from '$app/navigation';
+	import MonthYearSelector from '$lib/components/MonthYearSelector.svelte';
 	import OverviewCards from '$lib/components/OverviewCards.svelte';
 	import OverviewTable from '$lib/components/OverviewTable.svelte';
 	import { calculateAnalytics } from '$lib/utils';
@@ -21,37 +22,6 @@
 		}
 	});
 
-	// Month options with names
-	const monthOptions = [
-		{ value: 1, label: 'January' },
-		{ value: 2, label: 'February' },
-		{ value: 3, label: 'March' },
-		{ value: 4, label: 'April' },
-		{ value: 5, label: 'May' },
-		{ value: 6, label: 'June' },
-		{ value: 7, label: 'July' },
-		{ value: 8, label: 'August' },
-		{ value: 9, label: 'September' },
-		{ value: 10, label: 'October' },
-		{ value: 11, label: 'November' },
-		{ value: 12, label: 'December' }
-	];
-
-	// Get available months for the selected year using $derived
-	let availableMonthsForYear: number[] = $derived.by(() => {
-		const monthsInYear = new Set<number>();
-		data.records.forEach((record) => {
-			const dateString = record.entry_date || record.created_at;
-			if (dateString) {
-				const recordDate = new Date(dateString);
-				if (recordDate.getFullYear() === selectedYear) {
-					monthsInYear.add(recordDate.getMonth() + 1);
-				}
-			}
-		});
-		return Array.from(monthsInYear).sort((a, b) => a - b);
-	});
-
 	// Filter records based on selected year and month using $derived
 	let filteredRecords = $derived.by(() => {
 		return data.records.filter((record) => {
@@ -66,14 +36,6 @@
 
 	// Calculate analytics using $derived and the utility function
 	let analytics = $derived.by(() => calculateAnalytics(filteredRecords));
-
-	// Auto-adjust month if not available for selected year using $effect
-	$effect(() => {
-		const availableMonths = availableMonthsForYear;
-		if (!availableMonths.includes(selectedMonth) && availableMonths.length > 0) {
-			selectedMonth = availableMonths[0];
-		}
-	});
 
 	// Auto-refresh data when page becomes visible (handles navigation from other pages)
 	onMount(() => {
@@ -116,27 +78,13 @@
 		<h1>Overview & Analytics</h1>
 
 		<div class="filters">
-			<div class="filter-group">
-				<label for="year-select">Year:</label>
-				<select id="year-select" bind:value={selectedYear}>
-					{#each data.availableYears as year}
-						<option value={year}>{year}</option>
-					{/each}
-				</select>
-			</div>
-
-			<div class="filter-group">
-				<label for="month-select">Month:</label>
-				<select id="month-select" bind:value={selectedMonth}>
-					{#each monthOptions.filter((m) => availableMonthsForYear.includes(m.value)) as month}
-						<option value={month.value}>{month.label}</option>
-					{/each}
-				</select>
-			</div>
-
-			<!-- <div class="filter-info">
-				<small>{filteredRecords.length} records found</small>
-			</div> -->
+			<MonthYearSelector
+				bind:year={selectedYear}
+				bind:month={selectedMonth}
+				records={data.records}
+				availableYears={data.availableYears}
+				showLabels={true}
+			/>
 
 			<button type="button" class="refresh-btn" onclick={refreshData} title="Refresh data">
 				Refresh
@@ -178,34 +126,6 @@
 		gap: 1.5rem;
 		align-items: end;
 		flex-wrap: wrap;
-	}
-
-	.filter-group {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-
-	.filter-group label {
-		font-weight: 500;
-		color: #555;
-		font-size: 0.9rem;
-	}
-
-	.filter-group select {
-		padding: 0.5rem 1rem;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		background: white;
-		font-size: 1rem;
-		min-width: 120px;
-		cursor: pointer;
-	}
-
-	.filter-group select:focus {
-		outline: none;
-		border-color: #007bff;
-		box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 	}
 
 	/* .filter-info {
