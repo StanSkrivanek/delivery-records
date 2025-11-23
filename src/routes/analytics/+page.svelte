@@ -246,9 +246,9 @@
 	}
 
 	@media (max-width: 768px) {
-		.main-container {
+		/* .main-container {
 			padding: 1rem;
-		}
+		} */
 
 		.header-section {
 			flex-direction: column;
