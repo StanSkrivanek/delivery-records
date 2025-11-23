@@ -245,7 +245,7 @@
 		justify-content: center;
 		flex-wrap: wrap;
 	}
-	.date-selector select {
+	/* .date-selector select {
 		padding: 0.5rem 1rem;
 		border: 1px solid #d1d5db;
 		border-radius: 0.5rem;
@@ -253,11 +253,11 @@
 		color: #111827;
 		font-size: 1rem;
 		min-width: 160px;
-	}
-	.date-selector select:disabled {
+	} */
+	/* .date-selector select:disabled {
 		opacity: 0.6;
 		cursor: not-allowed;
-	}
+	} */
 	.stats {
 		display: flex;
 		gap: 1rem;
