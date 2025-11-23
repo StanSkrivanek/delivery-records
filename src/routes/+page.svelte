@@ -81,172 +81,171 @@
 	<title>Monthly Overview</title>
 </svelte:head>
 <div class="page-content">
-
-
-<header>
-	<div class="header-content">
-		<div>
-			<h1>{getMonthName(currentMonth)} {new Date().getFullYear()}</h1>
-			<a href="/records" class="add-record-btn">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="20"
-					height="20"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				>
-					<line x1="12" y1="5" x2="12" y2="19"></line>
-					<line x1="5" y1="12" x2="19" y2="12"></line>
-				</svg>
-				Add/Edit Record
-			</a>
-		</div>
-	</div>
-</header>
-<BarGroups
-	title="Delivery"
-	data={monthly}
-	xKey="date"
-	yKeys={['delivery', 'collections', 'fails']}
-	height="480"
-	fillMissingDates={true}
-/>
-<div class="cards-grid">
-	<!-- Total Delivered -->
-	<div class="card green">
-		<div class="card-header">
-			<h3>Delivered</h3>
-		</div>
-		<p class="card-value">{sum.totalDelivered} pcs</p>
-		<!-- <p class="label">Total delivered ({getMonthName(selectedMonth)} {selectedYear})</p> -->
-		<p class="card-subtitle">Delivered parcels</p>
-	</div>
-	<!-- Collected Sum  -->
-	<div class="card blue">
-		<div class="card-header">
-			<h3>Collected</h3>
-		</div>
-		<p class="card-value">{sum.totalCollected} pcs</p>
-		<p class="card-subtitle">Collected</p>
-	</div>
-	<!-- Fails Sum  -->
-	<div class="card red">
-		<div class="card-header">
-			<h3>Fails</h3>
-		</div>
-		<p class="card-value">{sum.returnedSum} pcs</p>
-		<p class="card-subtitle">Failed deliveries</p>
-	</div>
-	<div class="card purple">
-		<div class="card-header">
-			<h3>Rate</h3>
-		</div>
-		<p class="card-value">{successRate} %</p>
-		<p class="card-subtitle">Success Rate</p>
-	</div>
-	<div class="card">
-		<div class="card-header">
-			<h3>Average</h3>
-		</div>
-		<p class="card-value">{sum.averagePerDay} pcs</p>
-		<p class="card-subtitle">Average pcs / day</p>
-	</div>
-	<div class="card">
-		<div class="card-header">
-			<h3>Odometer</h3>
-		</div>
-		<p class="card-value">{latestOdometer} km</p>
-		<p class="card-subtitle">Odometer in km</p>
-	</div>
-</div>
-
-<!-- Yearly Summary Section -->
-<section class="yearly-section">
 	<header>
-		<h2>Year {currentYear} Summary</h2>
-	</header>
-	<div class="monthly-cards-grid">
-		{#each monthlyData as monthData}
-			{#if monthData.hasData}
-				<a
-					href="/analytics?year={currentYear}&month={monthData.month + 1}"
-					class="month-card clickable"
-				>
-					<div class="month-card-header">
-						<h3>{monthData.monthName}</h3>
-						<span class="record-count">{monthData.recordCount} days</span>
-					</div>
-					<div class="month-stats">
-						<div class="stat-row">
-							<span class="stat-label">Delivered:</span>
-							<span class="stat-value green-text">{monthData.totalDelivered}</span>
-						</div>
-						<div class="stat-row">
-							<span class="stat-label">Collected:</span>
-							<span class="stat-value blue-text">{monthData.totalCollected}</span>
-						</div>
-						<div class="stat-row">
-							<span class="stat-label">Fails:</span>
-							<span class="stat-value red-text">{monthData.returnedSum}</span>
-						</div>
-						<div class="stat-row">
-							<span class="stat-label">Success Rate:</span>
-							<span class="stat-value purple-text">{monthData.successRate}%</span>
-						</div>
-						<div class="stat-row">
-							<span class="stat-label">Delivery Avg/day:</span>
-							<span class="stat-value">{monthData.averagePerDay}</span>
-						</div>
-						<div class="stat-row">
-							<span class="stat-label">Odometer:</span>
-							<span class="stat-value">{monthData.totalDistance.toLocaleString()} km</span>
-						</div>
-					</div>
+		<div class="header-content">
+			<div>
+				<h1>{getMonthName(currentMonth)} {new Date().getFullYear()}</h1>
+				<a href="/records" class="add-record-btn">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<line x1="12" y1="5" x2="12" y2="19"></line>
+						<line x1="5" y1="12" x2="19" y2="12"></line>
+					</svg>
+					Add/Edit Record
 				</a>
-			{:else}
-				<div class="month-card no-data">
-					<div class="month-card-header">
-						<h3>{monthData.monthName}</h3>
-					</div>
-					<p class="no-data-message">No data</p>
-				</div>
-			{/if}
-		{/each}
+			</div>
+		</div>
+	</header>
+	<BarGroups
+		title="Delivery"
+		data={monthly}
+		xKey="date"
+		yKeys={['delivery', 'collections', 'fails']}
+		height="480"
+		fillMissingDates={true}
+	/>
+	<div class="cards-grid">
+		<!-- Total Delivered -->
+		<div class="card green">
+			<div class="card-header">
+				<h3>Delivered</h3>
+			</div>
+			<p class="card-value">{sum.totalDelivered} pcs</p>
+			<!-- <p class="label">Total delivered ({getMonthName(selectedMonth)} {selectedYear})</p> -->
+			<p class="card-subtitle">Delivered parcels</p>
+		</div>
+		<!-- Collected Sum  -->
+		<div class="card blue">
+			<div class="card-header">
+				<h3>Collected</h3>
+			</div>
+			<p class="card-value">{sum.totalCollected} pcs</p>
+			<p class="card-subtitle">Collected</p>
+		</div>
+		<!-- Fails Sum  -->
+		<div class="card red">
+			<div class="card-header">
+				<h3>Fails</h3>
+			</div>
+			<p class="card-value">{sum.returnedSum} pcs</p>
+			<p class="card-subtitle">Failed deliveries</p>
+		</div>
+		<div class="card purple">
+			<div class="card-header">
+				<h3>Rate</h3>
+			</div>
+			<p class="card-value">{successRate} %</p>
+			<p class="card-subtitle">Success Rate</p>
+		</div>
+		<div class="card">
+			<div class="card-header">
+				<h3>Average</h3>
+			</div>
+			<p class="card-value">{sum.averagePerDay} pcs</p>
+			<p class="card-subtitle">Average pcs / day</p>
+		</div>
+		<div class="card">
+			<div class="card-header">
+				<h3>Odometer</h3>
+			</div>
+			<p class="card-value">{latestOdometer} km</p>
+			<p class="card-subtitle">Odometer in km</p>
+		</div>
 	</div>
-</section>
 
-<footer class="site-footer">
-	<div class="footer-content">
-		<div class="footer-section">
-			<h4>Delivery Records</h4>
-			<p class="footer-description">Professional delivery tracking and analytics system</p>
+	<!-- Yearly Summary Section -->
+	<section class="yearly-section">
+		<header>
+			<h2>Year {currentYear} Summary</h2>
+		</header>
+		<div class="monthly-cards-grid">
+			{#each monthlyData as monthData}
+				{#if monthData.hasData}
+					<a
+						href="/analytics?year={currentYear}&month={monthData.month + 1}"
+						class="month-card clickable"
+					>
+						<div class="month-card-header">
+							<h3>{monthData.monthName}</h3>
+							<span class="record-count">{monthData.recordCount} days</span>
+						</div>
+						<div class="month-stats">
+							<div class="stat-row">
+								<span class="stat-label">Delivered:</span>
+								<span class="stat-value green-text">{monthData.totalDelivered}</span>
+							</div>
+							<div class="stat-row">
+								<span class="stat-label">Collected:</span>
+								<span class="stat-value blue-text">{monthData.totalCollected}</span>
+							</div>
+							<div class="stat-row">
+								<span class="stat-label">Fails:</span>
+								<span class="stat-value red-text">{monthData.returnedSum}</span>
+							</div>
+							<div class="stat-row">
+								<span class="stat-label">Success Rate:</span>
+								<span class="stat-value purple-text">{monthData.successRate}%</span>
+							</div>
+							<div class="stat-row">
+								<span class="stat-label">Delivery Avg/day:</span>
+								<span class="stat-value">{monthData.averagePerDay}</span>
+							</div>
+							<div class="stat-row">
+								<span class="stat-label">Odometer:</span>
+								<span class="stat-value">{monthData.totalDistance.toLocaleString()} km</span>
+							</div>
+						</div>
+					</a>
+				{:else}
+					<div class="month-card no-data">
+						<div class="month-card-header">
+							<h3>{monthData.monthName}</h3>
+						</div>
+						<p class="no-data-message">No data</p>
+					</div>
+				{/if}
+			{/each}
 		</div>
-		<div class="footer-section">
-			<h4>Quick Links</h4>
-			<ul class="footer-links">
-				<li><a href="/records">Records</a></li>
-				<li><a href="/analytics">Analytics</a></li>
-				<li><a href="/revenue">Revenue</a></li>
-				<li><a href="/odometer">Odometer</a></li>
-			</ul>
+	</section>
+
+	<footer class="site-footer">
+		<div class="footer-content">
+			<div class="footer-section">
+				<h4>Delivery Records</h4>
+				<p class="footer-description">Professional delivery tracking and analytics system</p>
+			</div>
+			<div class="footer-section">
+				<h4>Quick Links</h4>
+				<ul class="footer-links">
+					<li><a href="/records">Records</a></li>
+					<li><a href="/analytics">Analytics</a></li>
+					<li><a href="/revenue">Revenue</a></li>
+					<li><a href="/odometer">Odometer</a></li>
+				</ul>
+			</div>
+			<div class="footer-section">
+				<h4>Information</h4>
+				<ul class="footer-links">
+					<li><a href="/invoice">Invoice Generator</a></li>
+					<li><a href="/backup">Backup</a></li>
+				</ul>
+			</div>
 		</div>
-		<div class="footer-section">
-			<h4>Information</h4>
-			<ul class="footer-links">
-				<li><a href="/invoice">Invoice Generator</a></li>
-				<li><a href="/backup">Backup</a></li>
-			</ul>
+		<div class="footer-bottom">
+			<p>&copy; {currentYear} Delivery Records. All rights reserved.</p>
 		</div>
-	</div>
-	<div class="footer-bottom">
-		<p>&copy; {currentYear} Delivery Records. All rights reserved.</p>
-	</div>
-</footer>
+	</footer>
 </div>
+
 <!-- 	yLabels={['Delivery', 'Collections', 'Fails']}
 	xLabel="Date"
 	xType="time"

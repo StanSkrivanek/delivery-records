@@ -2,14 +2,12 @@
 import { RecordService as rs } from '$lib/db.server'; // Your server-side database service
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ url }) => {
 	// Get current date for defaults
 	const now = new Date();
 	const records = await rs.getAllRecords();
 	const currentYear = now.getFullYear();
 	const currentMonth = now.getMonth() + 1;
-
-	const odoByMonth = await rs.getOdometerDifferencesByMonth(currentYear, currentMonth);
 
 	const yearsSet = new Set<number>();
 	const monthsSet = new Set<number>();
@@ -30,13 +28,24 @@ export const load: PageServerLoad = async () => {
 	const availableYears = Array.from(yearsSet).sort((a, b) => b - a); // Newest first
 	const availableMonths = Array.from(monthsSet).sort((a, b) => a - b); // January to December
 
-	// Set default year and month
-	const defaultYear = availableYears.includes(currentYear)
-		? currentYear
-		: availableYears[0] || currentYear;
-	const defaultMonth = availableMonths.includes(currentMonth)
-		? currentMonth
-		: availableMonths[0] || currentMonth;
+	// Check URL parameters for year and month
+	const urlYear = url.searchParams.get('year');
+	const urlMonth = url.searchParams.get('month');
+
+	// Set default year and month (prioritize URL params, then current date, then available data)
+	const defaultYear = urlYear
+		? parseInt(urlYear)
+		: availableYears.includes(currentYear)
+			? currentYear
+			: availableYears[0] || currentYear;
+	const defaultMonth = urlMonth
+		? parseInt(urlMonth)
+		: availableMonths.includes(currentMonth)
+			? currentMonth
+			: availableMonths[0] || currentMonth;
+
+	const odoByMonth = await rs.getOdometerDifferencesByMonth(defaultYear, defaultMonth);
+
 	return {
 		records,
 		availableYears,

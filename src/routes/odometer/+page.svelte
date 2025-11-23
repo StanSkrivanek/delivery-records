@@ -1,19 +1,22 @@
 <!-- src/routes/odometer/+page.svelte -->
 <script lang="ts">
+	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
+	import {
+		formatDate,
+		formatDistance,
+		formatOdometer,
+		getDistanceColorClass,
+		getMonthName
+	} from '$lib/utils';
 	import type { PageData } from './$types';
-	// import type { OdometerReading } from '$lib/types';
-	import { formatDate, formatDistance, formatOdometer, getDistanceColorClass } from '$lib/utils';
-	// Get data from server load function
+
 	let { data }: { data: PageData } = $props();
-	console.log('🚀 ~ data:', data);
 
-	// Reactive state for UI§
 	let loading = $state(false);
-
-	// Current values from server data
 	let selectedYear = $state(data.defaultYear);
 	let selectedMonth = $state(data.defaultMonth);
-	// Month options with names
+
 	const monthOptions = [
 		{ value: 1, label: 'January' },
 		{ value: 2, label: 'February' },
@@ -29,79 +32,82 @@
 		{ value: 12, label: 'December' }
 	];
 
+	const monthsByYearMap: Map<number, number[]> = (() => {
+		const map = new Map<number, Set<number>>();
+		for (const record of data.records) {
+			const dateString = record.entry_date || record.created_at;
+			if (!dateString) {
+				continue;
+			}
+			const date = new Date(dateString);
+			const year = date.getFullYear();
+			const month = date.getMonth() + 1;
+			if (!map.has(year)) {
+				map.set(year, new Set());
+			}
+			map.get(year)!.add(month);
+		}
+		const sortedMap = new Map<number, number[]>();
+		for (const [year, months] of map) {
+			sortedMap.set(
+				year,
+				Array.from(months).sort((a, b) => a - b)
+			);
+		}
+		return sortedMap;
+	})();
+
+	let availableMonthsForYear = $derived.by(() => monthsByYearMap.get(selectedYear) ?? []);
+	let monthSelectOptions = $derived.by(() => {
+		const allowed = availableMonthsForYear;
+		return allowed.length > 0
+			? monthOptions.filter((option) => allowed.includes(option.value))
+			: monthOptions;
+	});
+	let monthLabel = $derived.by(() => getMonthName(selectedMonth - 1));
+
 	function monthlyDistance() {
 		return data.odoByMonth.reduce((acc, reading) => acc + (reading.daily_difference ?? 0), 0);
 	}
 
-	// let availableMonthsForYear: number[] = $derived.by(() => {
-	// 	const monthsInYear = new Set<number>();
-	// 	data.odometerReadings.forEach((reading) => {
-	// 		const dateString = reading.entry_date || reading.created_at;
-	// 		if (dateString) {
-	// 			const recordDate = new Date(dateString);
-	// 			if (recordDate.getFullYear() === selectedYear) {
-	// 				monthsInYear.add(recordDate.getMonth() + 1);
-	// 			}
-	// 		}
-	// 	});
-	// 	return Array.from(monthsInYear).sort((a, b) => a - b);
-	// });
-	// $inspect('🚀 ~ availableMonthsForYear:', availableMonthsForYear);
+	async function updateSelection() {
+		if (!browser) {
+			return;
+		}
+		loading = true;
+		const url = new URL(window.location.href);
+		url.searchParams.set('year', selectedYear.toString());
+		url.searchParams.set('month', selectedMonth.toString());
+		try {
+			await goto(url.toString(), { replaceState: true, keepFocus: true, noScroll: true });
+		} finally {
+			loading = false;
+		}
+	}
 
-	// const filtereddata = $derived.by(() => {
-	// 	return data.odometerReadings.filter((reading) => {
-	// 		const dateString = reading.entry_date || reading.created_at;
-	// 		if (!dateString) return false;
-	// 		const recordDate = new Date(dateString);
-	// 		return (
-	// 			recordDate.getFullYear() === selectedYear && recordDate.getMonth() + 1 === selectedMonth
-	// 		);
-	// 	});
-	// });
+	function handleYearChange(event: Event) {
+		const select = event.currentTarget as HTMLSelectElement;
+		const year = Number(select.value);
+		if (Number.isNaN(year) || year === selectedYear) {
+			return;
+		}
+		selectedYear = year;
+		const monthsForYear = monthsByYearMap.get(year) ?? data.availableMonths;
+		if (monthsForYear.length > 0 && !monthsForYear.includes(selectedMonth)) {
+			selectedMonth = monthsForYear[0];
+		}
+		updateSelection();
+	}
 
-	// Function to update URL and reload data
-	// async function updateSelection() {
-	// 	loading = true;
-	// 	const url = new URL(page.url);
-	// 	url.searchParams.set('year', selectedYear.toString());
-	// 	url.searchParams.set('month', selectedMonth.toString());
-
-	// 	// Navigate to new URL, which will trigger server load
-	// 	await goto(url.toString(), { replaceState: true });
-	// 	loading = false;
-	// }
-
-	// Derived values for month names
-	// const monthNames = $derived([
-	// 	'January',
-	// 	'February',
-	// 	'March',
-	// 	'April',
-	// 	'May',
-	// 	'June',
-	// 	'July',
-	// 	'August',
-	// 	'September',
-	// 	'October',
-	// 	'November',
-	// 	'December'
-	// ]);
-
-	// const currentMonthName = $derived(monthNames[selectedMonth - 1]);
-
-	// Generate year options (current year and 4 previous years)
-	// const yearOptions = $derived(Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i));
-
-	// Update selection when dropdowns change
-	// $effect(() => {
-	// const availableMonths = availableMonthsForYear;
-	// if (!availableMonths.includes(selectedMonth) && availableMonths.length > 0) {
-	//     selectedMonth = availableMonths[0];
-	// }
-	// if (selectedYear !== data.selectedYear || selectedMonth !== data.selectedMonth) {
-	// 	updateSelection();
-	// }
-	// });
+	function handleMonthChange(event: Event) {
+		const select = event.currentTarget as HTMLSelectElement;
+		const month = Number(select.value);
+		if (Number.isNaN(month) || month === selectedMonth) {
+			return;
+		}
+		selectedMonth = month;
+		updateSelection();
+	}
 </script>
 
 <svelte:head>
@@ -111,7 +117,26 @@
 
 <div class="odometer-display">
 	<div class="header">
-		<h1>Odometer Readings - {selectedMonth} / {selectedYear}</h1>
+		<div class="header-title">
+			<h1>Odometer Readings - {monthLabel} {selectedYear}</h1>
+			{#if loading}
+				<span class="loading-indicator">Updating...</span>
+			{/if}
+		</div>
+		<div class="date-selector">
+			<select onchange={handleMonthChange} disabled={loading || monthSelectOptions.length === 0}>
+				{#each monthSelectOptions as option}
+					<option value={option.value} selected={option.value === selectedMonth}>
+						{option.label}
+					</option>
+				{/each}
+			</select>
+			<select onchange={handleYearChange} disabled={loading}>
+				{#each data.availableYears as year}
+					<option value={year} selected={year === selectedYear}>{year}</option>
+				{/each}
+			</select>
+		</div>
 		{#if data.odoByMonth.length > 0}
 			<div class="stats">
 				<div class="stat-card">
@@ -119,19 +144,6 @@
 					<p class="stat-value">{formatDistance(monthlyDistance())}</p>
 				</div>
 			</div>
-			<!-- <div class="date-selector"> -->
-			<!-- <select bind:value={selectedMonth} disabled={loading}>
-					{#each monthOptions as { value, label }}
-						<option value={value}>{label}</option>
-					{/each}
-				</select> -->
-			<!-- <select bind:value={selectedYear} disabled={loading}>
-					{#each data.yearOptions as year}
-						<option value={year}>{year}</option>
-					{/each}
-				</select> -->
-
-			<!-- </div> -->
 		{/if}
 
 		<!-- <div class="stats"> -->
@@ -274,11 +286,51 @@
 <style>
 	.header {
 		display: flex;
-		justify-content: space-between;
+		flex-direction: column;
 		align-items: center;
+		gap: 1.5rem;
 		margin-bottom: 2rem;
+	}
+	.header-title {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		text-align: center;
+	}
+	.header-title h1 {
+		margin: 0;
+		font-size: 2rem;
+		color: #333;
+	}
+	.loading-indicator {
+		font-size: 0.9rem;
+		color: #6b7280;
+	}
+	.date-selector {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+		justify-content: center;
 		flex-wrap: wrap;
+	}
+	.date-selector select {
+		padding: 0.5rem 1rem;
+		border: 1px solid #d1d5db;
+		border-radius: 0.5rem;
+		background: #fff;
+		color: #111827;
+		font-size: 1rem;
+		min-width: 160px;
+	}
+	.date-selector select:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+	.stats {
+		display: flex;
 		gap: 1rem;
+		flex-wrap: wrap;
+		justify-content: center;
 	}
 	.stat-card {
 		background: #4782cf;

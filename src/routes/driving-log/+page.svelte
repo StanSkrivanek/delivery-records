@@ -177,241 +177,242 @@
 	<title>Driving Log Book</title>
 </svelte:head>
 <div class="page-content">
-<section class="page-header">
-	<h1>Driving Log Book</h1>
-	<p>Track vehicle usage for revenue reporting with detailed driver logs.</p>
-</section>
+	<section class="page-header">
+		<h1>Driving Log Book</h1>
+		<p>Track vehicle usage for revenue reporting with detailed driver logs.</p>
+	</section>
 
-<section class="summary-grid">
-	<div class="summary-card">
-		<h3>Total Distance</h3>
-		<p class="value">{data.summary.totalDistance.toLocaleString()} km</p>
-	</div>
-	<div class="summary-card">
-		<h3>Total Driving Hours</h3>
-		<p class="value">{formatHours(data.summary.totalDrivingHours)} hrs</p>
-	</div>
-	<div class="summary-card">
-		<h3>Total Working Hours</h3>
-		<p class="value">{formatHours(data.summary.totalWorkingHours)} hrs</p>
-	</div>
-	<div class="summary-card">
-		<h3>Break Time</h3>
-		<p class="value">{formatBreak(data.summary.totalBreakMinutes)}</p>
-	</div>
-</section>
-
-<section class="filters">
-	<h2>Filters</h2>
-	<form method="get" class="filters-form">
-		<label>
-			<span>Start date</span>
-			<input type="date" name="startDate" value={data.filters.startDate} />
-		</label>
-		<label>
-			<span>End date</span>
-			<input type="date" name="endDate" value={data.filters.endDate} />
-		</label>
-		<label>
-			<span>Driver</span>
-			<input type="search" name="driver" list="drivers" value={data.filters.driver} />
-		</label>
-		<label>
-			<span>Vehicle</span>
-			<input type="search" name="vehicle" list="vehicles" value={data.filters.vehicle} />
-		</label>
-		<div class="filters-actions">
-			<button type="submit" class="primary">Apply</button>
-			<a class="secondary" href="/driving-log">Reset</a>
+	<section class="summary-grid">
+		<div class="summary-card">
+			<h3>Total Distance</h3>
+			<p class="value">{data.summary.totalDistance.toLocaleString()} km</p>
 		</div>
-	</form>
-	<datalist id="drivers">
-		{#each data.drivers as driver (driver.id)}
-			<option value={driver.full_name}>{driver.full_name}</option>
-		{/each}
-		{#each data.existingDrivers as driverOption (driverOption)}
-			<option value={driverOption}>{driverOption}</option>
-		{/each}
-	</datalist>
-	<datalist id="vehicles">
-		{#each data.vehicles as vehicle (vehicle.id)}
-			<option value="{vehicle.make} {vehicle.model} ({vehicle.registration_number})">
-				{vehicle.make}
-				{vehicle.model} ({vehicle.registration_number})
-			</option>
-		{/each}
-		{#each data.existingVehicles as vehicleOption (vehicleOption)}
-			<option value={vehicleOption}>{vehicleOption}</option>
-		{/each}
-	</datalist>
-</section>
-
-<section class="entry-form">
-	<div class="form-header">
-		<h2>{mode === 'create' ? 'Add New Entry' : 'Edit Entry'}</h2>
-		{#if mode === 'update'}
-			<button type="button" class="link" onclick={cancelEdit}>Cancel edit</button>
-		{/if}
-	</div>
-	{#if form?.error}
-		<p class="form-error">{form.error}</p>
-	{/if}
-	<form method="post" action={mode === 'create' ? '?/create' : '?/update'} class="grid">
-		{#if mode === 'update' && editingId}
-			<input type="hidden" name="id" value={editingId} />
-		{/if}
-		<label>
-			<span>Date</span>
-			<input type="date" name="entry_date" bind:value={formValues.entry_date} required />
-		</label>
-		<label>
-			<span>Driver</span>
-			<select name="driver" bind:value={formValues.driver} required>
-				<option value="">-- Select a driver --</option>
-				{#each data.drivers as driver (driver.id)}
-					<option value={driver.full_name}>{driver.full_name}</option>
-				{/each}
-			</select>
-		</label>
-		<label>
-			<span>Vehicle</span>
-			<select name="vehicle" bind:value={formValues.vehicle} required>
-				<option value="">-- Select a vehicle --</option>
-				{#each data.vehicles as vehicle (vehicle.id)}
-					<option value="{vehicle.make} {vehicle.model} ({vehicle.registration_number})">
-						{vehicle.make}
-						{vehicle.model} ({vehicle.registration_number})
-					</option>
-				{/each}
-			</select>
-		</label>
-		<label>
-			<span>Start time</span>
-			<input type="time" name="start_time" bind:value={formValues.start_time} required />
-		</label>
-		<label>
-			<span>End time</span>
-			<input type="time" name="end_time" bind:value={formValues.end_time} required />
-		</label>
-		<label>
-			<span>Start odometer</span>
-			<input
-				type="number"
-				name="start_odometer"
-				bind:value={formValues.start_odometer}
-				min="0"
-				required
-			/>
-		</label>
-		<label>
-			<span>End odometer</span>
-			<input
-				type="number"
-				name="end_odometer"
-				bind:value={formValues.end_odometer}
-				min="0"
-				required
-			/>
-		</label>
-		<label>
-			<span>Break (minutes)</span>
-			<input
-				type="number"
-				name="break_minutes"
-				bind:value={formValues.break_minutes}
-				min="0"
-				placeholder="0"
-			/>
-		</label>
-		<label>
-			<span>Total working hour</span>
-			<input
-				type="text"
-				value={formValues.total_working_hours}
-				readonly
-				style="background: #f3f4f6; cursor: not-allowed;"
-			/>
-			<input type="hidden" name="total_working_hours" value={formValues.total_working_hours} />
-		</label>
-		<label>
-			<span>Total driving hours</span>
-			<input
-				type="text"
-				value={formValues.total_driving_hours}
-				readonly
-				style="background: #f3f4f6; cursor: not-allowed;"
-			/>
-			<input type="hidden" name="total_driving_hours" value={formValues.total_driving_hours} />
-		</label>
-		<div class="form-actions">
-			<button type="submit" class="primary"
-				>{mode === 'create' ? 'Save entry' : 'Update entry'}</button
-			>
+		<div class="summary-card">
+			<h3>Total Driving Hours</h3>
+			<p class="value">{formatHours(data.summary.totalDrivingHours)} hrs</p>
 		</div>
-	</form>
-</section>
+		<div class="summary-card">
+			<h3>Total Working Hours</h3>
+			<p class="value">{formatHours(data.summary.totalWorkingHours)} hrs</p>
+		</div>
+		<div class="summary-card">
+			<h3>Break Time</h3>
+			<p class="value">{formatBreak(data.summary.totalBreakMinutes)}</p>
+		</div>
+	</section>
 
-<section class="entries">
-	<h2>Driving Log History</h2>
-	{#if data.entries.length === 0}
-		<p class="empty">No entries match your filters yet.</p>
-	{:else}
-		<div class="table-wrapper">
-			<table>
-				<thead>
-					<tr>
-						<th>Date</th>
-						<th>Driver</th>
-						<th>Vehicle</th>
-						<th>Start</th>
-						<th>End</th>
-						<th>Distance (km)</th>
-						<th>Driving hrs</th>
-						<th>Working hrs</th>
-						<th>Break</th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each data.entries as entry}
-						<tr>
-							<td>{entry.entry_date}</td>
-							<td>{entry.driver}</td>
-							<td>{entry.vehicle}</td>
-							<td>
-								<span class="time">{entry.start_time}</span>
-								<span class="odo">{Number(entry.start_odometer ?? 0).toLocaleString()} km</span>
-							</td>
-							<td>
-								<span class="time">{entry.end_time}</span>
-								<span class="odo">{Number(entry.end_odometer ?? 0).toLocaleString()} km</span>
-							</td>
-							<td>{formatDistance(entry.start_odometer, entry.end_odometer).toLocaleString()}</td>
-							<td>{formatHours(entry.total_driving_hours)}</td>
-							<td>{formatHours(entry.total_working_hours)}</td>
-							<td>{formatBreak(entry.break_minutes)}</td>
-							<td class="row-actions">
-								<button type="button" class="link" onclick={() => handleEdit(entry)}>Edit</button>
-								<form
-									method="post"
-									action="?/delete"
-									class="inline-form"
-									onsubmit={(event) => {
-										if (!confirm('Delete this entry?')) event.preventDefault();
-									}}
-								>
-									<input type="hidden" name="id" value={entry.id} />
-									<button type="submit" class="danger">Delete</button>
-								</form>
-							</td>
-						</tr>
+	<section class="filters">
+		<h2>Filters</h2>
+		<form method="get" class="filters-form">
+			<label>
+				<span>Start date</span>
+				<input type="date" name="startDate" value={data.filters.startDate} />
+			</label>
+			<label>
+				<span>End date</span>
+				<input type="date" name="endDate" value={data.filters.endDate} />
+			</label>
+			<label>
+				<span>Driver</span>
+				<input type="search" name="driver" list="drivers" value={data.filters.driver} />
+			</label>
+			<label>
+				<span>Vehicle</span>
+				<input type="search" name="vehicle" list="vehicles" value={data.filters.vehicle} />
+			</label>
+			<div class="filters-actions">
+				<button type="submit" class="primary">Apply</button>
+				<a class="secondary" href="/driving-log">Reset</a>
+			</div>
+		</form>
+		<datalist id="drivers">
+			{#each data.drivers as driver (driver.id)}
+				<option value={driver.full_name}>{driver.full_name}</option>
+			{/each}
+			{#each data.existingDrivers as driverOption (driverOption)}
+				<option value={driverOption}>{driverOption}</option>
+			{/each}
+		</datalist>
+		<datalist id="vehicles">
+			{#each data.vehicles as vehicle (vehicle.id)}
+				<option value="{vehicle.make} {vehicle.model} ({vehicle.registration_number})">
+					{vehicle.make}
+					{vehicle.model} ({vehicle.registration_number})
+				</option>
+			{/each}
+			{#each data.existingVehicles as vehicleOption (vehicleOption)}
+				<option value={vehicleOption}>{vehicleOption}</option>
+			{/each}
+		</datalist>
+	</section>
+
+	<section class="entry-form">
+		<div class="form-header">
+			<h2>{mode === 'create' ? 'Add New Entry' : 'Edit Entry'}</h2>
+			{#if mode === 'update'}
+				<button type="button" class="link" onclick={cancelEdit}>Cancel edit</button>
+			{/if}
+		</div>
+		{#if form?.error}
+			<p class="form-error">{form.error}</p>
+		{/if}
+		<form method="post" action={mode === 'create' ? '?/create' : '?/update'} class="grid">
+			{#if mode === 'update' && editingId}
+				<input type="hidden" name="id" value={editingId} />
+			{/if}
+			<label>
+				<span>Date</span>
+				<input type="date" name="entry_date" bind:value={formValues.entry_date} required />
+			</label>
+			<label>
+				<span>Driver</span>
+				<select name="driver" bind:value={formValues.driver} required>
+					<option value="">-- Select a driver --</option>
+					{#each data.drivers as driver (driver.id)}
+						<option value={driver.full_name}>{driver.full_name}</option>
 					{/each}
-				</tbody>
-			</table>
-		</div>
-	{/if}
-</section>
+				</select>
+			</label>
+			<label>
+				<span>Vehicle</span>
+				<select name="vehicle" bind:value={formValues.vehicle} required>
+					<option value="">-- Select a vehicle --</option>
+					{#each data.vehicles as vehicle (vehicle.id)}
+						<option value="{vehicle.make} {vehicle.model} ({vehicle.registration_number})">
+							{vehicle.make}
+							{vehicle.model} ({vehicle.registration_number})
+						</option>
+					{/each}
+				</select>
+			</label>
+			<label>
+				<span>Start time</span>
+				<input type="time" name="start_time" bind:value={formValues.start_time} required />
+			</label>
+			<label>
+				<span>End time</span>
+				<input type="time" name="end_time" bind:value={formValues.end_time} required />
+			</label>
+			<label>
+				<span>Start odometer</span>
+				<input
+					type="number"
+					name="start_odometer"
+					bind:value={formValues.start_odometer}
+					min="0"
+					required
+				/>
+			</label>
+			<label>
+				<span>End odometer</span>
+				<input
+					type="number"
+					name="end_odometer"
+					bind:value={formValues.end_odometer}
+					min="0"
+					required
+				/>
+			</label>
+			<label>
+				<span>Break (minutes)</span>
+				<input
+					type="number"
+					name="break_minutes"
+					bind:value={formValues.break_minutes}
+					min="0"
+					placeholder="0"
+				/>
+			</label>
+			<label>
+				<span>Total working hour</span>
+				<input
+					type="text"
+					value={formValues.total_working_hours}
+					readonly
+					style="background: #f3f4f6; cursor: not-allowed;"
+				/>
+				<input type="hidden" name="total_working_hours" value={formValues.total_working_hours} />
+			</label>
+			<label>
+				<span>Total driving hours</span>
+				<input
+					type="text"
+					value={formValues.total_driving_hours}
+					readonly
+					style="background: #f3f4f6; cursor: not-allowed;"
+				/>
+				<input type="hidden" name="total_driving_hours" value={formValues.total_driving_hours} />
+			</label>
+			<div class="form-actions">
+				<button type="submit" class="primary"
+					>{mode === 'create' ? 'Save entry' : 'Update entry'}</button
+				>
+			</div>
+		</form>
+	</section>
+
+	<section class="entries">
+		<h2>Driving Log History</h2>
+		{#if data.entries.length === 0}
+			<p class="empty">No entries match your filters yet.</p>
+		{:else}
+			<div class="table-wrapper">
+				<table>
+					<thead>
+						<tr>
+							<th>Date</th>
+							<th>Driver</th>
+							<th>Vehicle</th>
+							<th>Start</th>
+							<th>End</th>
+							<th>Distance (km)</th>
+							<th>Driving hrs</th>
+							<th>Working hrs</th>
+							<th>Break</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each data.entries as entry}
+							<tr>
+								<td>{entry.entry_date}</td>
+								<td>{entry.driver}</td>
+								<td>{entry.vehicle}</td>
+								<td>
+									<span class="time">{entry.start_time}</span>
+									<span class="odo">{Number(entry.start_odometer ?? 0).toLocaleString()} km</span>
+								</td>
+								<td>
+									<span class="time">{entry.end_time}</span>
+									<span class="odo">{Number(entry.end_odometer ?? 0).toLocaleString()} km</span>
+								</td>
+								<td>{formatDistance(entry.start_odometer, entry.end_odometer).toLocaleString()}</td>
+								<td>{formatHours(entry.total_driving_hours)}</td>
+								<td>{formatHours(entry.total_working_hours)}</td>
+								<td>{formatBreak(entry.break_minutes)}</td>
+								<td class="row-actions">
+									<button type="button" class="link" onclick={() => handleEdit(entry)}>Edit</button>
+									<form
+										method="post"
+										action="?/delete"
+										class="inline-form"
+										onsubmit={(event) => {
+											if (!confirm('Delete this entry?')) event.preventDefault();
+										}}
+									>
+										<input type="hidden" name="id" value={entry.id} />
+										<button type="submit" class="danger">Delete</button>
+									</form>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+		{/if}
+	</section>
 </div>
+
 <style>
 	.page-header {
 		margin: 2rem 0;
