@@ -283,7 +283,7 @@
 						<tr>
 							<td>Deliveries</td>
 							<td>{invoiceData.totalDeliveries.toLocaleString()}</td>
-							<td>{formatCurrency(4.0)}</td>
+							<td>{formatCurrency(4.41)}</td>
 							<td>{formatCurrency(invoiceData.deliverySubtotal)}</td>
 							<td>{formatCurrency(invoiceData.deliveryVAT)}</td>
 							<td class="font-medium">{formatCurrency(invoiceData.deliveryTotal)}</td>
