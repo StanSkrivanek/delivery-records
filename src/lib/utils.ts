@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 export const PPU_DELIVERY = 4.41; // Price per delivery without tax
-export const PPU_COLLECTION = 1.00; // Price per collection without tax
+export const PPU_COLLECTION = 1.0; // Price per collection without tax
 export const TAX_RATE = 0.23; // Tax rate (23%)
 
 export const ODOMETER_INIT = 267317; //INITIAL ODOMETER VALUE, NOT USED IN CALCULATIONS
@@ -134,8 +134,9 @@ export function formatDate(dateString: string): string {
 export function dlvPd(record: DeliveryRecord): number {
 	return (
 		// + (record.cutters ?? 0) // cutters are not delivered, they are collected but not displayed in scanner
-		record.loaded - (record.collected ?? 0) - ((record.returned ?? 0) + (record.missplaced ?? 0)) ||
-		0
+		record.loaded || 0
+		// - (record.collected ?? 0) - ((record.returned ?? 0) + (record.missplaced ?? 0)) ||
+		// 0
 	);
 }
 
@@ -145,14 +146,7 @@ export function dlvPd(record: DeliveryRecord): number {
  * @returns {number} - The average delivered items per day.
  */
 export function dpm(records: DeliveryRecord[]): number {
-	const totalDelivered = records.reduce(
-		(sum, record) =>
-			sum +
-			(record.loaded -
-				((record.collected || 0) + (record.cutters || 0)) -
-				((record.returned ?? 0) + (record.missplaced || 0)) || 0),
-		0
-	);
+	const totalDelivered = records.reduce((sum, record) => sum + dlvPd(record), 0);
 	return records.length > 0 ? totalDelivered / records.length : 0;
 }
 
