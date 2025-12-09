@@ -3,6 +3,7 @@ import { RecordService } from '$lib/db.server';
 import {
 	PPU_DELIVERY,
 	PPU_COLLECTION,
+	WAN_B_DELIVERY,
 	TAX_RATE,
 	calculateTotalDelivered,
 	calculateTotalCollected,
@@ -17,12 +18,16 @@ export interface InvoiceData {
 	year: number;
 	totalDeliveries: number;
 	totalCollections: number;
+	wanBCount: number;
 	deliverySubtotal: number;
 	collectionSubtotal: number;
+	wanBSubtotal: number;
 	deliveryVAT: number;
 	collectionVAT: number;
+	wanBVAT: number;
 	deliveryTotal: number;
 	collectionTotal: number;
+	wanBTotal: number;
 	grandTotal: number;
 	records: DeliveryRecord[];
 }
@@ -30,24 +35,37 @@ export class InvoiceService {
 	/**
 	 * Generate invoice data for a specific month
 	 */
-	static async generateInvoiceData(year: number, month: number): Promise<InvoiceData> {
+	static async generateInvoiceData(
+		year: number,
+		month: number,
+		wanBCount: number = 0
+	): Promise<InvoiceData> {
 		const records = await RecordService.getRecordsByMonth(year, month);
 
 		// Calculate totals
-		const totalDeliveries = calculateTotalDelivered(records);
+		let totalDeliveries = calculateTotalDelivered(records);
 		const totalCollections = calculateTotalCollected(records);
+
+		// Adjust deliveries for WanB
+		// WanB items are subtracted from total deliveries as they have a different rate
+		if (wanBCount > 0) {
+			totalDeliveries = Math.max(0, totalDeliveries - wanBCount);
+		}
 
 		// Calculate financial values
 		const deliverySubtotal = totalDeliveries * PPU_DELIVERY;
 		const collectionSubtotal = totalCollections * PPU_COLLECTION;
+		const wanBSubtotal = wanBCount * WAN_B_DELIVERY;
 
 		const deliveryVAT = deliverySubtotal * TAX_RATE;
 		const collectionVAT = collectionSubtotal * TAX_RATE;
+		const wanBVAT = wanBSubtotal * TAX_RATE;
 
 		const deliveryTotal = deliverySubtotal + deliveryVAT;
 		const collectionTotal = collectionSubtotal + collectionVAT;
+		const wanBTotal = wanBSubtotal + wanBVAT;
 
-		const grandTotal = deliveryTotal + collectionTotal;
+		const grandTotal = deliveryTotal + collectionTotal + wanBTotal;
 
 		// Generate invoice number (format: YYYY-MM-001)
 		const invoiceNumber = `${year}-${String(month).padStart(2, '0')}-001`;
@@ -60,12 +78,16 @@ export class InvoiceService {
 			year,
 			totalDeliveries,
 			totalCollections,
+			wanBCount,
 			deliverySubtotal,
 			collectionSubtotal,
+			wanBSubtotal,
 			deliveryVAT,
 			collectionVAT,
+			wanBVAT,
 			deliveryTotal,
 			collectionTotal,
+			wanBTotal,
 			grandTotal,
 			records
 		};

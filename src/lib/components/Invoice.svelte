@@ -12,6 +12,7 @@
 
 	let selectedYear = $state(defaultYear);
 	let selectedMonth = $state(defaultMonth);
+	let wanBCount = $state(0);
 	let invoiceData = $state<InvoiceData | null>(null);
 	let loading = $state(false);
 	let error = $state<string | null>(null);
@@ -67,7 +68,7 @@
 
 		try {
 			const response = await fetch(
-				`/api/invoice?year=${selectedYear}&month=${selectedMonth}&format=json`
+				`/api/invoice?year=${selectedYear}&month=${selectedMonth}&wanBCount=${wanBCount}&format=json`
 			);
 
 			if (!response.ok) {
@@ -96,6 +97,7 @@
 				body: JSON.stringify({
 					year: selectedYear,
 					month: selectedMonth,
+					wanBCount,
 					companyInfo,
 					invoiceReceiver
 				})
@@ -140,6 +142,7 @@
 				body: JSON.stringify({
 					year: selectedYear,
 					month: selectedMonth,
+					wanBCount,
 					companyInfo,
 					invoiceReceiver,
 					format: 'html'
@@ -195,8 +198,20 @@
 				</select>
 			</div>
 
+			<div class="control-group">
+				<label for="wanb-input">WanB Count:</label>
+				<input
+					type="number"
+					id="wanb-input"
+					bind:value={wanBCount}
+					min="0"
+					disabled={loading}
+					style="width: 80px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
+				/>
+			</div>
+
 			<button type="button" class="btn primary" onclick={generateInvoice} disabled={loading}>
-				{loading ? 'Generating...' : 'Generate Invoice'}
+				{loading ? 'Generating...' : 'Generate / Update Invoice'}
 			</button>
 		</div>
 
@@ -288,6 +303,16 @@
 							<td>{formatCurrency(invoiceData.deliveryVAT)}</td>
 							<td class="font-medium">{formatCurrency(invoiceData.deliveryTotal)}</td>
 						</tr>
+						{#if invoiceData.wanBCount && invoiceData.wanBCount > 0}
+							<tr>
+								<td>WanB Deliveries</td>
+								<td>{invoiceData.wanBCount.toLocaleString()}</td>
+								<td>{formatCurrency(WAN_B_DELIVERY)}</td>
+								<td>{formatCurrency(invoiceData.wanBSubtotal || 0)}</td>
+								<td>{formatCurrency(invoiceData.wanBVAT || 0)}</td>
+								<td class="font-medium">{formatCurrency(invoiceData.wanBTotal || 0)}</td>
+							</tr>
+						{/if}
 						<tr>
 							<td>Collections</td>
 							<td>{invoiceData.totalCollections.toLocaleString()}</td>

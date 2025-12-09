@@ -1,6 +1,13 @@
 // src/lib/pdfGenerator.ts
 import type { InvoiceData } from '$lib/invoice.server';
-import { formatCurrency, formatDate, getMonthName } from '$lib/utils';
+import {
+	formatCurrency,
+	formatDate,
+	getMonthName,
+	PPU_COLLECTION,
+	PPU_DELIVERY,
+	WAN_B_DELIVERY
+} from '$lib/utils';
 
 export function generateInvoiceHTML(
 	invoiceData: InvoiceData,
@@ -34,12 +41,16 @@ export function generateInvoiceHTML(
 		year,
 		totalDeliveries,
 		totalCollections,
+		wanBCount,
 		deliverySubtotal,
 		collectionSubtotal,
+		wanBSubtotal,
 		deliveryVAT,
 		collectionVAT,
+		wanBVAT,
 		deliveryTotal,
 		collectionTotal,
+		wanBTotal,
 		grandTotal
 	} = invoiceData;
 
@@ -399,18 +410,35 @@ export function generateInvoiceHTML(
 						<small>Monthly parcel delivery services for ${getMonthName(month - 1)} ${year}</small>
 					</td>
 					<td class="text-right">${totalDeliveries.toLocaleString()}</td>
-					<td class="text-right">${formatCurrency(4.0)}</td>
+					<td class="text-right">${formatCurrency(PPU_DELIVERY)}</td>
 					<td class="text-right">${formatCurrency(deliverySubtotal)}</td>
 					<td class="text-right">${formatCurrency(deliveryVAT)}</td>
 					<td class="text-right font-medium">${formatCurrency(deliveryTotal)}</td>
 				</tr>
+				${
+					wanBCount && wanBCount > 0
+						? `
+				<tr>
+					<td>
+						<strong>WanB Delivery Services</strong><br>
+						<small>Monthly WanB delivery services for ${getMonthName(month - 1)} ${year}</small>
+					</td>
+					<td class="text-right">${wanBCount.toLocaleString()}</td>
+					<td class="text-right">${formatCurrency(WAN_B_DELIVERY)}</td>
+					<td class="text-right">${formatCurrency(wanBSubtotal || 0)}</td>
+					<td class="text-right">${formatCurrency(wanBVAT || 0)}</td>
+					<td class="text-right font-medium">${formatCurrency(wanBTotal || 0)}</td>
+				</tr>
+				`
+						: ''
+				}
 				<tr>
 					<td>
 						<strong>Parcel Collection Services</strong><br>
 						<small>Monthly parcel collection services for ${getMonthName(month - 1)} ${year}</small>
 					</td>
 					<td class="text-right">${totalCollections.toLocaleString()}</td>
-					<td class="text-right">${formatCurrency(1.0)}</td>
+					<td class="text-right">${formatCurrency(PPU_COLLECTION)}</td>
 					<td class="text-right">${formatCurrency(collectionSubtotal)}</td>
 					<td class="text-right">${formatCurrency(collectionVAT)}</td>
 					<td class="text-right font-medium">${formatCurrency(collectionTotal)}</td>

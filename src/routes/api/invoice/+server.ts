@@ -8,9 +8,10 @@ export const GET: RequestHandler = async ({ url }) => {
 	try {
 		const year = parseInt(url.searchParams.get('year') || new Date().getFullYear().toString());
 		const month = parseInt(url.searchParams.get('month') || (new Date().getMonth() + 1).toString());
+		const wanBCount = parseInt(url.searchParams.get('wanBCount') || '0');
 		const format = url.searchParams.get('format') || 'json';
 
-		const invoiceData = await InvoiceService.generateInvoiceData(year, month);
+		const invoiceData = await InvoiceService.generateInvoiceData(year, month, wanBCount);
 
 		if (format === 'html') {
 			// Return HTML for PDF generation
@@ -32,9 +33,9 @@ export const GET: RequestHandler = async ({ url }) => {
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		const { year, month, companyInfo, invoiceReceiver } = await request.json();
+		const { year, month, wanBCount, companyInfo, invoiceReceiver } = await request.json();
 
-		const invoiceData = await InvoiceService.generateInvoiceData(year, month);
+		const invoiceData = await InvoiceService.generateInvoiceData(year, month, wanBCount || 0);
 		const html = generateInvoiceHTML(invoiceData, companyInfo, invoiceReceiver);
 
 		return new Response(html, {
