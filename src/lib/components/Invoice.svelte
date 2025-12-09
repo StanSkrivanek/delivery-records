@@ -1,7 +1,7 @@
 <!-- src/lib/components/Invoice.svelte -->
 <script lang="ts">
 	import type { InvoiceData } from '$lib/invoice.server';
-	import { formatCurrency, getMonthName } from '$lib/utils';
+	import { formatCurrency, getMonthName, PPU_COLLECTION, PPU_DELIVERY, WAN_B_DELIVERY } from '$lib/utils';
 
 	let {
 		availableYears = [],
@@ -283,7 +283,7 @@
 						<tr>
 							<td>Deliveries</td>
 							<td>{invoiceData.totalDeliveries.toLocaleString()}</td>
-							<td>{formatCurrency(4.41)}</td>
+							<td>{formatCurrency(PPU_DELIVERY)}</td>
 							<td>{formatCurrency(invoiceData.deliverySubtotal)}</td>
 							<td>{formatCurrency(invoiceData.deliveryVAT)}</td>
 							<td class="font-medium">{formatCurrency(invoiceData.deliveryTotal)}</td>
@@ -291,7 +291,7 @@
 						<tr>
 							<td>Collections</td>
 							<td>{invoiceData.totalCollections.toLocaleString()}</td>
-							<td>{formatCurrency(1.0)}</td>
+							<td>{formatCurrency(PPU_COLLECTION)}</td>
 							<td>{formatCurrency(invoiceData.collectionSubtotal)}</td>
 							<td>{formatCurrency(invoiceData.collectionVAT)}</td>
 							<td class="font-medium">{formatCurrency(invoiceData.collectionTotal)}</td>
