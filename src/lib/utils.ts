@@ -3,8 +3,8 @@ import path from 'path';
 
 export const PPU_DELIVERY = 4.41; // Price per delivery without tax
 export const PPU_COLLECTION = 1.45; // Price per collection without tax
-export const TAX_RATE = 0.23; // Tax rate (23%)
 export const WAN_B_DELIVERY = 1.80; // China Shit Delivery Rate
+export const TAX_RATE = 0.23; // Tax rate (23%)
 
 export const ODOMETER_INIT = 267317; //INITIAL ODOMETER VALUE, NOT USED IN CALCULATIONS
 /**
