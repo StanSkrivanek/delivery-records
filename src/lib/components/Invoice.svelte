@@ -1,7 +1,13 @@
 <!-- src/lib/components/Invoice.svelte -->
 <script lang="ts">
 	import type { InvoiceData } from '$lib/invoice.server';
-	import { formatCurrency, getMonthName, PPU_COLLECTION, PPU_DELIVERY, WAN_B_DELIVERY } from '$lib/utils';
+	import {
+		formatCurrency,
+		getMonthName,
+		PPU_COLLECTION,
+		PPU_DELIVERY,
+		WAN_B_DELIVERY
+	} from '$lib/utils';
 
 	let {
 		availableYears = [],
