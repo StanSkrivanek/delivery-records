@@ -1,5 +1,5 @@
 import { RecordService } from '$lib/db.server';
-import { createImagePath, deleteImageFile, saveImageFile } from '$lib/utils';
+import { createImagePath, deleteImageFile, saveImageFile } from '$lib/utils.server';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 

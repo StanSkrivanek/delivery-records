@@ -3,7 +3,7 @@
 // It includes PUT and DELETE methods to update and delete records respectively.
 
 import { RecordService } from '$lib/db.server';
-import { createImagePaths, deleteImageFile, saveImageFile } from '$lib/utils';
+import { createImagePaths, deleteImageFile, saveImageFile } from '$lib/utils.server';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
