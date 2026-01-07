@@ -459,6 +459,15 @@ export class RecordService {
 		return stmt.all() as Record[];
 	}
 
+	static async getRecordsByYear(year: number) {
+		const stmt = db.prepare(`
+	  SELECT * FROM records
+	  WHERE strftime('%Y', entry_date) = ?
+	  ORDER BY entry_date DESC
+	`);
+		return stmt.all(String(year)) as Record[];
+	}
+
 	static async getRecordsByMonth(year: number, month: number): Promise<Record[]> {
 		const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
 		const endDate = `${year}-${String(month).padStart(2, '0')}-31`;

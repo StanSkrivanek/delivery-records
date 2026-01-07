@@ -1,74 +1,91 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import BarGroups from '$lib/components/charts/BarGoups.svelte';
 	import { calculateAnalytics, dlvPd, getMonthName } from '$lib/utils.js';
 	let { data } = $props();
 
+	const selectedYear = $derived(data.selectedYear);
+	const availableYears = $derived(data.availableYears);
+
+	function handleYearChange(event: Event) {
+		const target = event.target as HTMLSelectElement;
+		goto(`/?year=${target.value}`);
+	}
+
 	// Map through each record in the array and process it, or process the entire array
 	// const delivery = data.monthly.map((record) => dlvPd(record));
-	const monthly = data.monthly.map((item) => {
-		return {
-			date: item.entry_date,
-			delivery: dlvPd(item),
-			collections: (item.collected ?? 0) + (item.cutters ?? 0),
-			fails: (item.returned ?? 0) + (item.missplaced ?? 0)
-		};
-	});
+	const monthly = $derived(
+		data.monthly.map((item) => {
+			return {
+				date: item.entry_date,
+				delivery: dlvPd(item),
+				collections: (item.collected ?? 0) + (item.cutters ?? 0),
+				fails: (item.returned ?? 0) + (item.missplaced ?? 0)
+			};
+		})
+	);
 
-	const sum = calculateAnalytics(data.monthly);
+	const sum = $derived(calculateAnalytics(data.monthly));
 
 	const currentMonth = new Date().getMonth();
 	const currentYear = new Date().getFullYear();
-	const successRate =
-		Number(((sum.totalDelivered / (sum.totalDelivered + sum.returnedSum)) * 100).toFixed(2)) || 0;
-	const latestOdometer = data.getLatestOdometer ? data.getLatestOdometer : 0;
+	const isCurrentYear = $derived(selectedYear === currentYear);
+	const displayMonth = $derived(isCurrentYear ? getMonthName(currentMonth) : '');
+	const displayYear = $derived(selectedYear);
+	const successRate = $derived(
+		Number(((sum.totalDelivered / (sum.totalDelivered + sum.returnedSum)) * 100).toFixed(2)) || 0
+	);
+	const latestOdometer = $derived(data.getLatestOdometer ? data.getLatestOdometer : 0);
 
 	// Group yearly data by month
-	const monthlyData = Array.from({ length: 12 }, (_, i) => {
-		const monthNumber = i + 1;
-		const monthRecords = data.yearly.filter((record) => {
-			const recordDate = new Date(record.entry_date);
-			return recordDate.getMonth() === i;
-		});
+	const monthlyData = $derived(
+		Array.from({ length: 12 }, (_, i) => {
+			const monthNumber = i + 1;
+			const monthRecords = data.yearly.filter((record) => {
+				const recordDate = new Date(record.entry_date);
+				return recordDate.getMonth() === i;
+			});
 
-		if (monthRecords.length === 0) {
+			if (monthRecords.length === 0) {
+				return {
+					month: i,
+					monthName: getMonthName(i),
+					hasData: false,
+					totalDelivered: 0,
+					totalCollected: 0,
+					returnedSum: 0,
+					successRate: 0,
+					averagePerDay: '0.00',
+					totalDistance: 0,
+					recordCount: 0
+				};
+			}
+
+			const analytics = calculateAnalytics(monthRecords);
+			// Get the latest odometer reading for the month (not the sum)
+			const latestOdometer = Math.max(...monthRecords.map((record) => record.odometer ?? 0));
+			const successRate =
+				Number(
+					(
+						(analytics.totalDelivered / (analytics.totalDelivered + analytics.returnedSum)) *
+						100
+					).toFixed(2)
+				) || 0;
+
 			return {
 				month: i,
 				monthName: getMonthName(i),
-				hasData: false,
-				totalDelivered: 0,
-				totalCollected: 0,
-				returnedSum: 0,
-				successRate: 0,
-				averagePerDay: '0.00',
-				totalDistance: 0,
-				recordCount: 0
+				hasData: true,
+				totalDelivered: analytics.totalDelivered,
+				totalCollected: analytics.totalCollected,
+				returnedSum: analytics.returnedSum,
+				successRate,
+				averagePerDay: analytics.averagePerDay,
+				totalDistance: latestOdometer,
+				recordCount: monthRecords.length
 			};
-		}
-
-		const analytics = calculateAnalytics(monthRecords);
-		// Get the latest odometer reading for the month (not the sum)
-		const latestOdometer = Math.max(...monthRecords.map((record) => record.odometer ?? 0));
-		const successRate =
-			Number(
-				(
-					(analytics.totalDelivered / (analytics.totalDelivered + analytics.returnedSum)) *
-					100
-				).toFixed(2)
-			) || 0;
-
-		return {
-			month: i,
-			monthName: getMonthName(i),
-			hasData: true,
-			totalDelivered: analytics.totalDelivered,
-			totalCollected: analytics.totalCollected,
-			returnedSum: analytics.returnedSum,
-			successRate,
-			averagePerDay: analytics.averagePerDay,
-			totalDistance: latestOdometer,
-			recordCount: monthRecords.length
-		};
-	});
+		})
+	);
 
 	// const deliverySum = monthly.reduce((acc, item) => acc + item.delivery, 0);
 	// const collectionSum = monthly.reduce((acc, item) => acc + item.collections, 0);
@@ -84,7 +101,7 @@
 	<header>
 		<div class="header-content">
 			<div>
-				<h1>{getMonthName(currentMonth)} {new Date().getFullYear()}</h1>
+				<h1>{isCurrentYear ? `${displayMonth} ${displayYear}` : `Year ${displayYear}`}</h1>
 				<a href="/records" class="add-record-btn">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -165,13 +182,25 @@
 	<!-- Yearly Summary Section -->
 	<section class="yearly-section">
 		<header>
-			<h2>Year {currentYear} Summary</h2>
+			<div
+				style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;"
+			>
+				<h2>Year {selectedYear} Summary</h2>
+				<div class="year-selector">
+					<label for="year-select">Year:</label>
+					<select id="year-select" value={selectedYear} onchange={handleYearChange}>
+						{#each availableYears as year}
+							<option value={year}>{year}</option>
+						{/each}
+					</select>
+				</div>
+			</div>
 		</header>
 		<div class="monthly-cards-grid">
 			{#each monthlyData as monthData}
 				{#if monthData.hasData}
 					<a
-						href="/analytics?year={currentYear}&month={monthData.month + 1}"
+						href="/analytics?year={selectedYear}&month={monthData.month + 1}"
 						class="month-card clickable"
 					>
 						<div class="month-card-header">
@@ -329,6 +358,40 @@
 		color: #374151;
 		text-transform: uppercase;
 		letter-spacing: 0.05rem;
+	}
+
+	.year-selector {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.year-selector label {
+		font-size: 0.95rem;
+		font-weight: 600;
+		color: #374151;
+	}
+
+	.year-selector select {
+		padding: 0.5rem 1rem;
+		border: 2px solid #e5e7eb;
+		border-radius: 0.375rem;
+		font-size: 0.95rem;
+		color: #374151;
+		background: white;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		font-weight: 600;
+	}
+
+	.year-selector select:hover {
+		border-color: #3c9aff;
+	}
+
+	.year-selector select:focus {
+		outline: none;
+		border-color: #3c9aff;
+		box-shadow: 0 0 0 3px rgba(60, 154, 255, 0.1);
 	}
 
 	.monthly-cards-grid {
