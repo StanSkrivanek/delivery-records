@@ -205,7 +205,7 @@
 			</div>
 
 			<div class="control-group">
-				<label for="wanb-input">WanB Count:</label>
+				<label for="wanb-input">Economy:</label>
 				<input
 					type="number"
 					id="wanb-input"

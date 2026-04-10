@@ -420,8 +420,8 @@ export function generateInvoiceHTML(
 						? `
 				<tr>
 					<td>
-						<strong>WanB Delivery Services</strong><br>
-						<small>Monthly WanB delivery services for ${getMonthName(month - 1)} ${year}</small>
+						<strong>Economy Delivery Services</strong><br>
+						<small>Monthly economy delivery services for ${getMonthName(month - 1)} ${year}</small>
 					</td>
 					<td class="text-right">${wanBCount.toLocaleString()}</td>
 					<td class="text-right">${formatCurrency(WAN_B_DELIVERY)}</td>
