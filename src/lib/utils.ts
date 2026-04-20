@@ -3,7 +3,7 @@ export const PPU_COLLECTION = 1.45; // Price per collection without tax
 export const WAN_B_DELIVERY = 1.20; // China Shit Delivery Rate
 export const TAX_RATE = 0.23; // Tax rate (23%)
 
-export const ODOMETER_INIT = 267317; //INITIAL ODOMETER VALUE, NOT USED IN CALCULATIONS
+export const ODOMETER_INIT = 167317; //INITIAL ODOMETER VALUE, NOT USED IN CALCULATIONS
 /**
  * Type definition for a delivery record
  */
