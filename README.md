@@ -6,7 +6,7 @@ A comprehensive web application for tracking and managing daily delivery operati
 
 ---
 
-## 🚀 Features
+## Features
 
 - ✅ **Daily Record Management** - Track deliveries, collections, returns, and expenses
 - ✅ **Invoice Generation** - Automated PDF invoices with VAT calculations
@@ -18,7 +18,7 @@ A comprehensive web application for tracking and managing daily delivery operati
 
 ---
 
-## 📋 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -54,7 +54,7 @@ pnpm format           # Format code with Prettier
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 - **[DOCS.md](./DOCS.md)** - Complete architecture documentation, design decisions, API routes, data flow patterns
 - **[TODO.md](./TODO.md)** - Feature roadmap, completed tasks, and known issues
@@ -63,7 +63,7 @@ pnpm format           # Format code with Prettier
 
 ---
 
-## 🗄️ Database
+## Database
 
 **Database:** SQLite (`database.db` in project root)
 
@@ -76,7 +76,7 @@ pnpm format           # Format code with Prettier
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
@@ -100,7 +100,7 @@ static/
 
 ---
 
-## 🔑 Key Concepts
+## Key Concepts
 
 ### Vehicle Usage Modes
 
@@ -146,7 +146,7 @@ pnpm format
 
 ---
 
-## 🚢 Deployment
+## Deployment
 
 Currently configured with `adapter-auto`. Change to a specific adapter when deploying:
 
@@ -157,51 +157,3 @@ pnpm add -D @sveltejs/adapter-vercel  # For Vercel
 ```
 
 Update `svelte.config.js` accordingly.
-
----
-
-## 📝 License
-
-[Add your license information here]
-
----
-
-## 🤝 Contributing
-
-[Add contribution guidelines here]
-
----
-
-**Last Updated:** 26 October 2025  
-**Current Branch:** 21-refactor-edit-record (merged to main as branch 22)
-
-
-Hi [Name],
-
-I would like to discuss the current structure and rate of my rural route, as the workload has reached a level that is no longer sustainable or compliant in its current form.
-
-The route is currently averaging 94 parcels per day (approximately 80–90 stops) and, due to the rural geography, depot loading requirements, and travel distances, this consistently results in 12–13 hour working days. While the parcel volume is strong, the time and distance involved mean this route is not comparable to an urban 90+ drop route.
-
-To continue operating the route safely, reliably, and in line with reasonable working hours — particularly with further volume increases expected — the route realistically needs to be split across two drivers. However, at the current rate of €4.00 per parcel (ex. VAT), splitting the route becomes economically unviable once fuel and labour costs are taken into account.
-
-To be transparent with the numbers:
-- 94 parcels at €4.00 = €376 per day
-- Fuel for two routes ≈ €100 per day
-- This leaves approximately €138 per driver per day before any margin, which is below sustainable market rates for rural delivery work
-
-I also understand that other subcontractors within the depot are operating on higher per-parcel rates. In that context, I believe the current rate on this route no longer reflects the workload, hours involved, or the requirement to restructure the route properly.
-
-To allow the route to be split and operated safely while maintaining service levels, I would like to propose a revised rural rate of €4.75–€5.00 per parcel for this route.
-
-I am very open to:
-- A trial period at an adjusted rate
-- Reviewing performance once the route is split
-- Agreeing clear expectations on delivery standards and consistency
-
-My aim is to keep the route stable, compliant, and professionally staffed over the long term.
-
-Please let me know a suitable time to discuss this further.
-
-Kind regards,  
-Stan Skrivanek  
-Cork
