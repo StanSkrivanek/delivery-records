@@ -56,10 +56,10 @@ pnpm format           # Format code with Prettier
 
 ## Documentation
 
-- **[DOCS.md](./DOCS.md)** - Complete architecture documentation, design decisions, API routes, data flow patterns
+<!-- - **[DOCS.md](./DOCS.md)** - Complete architecture documentation, design decisions, API routes, data flow patterns
 - **[TODO.md](./TODO.md)** - Feature roadmap, completed tasks, and known issues
 - **[CLAUDE.md](./CLAUDE.md)** - Project overview, business domain, and development workflow
-- **[.github/copilot-instructions.md](./.github/copilot-instructions.md)** - Coding conventions and quick reference
+- **[.github/copilot-instructions.md](./.github/copilot-instructions.md)** - Coding conventions and quick reference -->
 
 ---
 
